@@ -1,0 +1,69 @@
+# ============================================================
+#  毕设项目 .gitignore
+#  原则:源码和文档进版本库;依赖、缓存、数据、模型权重一律不进
+# ============================================================
+
+# ---------- 依赖 ----------
+node_modules/
+.pnpm-store/
+
+# ---------- 工具缓存 / 虚拟环境(放在工作区内,避免沙箱拦截) ----------
+.npm-cache/
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ---------- 构建产物 ----------
+dist/
+dist-ssr/
+build/
+*.local
+*.tsbuildinfo
+
+# ---------- 数据(体积大,不进版本库;需要时按文件名单独放行) ----------
+data/
+*.csv
+*.parquet
+*.jsonl
+*.xlsx
+
+# ---------- 模型权重与训练产物 ----------
+*.pth
+*.pt
+*.onnx
+*.ckpt
+*.safetensors
+*.bin
+runs/
+wandb/
+outputs/
+checkpoints/
+
+# ---------- 日志 ----------
+logs/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# ---------- 环境变量与密钥 ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---------- 编辑器 / 系统 ----------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
