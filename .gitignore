@@ -67,3 +67,11 @@ Thumbs.db
 desktop.ini
 *.swp
 *~
+
+# ---------- 本机沙箱环境(全部收敛在工作区内,不进版本库) ----------
+.tmp/
+.pip-cache/
+.pylibs/
+.pylibs-*/
+.python/
+
