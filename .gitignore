@@ -74,4 +74,5 @@ desktop.ini
 .pylibs/
 .pylibs-*/
 .python/
+.git-trust/
 
