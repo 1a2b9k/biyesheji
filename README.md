@@ -58,7 +58,9 @@ biyesheji/
 │   │   └── App.vue              主页面
 │   └── tests/                   32 个测试
 ├── tools/                       环境与验证工具
+│   └── use_mysql.py             一条命令切换数据库
 ├── scripts/                     一键启动 / 测试脚本
+├── .env.example                 配置模板(复制为 .env)
 └── 文档/                        学校通知原件
 ```
 
@@ -107,7 +109,7 @@ biyesheji/
 scripts\test-all.cmd
 ```
 
-当前:**61 个测试全部通过**(后端 29 + 前端 32)。
+当前:**71 个测试全部通过**(后端 39 + 前端 32)。
 
 测试原则:
 - 采集解析用**离线样本**测(不发网络请求,快且稳定)
@@ -119,17 +121,29 @@ scripts\test-all.cmd
 
 ## 配置
 
-数据库默认用 SQLite,开箱即用。切换到 MySQL:
+数据库默认用 **SQLite**(零配置,开箱即用)。切换到 **MySQL** 用一条命令:
 
 ```bat
-set FIN_DATABASE_URL=mysql+pymysql://root:密码@127.0.0.1:3306/fin_sentiment?charset=utf8mb4
+.python\python.exe tools\use_mysql.py --password 你的密码
 ```
 
-首次使用 MySQL 需先建库:
+它会:验证密码 → 建库 `fin_sentiment` → 把连接串写进 `.env` → 建表。
+**密码只写进 `.env`,该文件已被 gitignore,不会进版本库。**
 
-```sql
-CREATE DATABASE fin_sentiment DEFAULT CHARSET utf8mb4;
+切回 SQLite:
+
+```bat
+.python\python.exe tools\use_mysql.py --sqlite
 ```
+
+查看当前用的是哪个库、能否连通:
+
+```bat
+.python\python.exe tools\use_mysql.py --check
+```
+
+> 也可以手工配置:复制 `.env.example` 为 `.env`,填入 `FIN_DATABASE_URL`。
+> 密码含特殊字符(`@ : / #`)时需做 URL 编码,如 `@` → `%40`。
 
 ---
 
