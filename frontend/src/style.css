@@ -1,0 +1,41 @@
+/**
+ * 全局样式。
+ *
+ * 只做最小必要的重置 —— 组件样式一律写在各自的 <style scoped> 里,
+ * 这里不放大而全的 UI 框架,避免样式冲突和体积膨胀。
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial,
+    sans-serif;
+  font-size: 14px;
+  color: #303133;
+  background: #f0f2f5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100%;
+}
+
+a {
+  text-decoration: none;
+}
+
+button,
+select,
+input {
+  font-family: inherit;
+  font-size: inherit;
+}
