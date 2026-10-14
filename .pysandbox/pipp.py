@@ -37,7 +37,9 @@ os.environ['PYTHONUTF8'] = '1'
 
 # 3) 安装目标指向工作区内的 .pylibs(与 python312._pth 中的条目一致)
 os.environ['PYTHONUSERBASE'] = os.path.join(_WS, '.pylibs')
-if '--user' not in sys.argv[1:]:
+# 只有 install 认 --user;download / wheel / list 等子命令加了会直接报错。
+_args = [a for a in sys.argv[1:] if not a.startswith('-')]
+if _args[:1] == ['install'] and '--user' not in sys.argv[1:]:
     sys.argv.append('--user')
 
 # 4) 交给真正的 pip

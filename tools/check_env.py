@@ -96,13 +96,16 @@ try:
 except Exception as exc:
     report(False, 'install target writable & on sys.path', repr(exc))
 
-# 6) 网络:PyPI 可达
+# 6) 网络:装包镜像可达
+#    注意:pypi.org 官方源本机实测只有 ~0.01 MB/s(延迟极高),虽然返回 200
+#    但实际装不了包,所以这里检查真正在用的国内镜像。
+_MIRROR = os.environ.get('PIP_MIRROR', 'https://pypi.tuna.tsinghua.edu.cn/simple/')
 try:
     import urllib.request
-    with urllib.request.urlopen('https://pypi.org/simple/', timeout=15) as r:
-        report(r.status == 200, 'PyPI reachable', 'HTTP %d' % r.status)
+    with urllib.request.urlopen(_MIRROR, timeout=15) as r:
+        report(r.status == 200, 'PyPI mirror reachable', 'HTTP %d %s' % (r.status, _MIRROR.split('/')[2]))
 except Exception as exc:
-    report(False, 'PyPI reachable', type(exc).__name__)
+    report(False, 'PyPI mirror reachable', type(exc).__name__)
 
 # 7) 关键第三方库
 for mod in ('numpy', 'requests', 'docx', 'fitz'):
@@ -112,13 +115,30 @@ for mod in ('numpy', 'requests', 'docx', 'fitz'):
     except Exception as exc:
         report(False, 'lib %s' % mod, type(exc).__name__)
 
-# 8) torch(可选)
+# 8) torch(可选):不只是看 is_available,真跑一次 GPU 矩阵乘法
+#    只有这样才能发现「驱动能认卡、但 wheel 里没有本卡算力的 kernel」这类问题
+#    (RTX 5060 是 sm_120,需要 cu128+ 的构建才带对应 kernel)。
 try:
     import torch
-    report(torch.cuda.is_available(), 'torch installed / CUDA available',
-           'torch %s, cuda=%s' % (torch.__version__, torch.cuda.is_available()))
+    if not torch.cuda.is_available():
+        report(False, 'torch GPU compute', 'torch %s installed but CUDA unavailable' % torch.__version__)
+    else:
+        cap = torch.cuda.get_device_capability(0)
+        arch = 'sm_%d%d' % cap
+        built = torch.cuda.get_arch_list()
+        # 该卡算力是否在本次构建的 kernel 列表里
+        report(arch in built, 'torch GPU compute',
+               'torch %s, %s, %s' % (torch.__version__, torch.cuda.get_device_name(0), arch))
+        if arch in built:
+            a = torch.randn(512, 512, device='cuda')
+            b = torch.randn(512, 512, device='cuda')
+            c = a @ b
+            torch.cuda.synchronize()
+            ok = bool(torch.allclose(c.cpu(), a.cpu() @ b.cpu(), rtol=1e-2, atol=1e-1))
+            report(ok, 'torch GPU matmul matches CPU',
+                   'max diff %.2e' % float((c.cpu() - a.cpu() @ b.cpu()).abs().max()))
 except ImportError:
-    print('  [SKIP] %-46s %s' % ('torch installed / CUDA available', 'not installed yet'))
+    print('  [SKIP] %-46s %s' % ('torch GPU compute', 'torch not installed yet'))
 
 print()
 if failures:
