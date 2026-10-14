@@ -50,11 +50,14 @@ wandb/
 outputs/
 checkpoints/
 
-# ---------- 日志 ----------
+# ---------- 日志与分词缓存 ----------
 logs/
 *.log
 npm-debug.log*
 yarn-error.log*
+# jieba 首次分词会生成 ~9 MB 缓存,纯机器产物,换台机器自动重建
+jieba.cache
+.tmp*.cache
 
 # ---------- 环境变量与密钥 ----------
 .env
