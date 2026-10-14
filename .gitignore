@@ -76,3 +76,12 @@ desktop.ini
 .python/
 .git-trust/
 
+# ---------- 内置 skill 的测试夹具(.dsh/skills 是上游原样 vendor 的第三方内容) ----------
+# 上面的 *.jsonl 等规则是给"数据集/日志"写的,会误伤 skill 自带的测试夹具,
+# 导致上游脚本在干净检出里跑不起来。这里按目录精确放行,不影响别处。
+!.dsh/skills/**/fixtures/**
+!.dsh/skills/**/fixtures/**/*.jsonl
+!.dsh/skills/**/fixtures/**/*.csv
+!.dsh/skills/**/fixtures/**/*.log
+!.dsh/skills/**/fixtures/**/*.json
+

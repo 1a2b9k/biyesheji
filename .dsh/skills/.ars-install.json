@@ -1,0 +1,14 @@
+﻿{
+    "repository":  "https://github.com/Imbad0202/academic-research-skills.git",
+    "commit":  "a3ef8c79d888b90aaaaecce7f42fbc3fd082d5ab",
+    "commitDate":  "2026-10-14T01:41:19+08:00",
+    "installed":  "2026-10-14T21:03:50+08:00",
+    "license":  "CC-BY-NC-4.0 (see .upstream/LICENSE)",
+    "skills":  [
+                   "academic-paper",
+                   "academic-paper-reviewer",
+                   "academic-pipeline",
+                   "deep-research",
+                   "sr-screener"
+               ]
+}
