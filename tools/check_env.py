@@ -140,6 +140,35 @@ try:
 except ImportError:
     print('  [SKIP] %-46s %s' % ('torch GPU compute', 'torch not installed yet'))
 
+# 9) 情感分析的机器学习栈(可选)
+#    这些是 v0.2 要用的,没装不算环境故障,但装了就要确认能 import。
+for mod in ('transformers', 'sklearn', 'pandas'):
+    try:
+        m = __import__(mod)
+        report(True, 'ml lib %s' % mod, getattr(m, '__version__', 'ok'))
+    except ImportError:
+        print('  [SKIP] %-46s %s' % ('ml lib %s' % mod, 'not installed yet'))
+    except Exception as exc:
+        report(False, 'ml lib %s' % mod, type(exc).__name__)
+
+# 10) 预训练模型(可选):只查文件在不在,不加载(加载要几秒)
+_MODELS = os.path.join(_WS, 'models')
+if os.path.isdir(_MODELS):
+    for name in sorted(os.listdir(_MODELS)):
+        d = os.path.join(_MODELS, name)
+        if not os.path.isdir(d):
+            continue
+        has_cfg = os.path.exists(os.path.join(d, 'config.json'))
+        has_w = any(os.path.exists(os.path.join(d, w))
+                    for w in ('model.safetensors', 'pytorch_model.bin'))
+        size = sum(os.path.getsize(os.path.join(dp, f))
+                   for dp, _, fs in os.walk(d) for f in fs)
+        report(has_cfg and has_w, 'model %s' % name,
+               '%.1f MB' % (size / 1048576) if has_cfg and has_w
+               else 'incomplete (config=%s weights=%s)' % (has_cfg, has_w))
+else:
+    print('  [SKIP] %-46s %s' % ('pretrained models', 'models/ not found'))
+
 print()
 if failures:
     print('RESULT: %d check(s) FAILED -> %s' % (len(failures), ', '.join(failures)))
