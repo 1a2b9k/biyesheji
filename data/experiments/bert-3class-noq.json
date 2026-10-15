@@ -1,0 +1,57 @@
+{
+  "accuracy": 0.7437,
+  "macro_f1": 0.7405,
+  "weighted_f1": 0.7437,
+  "confusion_matrix": [
+    [
+      447,
+      86,
+      108
+    ],
+    [
+      62,
+      466,
+      90
+    ],
+    [
+      135,
+      65,
+      671
+    ]
+  ],
+  "label_names": [
+    "negative",
+    "positive",
+    "neutral"
+  ],
+  "per_class": {
+    "negative": {
+      "precision": 0.6941,
+      "recall": 0.6973,
+      "f1": 0.6957,
+      "support": 641
+    },
+    "positive": {
+      "precision": 0.7553,
+      "recall": 0.754,
+      "f1": 0.7547,
+      "support": 618
+    },
+    "neutral": {
+      "precision": 0.7722,
+      "recall": 0.7704,
+      "f1": 0.7713,
+      "support": 871
+    }
+  },
+  "macro_precision": 0.7405,
+  "macro_recall": 0.7406,
+  "report_text": "              precision    recall  f1-score   support\n\n    negative     0.6941    0.6973    0.6957       641\n    positive     0.7553    0.7540    0.7547       618\n     neutral     0.7722    0.7704    0.7713       871\n\n    accuracy                         0.7437      2130\n   macro avg     0.7405    0.7406    0.7405      2130\nweighted avg     0.7438    0.7437    0.7437      2130\n",
+  "mean_confidence": 0.8781,
+  "model": "bert",
+  "task": "3class-noq",
+  "n_train": 5988,
+  "n_test": 2130,
+  "seed": 42,
+  "note": "训练集剔除以问号结尾的样本"
+}

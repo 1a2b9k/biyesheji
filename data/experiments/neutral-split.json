@@ -1,0 +1,314 @@
+{
+  "train_questions": {
+    "n": 8516,
+    "question": 2528,
+    "question_ratio": 0.2969,
+    "question_loose": 3713,
+    "question_loose_ratio": 0.436,
+    "per_class": {
+      "negative": {
+        "n": 2529,
+        "question": 576,
+        "question_ratio": 0.2278,
+        "question_loose": 910,
+        "question_loose_ratio": 0.3598
+      },
+      "positive": {
+        "n": 2406,
+        "question": 223,
+        "question_ratio": 0.0927,
+        "question_loose": 458,
+        "question_loose_ratio": 0.1904
+      },
+      "neutral": {
+        "n": 3581,
+        "question": 1729,
+        "question_ratio": 0.4828,
+        "question_loose": 2345,
+        "question_loose_ratio": 0.6548
+      }
+    },
+    "question_label_dist": {
+      "negative": 576,
+      "positive": 223,
+      "neutral": 1729
+    }
+  },
+  "test_questions": {
+    "n": 2130,
+    "question": 609,
+    "question_ratio": 0.2859,
+    "question_loose": 874,
+    "question_loose_ratio": 0.4103,
+    "per_class": {
+      "negative": {
+        "n": 641,
+        "question": 150,
+        "question_ratio": 0.234,
+        "question_loose": 228,
+        "question_loose_ratio": 0.3557
+      },
+      "positive": {
+        "n": 618,
+        "question": 52,
+        "question_ratio": 0.0841,
+        "question_loose": 96,
+        "question_loose_ratio": 0.1553
+      },
+      "neutral": {
+        "n": 871,
+        "question": 407,
+        "question_ratio": 0.4673,
+        "question_loose": 550,
+        "question_loose_ratio": 0.6315
+      }
+    },
+    "question_label_dist": {
+      "negative": 150,
+      "positive": 52,
+      "neutral": 407
+    }
+  },
+  "error_flow": {
+    "total_errors": 524,
+    "sinks": [
+      {
+        "label": "neutral",
+        "absorbed": 227,
+        "share": 0.4332
+      },
+      {
+        "label": "negative",
+        "absorbed": 171,
+        "share": 0.3263
+      },
+      {
+        "label": "positive",
+        "absorbed": 126,
+        "share": 0.2405
+      }
+    ],
+    "pairs": [
+      {
+        "true": "negative",
+        "pred": "neutral",
+        "n": 121,
+        "share": 0.2309
+      },
+      {
+        "true": "neutral",
+        "pred": "negative",
+        "n": 113,
+        "share": 0.2156
+      },
+      {
+        "true": "positive",
+        "pred": "neutral",
+        "n": 106,
+        "share": 0.2023
+      },
+      {
+        "true": "negative",
+        "pred": "positive",
+        "n": 81,
+        "share": 0.1546
+      },
+      {
+        "true": "positive",
+        "pred": "negative",
+        "n": 58,
+        "share": 0.1107
+      },
+      {
+        "true": "neutral",
+        "pred": "positive",
+        "n": 45,
+        "share": 0.0859
+      }
+    ],
+    "boundary_errors": 385,
+    "boundary_share": 0.7347,
+    "polarity_errors": 139,
+    "polarity_share": 0.2653
+  },
+  "split_eval": {
+    "model": "bert",
+    "task": "3class",
+    "criterion": "title ends with ? or ？",
+    "overall": {
+      "n": 2130,
+      "accuracy": 0.754,
+      "macro_f1": 0.7491,
+      "confusion_matrix": [
+        [
+          439,
+          81,
+          121
+        ],
+        [
+          58,
+          454,
+          106
+        ],
+        [
+          113,
+          45,
+          713
+        ]
+      ],
+      "per_class": {
+        "negative": {
+          "support": 641,
+          "recall": 0.6849
+        },
+        "positive": {
+          "support": 618,
+          "recall": 0.7346
+        },
+        "neutral": {
+          "support": 871,
+          "recall": 0.8186
+        }
+      }
+    },
+    "question": {
+      "n": 609,
+      "accuracy": 0.7882,
+      "macro_f1": 0.6492,
+      "confusion_matrix": [
+        [
+          104,
+          4,
+          42
+        ],
+        [
+          11,
+          15,
+          26
+        ],
+        [
+          44,
+          2,
+          361
+        ]
+      ],
+      "per_class": {
+        "negative": {
+          "support": 150,
+          "recall": 0.6933
+        },
+        "positive": {
+          "support": 52,
+          "recall": 0.2885
+        },
+        "neutral": {
+          "support": 407,
+          "recall": 0.887
+        }
+      },
+      "label_dist": {
+        "negative": 150,
+        "positive": 52,
+        "neutral": 407
+      }
+    },
+    "statement": {
+      "n": 1521,
+      "accuracy": 0.7403,
+      "macro_f1": 0.7379,
+      "confusion_matrix": [
+        [
+          335,
+          77,
+          79
+        ],
+        [
+          47,
+          439,
+          80
+        ],
+        [
+          69,
+          43,
+          352
+        ]
+      ],
+      "per_class": {
+        "negative": {
+          "support": 491,
+          "recall": 0.6823
+        },
+        "positive": {
+          "support": 566,
+          "recall": 0.7756
+        },
+        "neutral": {
+          "support": 464,
+          "recall": 0.7586
+        }
+      },
+      "label_dist": {
+        "negative": 491,
+        "positive": 566,
+        "neutral": 464
+      }
+    }
+  },
+  "retrain_without_questions": {
+    "accuracy": 0.7437,
+    "macro_f1": 0.7405,
+    "weighted_f1": 0.7437,
+    "confusion_matrix": [
+      [
+        447,
+        86,
+        108
+      ],
+      [
+        62,
+        466,
+        90
+      ],
+      [
+        135,
+        65,
+        671
+      ]
+    ],
+    "label_names": [
+      "negative",
+      "positive",
+      "neutral"
+    ],
+    "per_class": {
+      "negative": {
+        "precision": 0.6941,
+        "recall": 0.6973,
+        "f1": 0.6957,
+        "support": 641
+      },
+      "positive": {
+        "precision": 0.7553,
+        "recall": 0.754,
+        "f1": 0.7547,
+        "support": 618
+      },
+      "neutral": {
+        "precision": 0.7722,
+        "recall": 0.7704,
+        "f1": 0.7713,
+        "support": 871
+      }
+    },
+    "macro_precision": 0.7405,
+    "macro_recall": 0.7406,
+    "report_text": "              precision    recall  f1-score   support\n\n    negative     0.6941    0.6973    0.6957       641\n    positive     0.7553    0.7540    0.7547       618\n     neutral     0.7722    0.7704    0.7713       871\n\n    accuracy                         0.7437      2130\n   macro avg     0.7405    0.7406    0.7405      2130\nweighted avg     0.7438    0.7437    0.7437      2130\n",
+    "mean_confidence": 0.8781,
+    "model": "bert",
+    "task": "3class-noq",
+    "n_train": 5988,
+    "n_test": 2130,
+    "seed": 42,
+    "note": "训练集剔除以问号结尾的样本"
+  }
+}
