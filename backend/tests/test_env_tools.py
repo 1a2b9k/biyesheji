@@ -1,12 +1,14 @@
 """
 环境与下载工具的测试。
 
-覆盖两处:
+覆盖三处:
   1. tools/fetch_wheel.py 的纯逻辑 —— 版本解析、CDN 主机改写、wheel 挑选。
      这里最要紧的是「默认挑最新版」必须按数字比较,而不是按字符串比较,
      否则 2.10.0 会被判成比 2.9.0 小。
   2. tools/check_env.py 作为脚本的退出码 —— 它是交付前的环境闸门,
      必须真的能跑通并返回 0。
+  3. .pysandbox/sitecustomize.py 的 mode 降级 —— 它同时兜住 pip 与
+     pytest 的临时目录,坏了会让整个测试套件无法运行。
 
 不发网络请求:需要 HTTP 的地方用假的 _open 替换。
 """
@@ -175,3 +177,57 @@ def test_check_env_reports_gpu_compute():
                        cwd=_REPO_ROOT, capture_output=True, text=True,
                        encoding='utf-8', errors='replace', timeout=300)
     assert 'torch GPU compute' in r.stdout
+    assert 'torch GPU matmul matches CPU' in r.stdout
+
+
+@pytest.mark.skipif(not os.path.exists(_PY), reason='workspace interpreter missing')
+def test_check_env_covers_0700_directory_bug():
+    """自检必须覆盖「0o700 目录不可写」这个沙箱坑。
+
+    单独列出来,是因为它的症状是 PermissionError 而不是「补丁没加载」,
+    出问题时很难联想到权限模式 —— 而它同时打断 pip 与 pytest。
+    """
+    r = subprocess.run([_PY, os.path.join(_TOOLS, 'check_env.py')],
+                       cwd=_REPO_ROOT, capture_output=True, text=True,
+                       encoding='utf-8', errors='replace', timeout=300)
+    assert 'mkdir(mode=0o700) dirs are writable' in r.stdout
+
+
+@pytest.mark.skipif(not os.path.exists(_PY), reason='workspace interpreter missing')
+def test_sandbox_patch_makes_0700_writable():
+    """补丁的核心承诺:0o700 目录建出来能写。
+
+    Windows 上 os.stat 一律报 0o777,权限位看不出来,只能实测写入。
+    """
+    code = (
+        'import os, tempfile, shutil\n'
+        'root = tempfile.mkdtemp(prefix="t-mode-")\n'
+        'p = os.path.join(root, "d")\n'
+        'os.mkdir(p, 0o700)\n'
+        'open(os.path.join(p, "x"), "w").write("ok")\n'
+        'print("WROTE")\n'
+        'shutil.rmtree(root, ignore_errors=True)\n'
+    )
+    r = subprocess.run([_PY, '-c', code], cwd=_REPO_ROOT,
+                       capture_output=True, text=True,
+                       encoding='utf-8', errors='replace', timeout=60)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert 'WROTE' in r.stdout
+
+
+@pytest.mark.skipif(not os.path.exists(_PY), reason='workspace interpreter missing')
+def test_sandbox_patch_only_touches_0700():
+    """非 0o700 的 mode 必须原样透传 —— 否则会悄悄放松别人的权限。"""
+    code = (
+        'import sys\n'
+        'sys.path.insert(0, r"%s")\n'
+        'import sitecustomize as sc\n'
+        'print(sc._fix_mode(0o755), sc._fix_mode(0o644),\n'
+        '      sc._fix_mode(0o700), sc._fix_mode(None))\n'
+        % os.path.join(_REPO_ROOT, '.pysandbox'))
+    r = subprocess.run([_PY, '-c', code], cwd=_REPO_ROOT,
+                       capture_output=True, text=True,
+                       encoding='utf-8', errors='replace', timeout=60)
+    assert r.returncode == 0, r.stdout + r.stderr
+    # 0o755=493 0o644=420 0o700->0o755=493 None 原样
+    assert r.stdout.split() == ['493', '420', '493', 'None']

@@ -3,7 +3,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import collector, models
+from . import collector, models, sentiment
 
 
 def upsert_stock(db: Session, code, name, market='SH'):
@@ -79,12 +79,52 @@ def save_news(db: Session, code, rows):
     return added
 
 
+def annotate_sentiment(db: Session, code, limit=None):
+    """给尚未标注情感的新闻打情感标签。返回 (标注条数, 用的模型名)。
+
+    单独一遍扫描(而不是在 save_news 里顺手标)有两个好处:
+      1. 老数据也能补标 —— v0.1 存进去的新闻 sentiment 是空的
+      2. 模型缺失时不影响采集,只是标注数为 0
+
+    批量推理而不是逐条: BERT 单条推理要几十毫秒,批量能摊薄固定开销。
+    """
+    rows = db.scalars(
+        select(models.News)
+        .where(models.News.code == code)
+        .where(models.News.sentiment == '')
+        .order_by(models.News.id)
+    ).all()
+    if limit:
+        rows = rows[:limit]
+    if not rows:
+        return 0, sentiment.default_kind()
+
+    model = sentiment.load()
+    if model is None:
+        return 0, None
+
+    texts = [r.title for r in rows]
+    BATCH = 64
+    done = 0
+    for i in range(0, len(texts), BATCH):
+        chunk = texts[i:i + BATCH]
+        results = model.predict(chunk)
+        for row, res in zip(rows[i:i + BATCH], results):
+            row.sentiment = res['label']
+            row.sentiment_score = res['score']
+            done += 1
+    db.flush()
+    return done, model.kind
+
+
 def sync_stock(db: Session, code, name, market='SH', news_size=20):
-    """完整同步一只股票:基本信息 + 日线 + 新闻。返回统计字典。"""
+    """完整同步一只股票:基本信息 + 日线 + 新闻 + 情感标注。返回统计字典。"""
     upsert_stock(db, code, name, market)
 
     kline_added = 0
     news_added = 0
+    sentiment_added = 0
+    sentiment_model = None
     errors = []
 
     try:
@@ -99,11 +139,18 @@ def sync_stock(db: Session, code, name, market='SH', news_size=20):
     except Exception as exc:  # noqa: BLE001
         errors.append('news: %s: %s' % (type(exc).__name__, exc))
 
+    try:
+        sentiment_added, sentiment_model = annotate_sentiment(db, code)
+    except Exception as exc:  # noqa: BLE001
+        errors.append('sentiment: %s: %s' % (type(exc).__name__, exc))
+
     db.commit()
     return {
         'code': code,
         'name': name,
         'kline_added': kline_added,
         'news_added': news_added,
+        'sentiment_added': sentiment_added,
+        'sentiment_model': sentiment_model,
         'errors': errors,
     }

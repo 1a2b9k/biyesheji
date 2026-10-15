@@ -1,0 +1,50 @@
+{
+  "accuracy": 0.8435,
+  "macro_f1": 0.8435,
+  "weighted_f1": 0.8435,
+  "confusion_matrix": [
+    [
+      529,
+      112
+    ],
+    [
+      85,
+      533
+    ]
+  ],
+  "label_names": [
+    "negative",
+    "positive"
+  ],
+  "per_class": {
+    "negative": {
+      "precision": 0.8616,
+      "recall": 0.8253,
+      "support": 641
+    },
+    "positive": {
+      "precision": 0.8264,
+      "recall": 0.8625,
+      "support": 618
+    }
+  },
+  "report_text": "              precision    recall  f1-score   support\n\n    negative     0.8616    0.8253    0.8430       641\n    positive     0.8264    0.8625    0.8440       618\n\n    accuracy                         0.8435      1259\n   macro avg     0.8440    0.8439    0.8435      1259\nweighted avg     0.8443    0.8435    0.8435      1259\n",
+  "mean_confidence": 0.9231,
+  "model": "bert",
+  "task": "polarity",
+  "n_train": 4935,
+  "n_test": 1259,
+  "seed": 42,
+  "elapsed_sec": 109.3,
+  "majority_baseline": {
+    "label": 0,
+    "accuracy": 0.5091
+  },
+  "hyperparams": {
+    "max_len": 64,
+    "batch_size": 32,
+    "epochs": 3,
+    "learning_rate": 2e-05,
+    "base_model": "bert-base-chinese"
+  }
+}

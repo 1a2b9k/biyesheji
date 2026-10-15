@@ -27,7 +27,13 @@ build/
 *.tsbuildinfo
 
 # ---------- 数据(体积大,不进版本库;需要时按文件名单独放行) ----------
-data/
+# 用 data/* 而不是 data/:写 data/ 会把目录本身排除掉,git 就不会再进这个
+# 目录,下面的 !data/experiments/ 也就无从生效(规则:父目录被排除时,
+# 子文件无法被重新包含)。
+data/*
+!data/experiments/
+!data/experiments/*.json
+!data/experiments/*.md
 *.csv
 *.parquet
 *.jsonl

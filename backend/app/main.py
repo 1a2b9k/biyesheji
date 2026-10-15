@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from . import config, models, service
+from . import config, models, sentiment, service
 from .db import get_db, init_db
 
 
@@ -32,8 +32,8 @@ def _seed_defaults():
 
 app = FastAPI(
     title='财经舆情分析平台 API',
-    version='0.1.0',
-    description='行情与新闻采集展示(v0.1 基础版;情感分析在 v0.2 加入)',
+    version='0.2.0',
+    description='行情与新闻采集展示 + 情感分析',
     lifespan=lifespan,
 )
 
@@ -163,11 +163,100 @@ def get_overview(code: str, db: Session = Depends(get_db)):
 @app.post('/api/stocks/{code}/sync')
 def sync(code: str, news_size: int = Query(20, ge=1, le=100),
          db: Session = Depends(get_db)):
-    """触发一次采集(行情 + 新闻)。"""
+    """触发一次采集(行情 + 新闻 + 情感分析)。"""
     _require_stock(db, code)
     stock = db.get(models.Stock, code)
     return service.sync_stock(db, stock.code, stock.name, stock.market,
                               news_size=news_size)
+
+
+# ------------------------------------------------------------ 情感分析
+
+@app.get('/api/sentiment/info')
+def sentiment_info():
+    """当前情感分析模型的可用性与指标。"""
+    return sentiment.info()
+
+
+@app.post('/api/sentiment/analyze')
+def sentiment_analyze(payload: dict):
+    """对任意文本做情感分析(演示 / 调试用)。
+
+    请求体: {'texts': ['...', '...'], 'model': 'bert'}   model 可省略
+    返回  : {'model': 'bert', 'results': [{'text','label','score','scores'}]}
+    """
+    texts = (payload or {}).get('texts')
+    if not isinstance(texts, list) or not texts:
+        raise HTTPException(status_code=400, detail='texts 必须是非空数组')
+    texts = [str(t) for t in texts][:200]
+
+    kind = (payload or {}).get('model') or None
+    if kind and kind not in sentiment.available():
+        raise HTTPException(status_code=400, detail='模型不可用: %s' % kind)
+
+    results = sentiment.predict(texts, kind=kind)
+    if results is None:
+        raise HTTPException(
+            status_code=503,
+            detail='没有可用的情感分析模型,请先跑 tools/train_sentiment.py')
+    return {
+        'model': kind or sentiment.default_kind(),
+        'results': [dict(text=t, **r) for t, r in zip(texts, results)],
+    }
+
+
+@app.get('/api/stocks/{code}/sentiment')
+def get_sentiment(code: str, limit: int = Query(500, ge=1, le=5000),
+                  db: Session = Depends(get_db)):
+    """某只股票新闻的情绪分布。
+
+    只统计已标注情感的行。若一条都没有,返回 zero=True,前端据此提示
+    先点「采集最新数据」。
+    """
+    _require_stock(db, code)
+
+    rows = db.scalars(
+        select(models.News)
+        .where(models.News.code == code)
+        .where(models.News.sentiment != '')
+        .order_by(models.News.publish_time.desc())
+        .limit(limit)
+    ).all()
+
+    counts = {'positive': 0, 'neutral': 0, 'negative': 0}
+    for r in rows:
+        if r.sentiment in counts:
+            counts[r.sentiment] += 1
+    total = sum(counts.values())
+
+    daily = db.execute(
+        select(models.News.publish_time, models.News.sentiment,
+               func.count())
+        .where(models.News.code == code)
+        .where(models.News.sentiment != '')
+        .group_by(models.News.publish_time, models.News.sentiment)
+        .order_by(models.News.publish_time)
+    ).all()
+
+    by_date = {}
+    for date, label, n in daily:
+        day = (date or '')[:10]
+        if not day:
+            continue
+        by_date.setdefault(day, {'positive': 0, 'neutral': 0, 'negative': 0})
+        if label in by_date[day]:
+            by_date[day][label] += n
+
+    return {
+        'code': code,
+        'model': sentiment.default_kind(),
+        'total': total,
+        'zero': total == 0,
+        'counts': counts,
+        'ratio': {k: (round(v / total, 4) if total else 0.0)
+                  for k, v in counts.items()},
+        'daily': [dict(date=d, **v) for d, v in sorted(by_date.items())],
+    }
 
 
 def _require_stock(db: Session, code: str):

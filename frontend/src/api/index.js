@@ -32,4 +32,12 @@ export const getOverview = (code) =>
 export const syncStock = (code) =>
   http.post(`/stocks/${code}/sync`).then((r) => r.data)
 
+/** 情感模型状态(可用性 + 测试集指标) */
+export const getSentimentInfo = () =>
+  http.get('/sentiment/info').then((r) => r.data)
+
+/** 单只股票的情感分布 */
+export const getStockSentiment = (code, limit = 500) =>
+  http.get(`/stocks/${code}/sentiment`, { params: { limit } }).then((r) => r.data)
+
 export default http

@@ -6,10 +6,11 @@
  */
 import { computed, onMounted, ref } from 'vue'
 
-import { getKlines, getNews, getOverview, listStocks, syncStock } from './api'
+import { getKlines, getNews, getOverview, getSentimentInfo, getStockSentiment, listStocks, syncStock } from './api'
 import EChart from './components/EChart.vue'
 import NewsList from './components/NewsList.vue'
 import OverviewCards from './components/OverviewCards.vue'
+import SentimentPanel from './components/SentimentPanel.vue'
 import StockBar from './components/StockBar.vue'
 import { buildKlineOption, buildSourcePieOption } from './utils/chart.js'
 
@@ -18,6 +19,8 @@ const current = ref('')
 const overview = ref(null)
 const klines = ref([])
 const news = ref([])
+const sentiment = ref(null)
+const sentimentInfo = ref(null)
 const loading = ref(false)
 const syncing = ref(false)
 const message = ref('')
@@ -31,14 +34,18 @@ async function loadAll(code) {
   loading.value = true
   message.value = ''
   try {
-    const [o, k, n] = await Promise.all([
+    const [o, k, n, s] = await Promise.all([
       getOverview(code),
       getKlines(code, 250),
       getNews(code, 50),
+      // 情感数据失败不该让整页打不开:模型可能压根没训练,
+      // 这时后端返回空统计,单独 catch 更稳妥。
+      getStockSentiment(code).catch(() => null),
     ])
     overview.value = o
     klines.value = k
     news.value = n
+    sentiment.value = s
     if (!k.length && !n.length) {
       message.value = '该股票还没有数据,请点击「采集最新数据」。'
     }
@@ -56,6 +63,7 @@ async function onSync() {
   try {
     const r = await syncStock(current.value)
     const parts = [`新增日线 ${r.kline_added} 条`, `新闻 ${r.news_added} 条`]
+    if (r.sentiment_added) parts.push(`情感标注 ${r.sentiment_added} 条`)
     if (r.errors?.length) parts.push(`失败 ${r.errors.length} 项`)
     // 先刷新数据再写提示 —— loadAll 开头会清空 message,
     // 若顺序反过来,用户永远看不到"采集完成"。
@@ -75,7 +83,13 @@ function onSelect(code) {
 
 onMounted(async () => {
   try {
-    stocks.value = await listStocks()
+    // 模型状态与股票列表互不依赖,并行拉;模型状态失败不影响主流程
+    const [list, info] = await Promise.all([
+      listStocks(),
+      getSentimentInfo().catch(() => null),
+    ])
+    stocks.value = list
+    sentimentInfo.value = info
     if (stocks.value.length) {
       current.value = stocks.value[0].code
       await loadAll(current.value)
@@ -121,6 +135,8 @@ onMounted(async () => {
       </div>
 
       <NewsList :news="news" />
+
+      <SentimentPanel :data="sentiment" :info="sentimentInfo" />
     </main>
   </div>
 </template>

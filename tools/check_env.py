@@ -77,6 +77,25 @@ try:
 except Exception as exc:  # pragma: no cover
     report(False, 'sandbox temp-dir patch active & writable', repr(exc))
 
+# 3b) mode=0o700 的目录在本沙箱下不可写(实测),补丁须把它降级。
+#     这条单列,因为它影响 pytest 的 tmp_path 与 pip 的临时目录,
+#     出问题时症状是 PermissionError 而不是"补丁没生效",很难联想。
+try:
+    import shutil
+    probe_root = tempfile.mkdtemp(prefix='check-mode-')
+    bad = os.path.join(probe_root, 'd700')
+    os.makedirs(bad, mode=0o700)
+    try:
+        with open(os.path.join(bad, 'probe.txt'), 'wb') as f:
+            f.write(b'ok')
+        mode_ok = True
+    except OSError:
+        mode_ok = False
+    shutil.rmtree(probe_root, ignore_errors=True)
+    report(mode_ok, 'mkdir(mode=0o700) dirs are writable', 'downgraded to 0o755')
+except Exception as exc:  # pragma: no cover
+    report(False, 'mkdir(mode=0o700) dirs are writable', repr(exc))
+
 # 4) pip / setuptools
 for mod in ('pip', 'setuptools'):
     try:
@@ -151,18 +170,28 @@ for mod in ('transformers', 'sklearn', 'pandas'):
     except Exception as exc:
         report(False, 'ml lib %s' % mod, type(exc).__name__)
 
-# 10) 预训练模型(可选):只查文件在不在,不加载(加载要几秒)
+# 10) 预训练 / 已训练模型(可选):只查文件在不在,不加载(加载要几秒)
+# 两类模型目录并存:
+#   bert-base-chinese          HuggingFace 格式(config.json + 权重)
+#   sentiment-tfidf-3class     joblib 格式(model.joblib,sklearn 流水线)
+# 之前只认 HF 格式,TF-IDF 模型一训练出来自检就红,这里按格式分别判断。
 _MODELS = os.path.join(_WS, 'models')
 if os.path.isdir(_MODELS):
     for name in sorted(os.listdir(_MODELS)):
         d = os.path.join(_MODELS, name)
         if not os.path.isdir(d):
             continue
+        size = sum(os.path.getsize(os.path.join(dp, f))
+                   for dp, _, fs in os.walk(d) for f in fs)
+
+        if os.path.exists(os.path.join(d, 'model.joblib')):
+            report(True, 'model %s' % name,
+                   '%.1f MB (joblib)' % (size / 1048576))
+            continue
+
         has_cfg = os.path.exists(os.path.join(d, 'config.json'))
         has_w = any(os.path.exists(os.path.join(d, w))
                     for w in ('model.safetensors', 'pytorch_model.bin'))
-        size = sum(os.path.getsize(os.path.join(dp, f))
-                   for dp, _, fs in os.walk(d) for f in fs)
         report(has_cfg and has_w, 'model %s' % name,
                '%.1f MB' % (size / 1048576) if has_cfg and has_w
                else 'incomplete (config=%s weights=%s)' % (has_cfg, has_w))

@@ -1,0 +1,52 @@
+{
+  "accuracy": 0.7546,
+  "macro_f1": 0.754,
+  "weighted_f1": 0.7542,
+  "confusion_matrix": [
+    [
+      505,
+      136
+    ],
+    [
+      173,
+      445
+    ]
+  ],
+  "label_names": [
+    "negative",
+    "positive"
+  ],
+  "per_class": {
+    "negative": {
+      "precision": 0.7448,
+      "recall": 0.7878,
+      "support": 641
+    },
+    "positive": {
+      "precision": 0.7659,
+      "recall": 0.7201,
+      "support": 618
+    }
+  },
+  "report_text": "              precision    recall  f1-score   support\n\n    negative     0.7448    0.7878    0.7657       641\n    positive     0.7659    0.7201    0.7423       618\n\n    accuracy                         0.7546      1259\n   macro avg     0.7554    0.7539    0.7540      1259\nweighted avg     0.7552    0.7546    0.7542      1259\n",
+  "mean_confidence": 0.664,
+  "model": "tfidf",
+  "task": "polarity",
+  "n_train": 4935,
+  "n_test": 1259,
+  "seed": 42,
+  "elapsed_sec": 10.9,
+  "majority_baseline": {
+    "label": 0,
+    "accuracy": 0.5091
+  },
+  "hyperparams": {
+    "max_features": 50000,
+    "ngram_range": [
+      1,
+      2
+    ],
+    "min_df": 2,
+    "classifier": "LogisticRegression"
+  }
+}

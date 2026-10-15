@@ -41,13 +41,35 @@ const NEWS = [
   { id: 2, title: '11只白酒股下跌', url: 'https://x/2', source: '北京商报', publish_time: '2026-10-13 17:15:22', sentiment: '', sentiment_score: 0 },
 ]
 
+const SENTIMENT = {
+  code: '600519',
+  model: 'bert',
+  total: 4,
+  zero: false,
+  counts: { positive: 3, negative: 1, neutral: 0 },
+  ratio: { positive: 0.75, negative: 0.25, neutral: 0 },
+  daily: [
+    { date: '2026-10-12', positive: 2, negative: 0, neutral: 0 },
+    { date: '2026-10-13', positive: 1, negative: 1, neutral: 0 },
+  ],
+}
+
+const SENTIMENT_INFO = {
+  available: ['bert'],
+  active: 'bert',
+  labels: ['negative', 'positive', 'neutral'],
+  metrics: { accuracy: 0.754, macro_f1: 0.7491, n_test: 2130 },
+}
+
 // 打桩:网络层与图表组件
 vi.mock('../src/api', () => ({
   listStocks: vi.fn(() => Promise.resolve(STOCKS)),
   getOverview: vi.fn(() => Promise.resolve(OVERVIEW)),
   getKlines: vi.fn(() => Promise.resolve(KLINES)),
   getNews: vi.fn(() => Promise.resolve(NEWS)),
-  syncStock: vi.fn(() => Promise.resolve({ kline_added: 5, news_added: 3, errors: [] })),
+  getSentimentInfo: vi.fn(() => Promise.resolve(SENTIMENT_INFO)),
+  getStockSentiment: vi.fn(() => Promise.resolve(SENTIMENT)),
+  syncStock: vi.fn(() => Promise.resolve({ kline_added: 5, news_added: 3, sentiment_added: 2, errors: [] })),
 }))
 
 vi.mock('../src/components/EChart.vue', () => ({
@@ -95,9 +117,9 @@ describe('App 集成', () => {
     expect(w.text()).toContain('11只白酒股下跌')
   })
 
-  it('渲染两个图表位(K线 + 来源分布)', async () => {
+  it('渲染四个图表位(K线 + 来源分布 + 情感分布 + 情感趋势)', async () => {
     const w = await mountApp()
-    expect(w.findAll('.echart-stub')).toHaveLength(2)
+    expect(w.findAll('.echart-stub')).toHaveLength(4)
   })
 
   it('K线图收到的配置含正确的日期轴', async () => {
@@ -149,5 +171,86 @@ describe('App 集成', () => {
     await flushPromises()
     await flushPromises()
     expect(w.text()).toContain('无法连接后端')
+  })
+})
+
+describe('情感分析面板', () => {
+  it('展示模型名与测试集指标', async () => {
+    const w = await mountApp()
+    const text = w.text()
+    expect(text).toContain('BERT')
+    expect(text).toContain('75.40%')
+    expect(text).toContain('74.91%')
+    expect(text).toContain('2130')
+  })
+
+  it('展示情感条数与占比', async () => {
+    const w = await mountApp()
+    const text = w.text()
+    expect(text).toContain('共 4 条已标注新闻')
+    expect(text).toContain('75.00%')
+    expect(text).toContain('25.00%')
+  })
+
+  it('总结占比最高的一类', async () => {
+    const w = await mountApp()
+    expect(w.text()).toContain('「利好」占比最高')
+  })
+
+  it('情感图表配置正确', async () => {
+    const w = await mountApp()
+    const charts = w.findAllComponents({ name: 'EChart' })
+    const pie = charts[2].props('option')
+    expect(pie.series[0].data).toEqual([
+      { name: '利好', value: 3, itemStyle: { color: '#f56c6c' } },
+      { name: '利空', value: 1, itemStyle: { color: '#67c23a' } },
+    ])
+    const trend = charts[3].props('option')
+    expect(trend.xAxis.data).toEqual(['2026-10-12', '2026-10-13'])
+  })
+
+  it('没有模型时提示先训练', async () => {
+    const api = await import('../src/api')
+    api.getSentimentInfo.mockResolvedValueOnce({
+      available: [], active: null, labels: [],
+    })
+
+    const w = mount(App)
+    await flushPromises()
+    await flushPromises()
+    expect(w.text()).toContain('尚未训练情感模型')
+  })
+
+  it('有模型但该股无标注时提示去采集', async () => {
+    const api = await import('../src/api')
+    api.getStockSentiment.mockResolvedValueOnce({
+      code: '600519', model: 'bert', total: 0, zero: true,
+      counts: { positive: 0, negative: 0, neutral: 0 },
+      ratio: { positive: 0, negative: 0, neutral: 0 }, daily: [],
+    })
+
+    const w = mount(App)
+    await flushPromises()
+    await flushPromises()
+    expect(w.text()).toContain('还没有情感标注')
+  })
+
+  it('情感接口失败不影响页面其余部分', async () => {
+    const api = await import('../src/api')
+    api.getStockSentiment.mockRejectedValueOnce(new Error('503'))
+
+    const w = await mountApp()
+    // 新闻与概览照常渲染
+    expect(w.text()).toContain('贵州茅台重回A股股王')
+    expect(w.text()).toContain('1274.89')
+  })
+
+  it('采集结果包含情感标注条数', async () => {
+    const w = await mountApp()
+    await w.find('button.btn').trigger('click')
+    await flushPromises()
+    await flushPromises()
+    await flushPromises()
+    expect(w.text()).toContain('情感标注 2 条')
   })
 })

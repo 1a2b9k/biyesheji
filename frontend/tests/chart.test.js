@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildKlineOption,
+  buildSentimentPieOption,
+  buildSentimentTrendOption,
   buildSourcePieOption,
   formatAmount,
   formatChangePct,
@@ -114,5 +116,73 @@ describe('buildSourcePieOption', () => {
 
   it('空数组不报错', () => {
     expect(buildSourcePieOption([]).series[0].data).toEqual([])
+  })
+})
+
+describe('buildSentimentPieOption', () => {
+  it('翻译成中文标签并固定配色', () => {
+    const o = buildSentimentPieOption({ positive: 5, negative: 3, neutral: 2 })
+    expect(o.series[0].data).toEqual([
+      { name: '利好', value: 5, itemStyle: { color: '#f56c6c' } },
+      { name: '利空', value: 3, itemStyle: { color: '#67c23a' } },
+      { name: '中性', value: 2, itemStyle: { color: '#909399' } },
+    ])
+  })
+
+  it('剔除 0 值类别,避免饼图出现零面积扇区', () => {
+    const o = buildSentimentPieOption({ positive: 4, negative: 0, neutral: 0 })
+    expect(o.series[0].data).toHaveLength(1)
+    expect(o.series[0].data[0].name).toBe('利好')
+  })
+
+  it('缺字段按 0 处理', () => {
+    expect(buildSentimentPieOption({ positive: 1 }).series[0].data)
+      .toHaveLength(1)
+  })
+
+  it('空对象与 undefined 都不报错', () => {
+    expect(buildSentimentPieOption({}).series[0].data).toEqual([])
+    expect(buildSentimentPieOption(undefined).series[0].data).toEqual([])
+  })
+
+  it('利好为红、利空为绿 —— 与 K 线一致', () => {
+    const o = buildSentimentPieOption({ positive: 1, negative: 1, neutral: 0 })
+    const byName = Object.fromEntries(
+      o.series[0].data.map((d) => [d.name, d.itemStyle.color]))
+    expect(byName['利好']).toBe('#f56c6c')
+    expect(byName['利空']).toBe('#67c23a')
+  })
+})
+
+describe('buildSentimentTrendOption', () => {
+  const daily = [
+    { date: '2026-10-01', positive: 3, negative: 1, neutral: 2 },
+    { date: '2026-10-02', positive: 0, negative: 4, neutral: 1 },
+  ]
+
+  it('x 轴取日期,三条序列按日取值', () => {
+    const o = buildSentimentTrendOption(daily)
+    expect(o.xAxis.data).toEqual(['2026-10-01', '2026-10-02'])
+    expect(o.series).toHaveLength(3)
+    const pos = o.series.find((s) => s.name === '利好')
+    expect(pos.data).toEqual([3, 0])
+    const neg = o.series.find((s) => s.name === '利空')
+    expect(neg.data).toEqual([1, 4])
+  })
+
+  it('三条序列堆叠在同一柱上', () => {
+    const o = buildSentimentTrendOption(daily)
+    expect(o.series.every((s) => s.stack === 'total')).toBe(true)
+  })
+
+  it('缺字段按 0 处理', () => {
+    const o = buildSentimentTrendOption([{ date: '2026-10-03', positive: 2 }])
+    const neg = o.series.find((s) => s.name === '利空')
+    expect(neg.data).toEqual([0])
+  })
+
+  it('空数组与 undefined 都不报错', () => {
+    expect(buildSentimentTrendOption([]).xAxis.data).toEqual([])
+    expect(buildSentimentTrendOption(undefined).xAxis.data).toEqual([])
   })
 })

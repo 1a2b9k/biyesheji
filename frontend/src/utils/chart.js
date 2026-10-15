@@ -91,3 +91,83 @@ export function buildSourcePieOption(sources) {
     }],
   }
 }
+
+// ------------------------------------------------------------------ 情感分析
+
+/**
+ * 情感配色。
+ *
+ * 与 K 线保持一致:A 股习惯红涨绿跌,所以「利好」用红、「利空」用绿。
+ * 若这里改成国际惯例的绿涨红跌,同一页面上两张图会互相矛盾。
+ */
+export const SENTIMENT_COLORS = {
+  positive: '#f56c6c',
+  negative: '#67c23a',
+  neutral: '#909399',
+}
+
+export const SENTIMENT_NAMES = {
+  positive: '利好',
+  negative: '利空',
+  neutral: '中性',
+}
+
+/**
+ * 构造情感分布饼图配置。
+ * counts 形如 { positive: 12, negative: 3, neutral: 5 }。
+ */
+export function buildSentimentPieOption(counts) {
+  const order = ['positive', 'negative', 'neutral']
+  const data = order
+    .map((k) => ({
+      name: SENTIMENT_NAMES[k],
+      value: counts?.[k] ?? 0,
+      itemStyle: { color: SENTIMENT_COLORS[k] },
+    }))
+    .filter((d) => d.value > 0)
+
+  return {
+    tooltip: { trigger: 'item', formatter: '{b}: {c} 条 ({d}%)' },
+    legend: { bottom: 0, textStyle: { fontSize: 11 } },
+    series: [{
+      name: '情感分布',
+      type: 'pie',
+      radius: ['40%', '68%'],
+      center: ['50%', '45%'],
+      data,
+      label: { fontSize: 11 },
+    }],
+  }
+}
+
+/**
+ * 构造情感日线堆叠柱状图。
+ *
+ * 用堆叠而非折线:每天新闻条数很少(常常个位数),折线会把
+ * 「某天只有 1 条」渲染成和「某天有 50 条」一样粗的趋势线,
+ * 堆叠柱能同时表达数量和构成。
+ */
+export function buildSentimentTrendOption(daily) {
+  const rows = Array.isArray(daily) ? daily : []
+  const dates = rows.map((d) => d.date)
+  const order = ['positive', 'negative', 'neutral']
+
+  return {
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { bottom: 0, textStyle: { fontSize: 11 } },
+    grid: { left: 45, right: 20, top: 20, bottom: 55 },
+    xAxis: {
+      type: 'category',
+      data: dates,
+      axisLabel: { fontSize: 10, rotate: dates.length > 12 ? 45 : 0 },
+    },
+    yAxis: { type: 'value', name: '条数', minInterval: 1 },
+    series: order.map((k) => ({
+      name: SENTIMENT_NAMES[k],
+      type: 'bar',
+      stack: 'total',
+      itemStyle: { color: SENTIMENT_COLORS[k] },
+      data: rows.map((d) => d?.[k] ?? 0),
+    })),
+  }
+}
