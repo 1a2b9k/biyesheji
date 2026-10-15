@@ -77,12 +77,31 @@ vi.mock('../src/components/EChart.vue', () => ({
 }))
 
 import App from '../src/App.vue'
+import { COLORS } from '../src/utils/chart.js'
 
 async function mountApp() {
   const w = mount(App)
   await flushPromises()
   await flushPromises()
   return w
+}
+
+/**
+ * 按 series 名找图表配置。
+ *
+ * 不用下标:页面改布局(例如把来源分布挪到右栏)会让图表顺序变化,
+ * 下标断言会因此误报,而"哪个图拿到哪份数据"才是真正要测的。
+ * 同名 series 出现在多张图里时用 type 再筛一层。
+ */
+function optionOf(w, seriesName, seriesType) {
+  const hit = w.findAllComponents({ name: 'EChart' })
+    .map((c) => c.props('option'))
+    .find((o) => (o.series ?? []).some(
+      (s) => s.name === seriesName && (!seriesType || s.type === seriesType)))
+  if (!hit) {
+    throw new Error(`找不到 series 为 ${seriesName} 的图表`)
+  }
+  return hit
 }
 
 beforeEach(() => {
@@ -98,10 +117,10 @@ describe('App 集成', () => {
     expect(opts[0].text()).toContain('600519')
   })
 
-  it('渲染概览卡片与最新价', async () => {
+  it('渲染概览读数与最新价', async () => {
     const w = await mountApp()
     const text = w.text()
-    expect(text).toContain('最新交易日')
+    expect(text).toContain('最新收盘')
     expect(text).toContain('2026-10-13')
     expect(text).toContain('1274.89')
   })
@@ -117,28 +136,29 @@ describe('App 集成', () => {
     expect(w.text()).toContain('11只白酒股下跌')
   })
 
-  it('渲染四个图表位(K线 + 来源分布 + 情感分布 + 情感趋势)', async () => {
+  it('渲染三个图表位(K线 + 情感分布 + 情感趋势)', async () => {
     const w = await mountApp()
-    expect(w.findAll('.echart-stub')).toHaveLength(4)
+    expect(w.findAll('.echart-stub')).toHaveLength(3)
   })
 
   it('K线图收到的配置含正确的日期轴', async () => {
     const w = await mountApp()
-    const charts = w.findAllComponents({ name: 'EChart' })
-    const klineChart = charts[0]
-    expect(klineChart.props('option').xAxis[0].data).toEqual([
+    const kline = optionOf(w, 'K线')
+    expect(kline.xAxis[0].data).toEqual([
       '2026-10-12', '2026-10-13',
     ])
   })
 
-  it('饼图收到的配置来自 news_sources', async () => {
+  it('来源分布不再是彩色饼图,而是条状列表', async () => {
     const w = await mountApp()
-    const charts = w.findAllComponents({ name: 'EChart' })
-    const pie = charts[1]
-    expect(pie.props('option').series[0].data).toEqual([
-      { name: '新华财经', value: 1 },
-      { name: '北京商报', value: 1 },
-    ])
+    // 页面里不应再有任何 series 名为「新闻来源」的图表
+    const opts = w.findAllComponents({ name: 'EChart' })
+      .map((c) => c.props('option'))
+    expect(opts.some((o) =>
+      (o.series ?? []).some((s) => s.name === '新闻来源'))).toBe(false)
+    // 但来源名仍要出现,由 SourceBreakdown 以文字渲染
+    expect(w.text()).toContain('新华财经')
+    expect(w.text()).toContain('北京商报')
   })
 
   it('数据量为 0 时给出采集提示', async () => {
@@ -199,14 +219,15 @@ describe('情感分析面板', () => {
 
   it('情感图表配置正确', async () => {
     const w = await mountApp()
-    const charts = w.findAllComponents({ name: 'EChart' })
-    const pie = charts[2].props('option')
+    const pie = optionOf(w, '情感分布')
     expect(pie.series[0].data).toEqual([
-      { name: '利好', value: 3, itemStyle: { color: '#f56c6c' } },
-      { name: '利空', value: 1, itemStyle: { color: '#67c23a' } },
+      { name: '利好', value: 3, itemStyle: { color: COLORS.pos } },
+      { name: '利空', value: 1, itemStyle: { color: COLORS.neg } },
     ])
-    const trend = charts[3].props('option')
+    // 趋势图的三条 series 都叫情感名,用 type=bar 与饼图区分开
+    const trend = optionOf(w, '利好', 'bar')
     expect(trend.xAxis.data).toEqual(['2026-10-12', '2026-10-13'])
+    expect(trend.series.map((s) => s.name)).toEqual(['利好', '利空', '中性'])
   })
 
   it('没有模型时提示先训练', async () => {

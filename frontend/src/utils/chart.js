@@ -17,14 +17,34 @@ export function formatAmount(value) {
   return n.toFixed(2)
 }
 
+/**
+ * 图表与数据配色 —— 全站唯一来源。
+ *
+ * 与 style.css 里的 CSS 变量同值。JS 侧拿不到 CSS 变量(图表要的是
+ * 具体色值),所以两处必须一起改;chart.test.js 会锁住这些值,
+ * 改错了测试会失败。
+ *
+ * 为什么是这两个红绿而不是常见的 #f56c6c / #67c23a:
+ * 原色饱和度太高,在暖白底上刺眼,且和页面唯一强调色(墨色)打架。
+ * 现在这两个都压过饱和度,红偏砖、绿偏松,和纸色底子能相处。
+ */
+export const COLORS = {
+  pos: '#c8443a',
+  neg: '#2e7d5b',
+  neu: '#8a857d',
+  ink: '#191713',
+  muted: '#6f6862',
+  line: '#e3ded4',
+}
+
 /** 涨跌幅显示:正数带 +,并给出颜色语义。 */
 export function formatChangePct(value) {
   const n = Number(value)
-  if (!Number.isFinite(n)) return { text: '-', color: '#909399' }
+  if (!Number.isFinite(n)) return { text: '-', color: COLORS.neu }
   const sign = n > 0 ? '+' : ''
   return {
     text: sign + n.toFixed(2) + '%',
-    color: n > 0 ? '#f56c6c' : n < 0 ? '#67c23a' : '#909399',
+    color: n > 0 ? COLORS.pos : n < 0 ? COLORS.neg : COLORS.neu,
   }
 }
 
@@ -36,59 +56,62 @@ export function buildKlineOption(rows) {
   const dates = rows.map((r) => r.trade_date)
   // ECharts 蜡烛图数据顺序:[开, 收, 低, 高]
   const candles = rows.map((r) => [r.open, r.close, r.low, r.high])
-  const volumes = rows.map((r, i) => ({
+  const volumes = rows.map((r) => ({
     value: r.volume,
     itemStyle: {
-      color: r.close >= r.open ? '#f56c6c' : '#67c23a',
+      color: r.close >= r.open ? COLORS.pos : COLORS.neg,
     },
   }))
 
+  // 轴样式统一在这里定一次,免得每个轴各写一遍还写不一致。
+  const axisLine = { lineStyle: { color: COLORS.line } }
+  const axisLabel = { fontSize: 11, color: COLORS.muted }
+  const splitLine = { lineStyle: { color: COLORS.line, type: 'dashed' } }
+
   return {
-    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'cross', label: { fontSize: 11 } },
+      // 悬停读数用等宽字体,数字不会左右跳
+      textStyle: { fontSize: 12 },
+    },
     grid: [
-      { left: 60, right: 30, top: 30, height: '55%' },
-      { left: 60, right: 30, top: '72%', height: '18%' },
+      { left: 62, right: 26, top: 26, height: '56%' },
+      { left: 62, right: 26, top: '74%', height: '16%' },
     ],
     xAxis: [
       { type: 'category', data: dates, boundaryGap: true, gridIndex: 0,
-        axisLabel: { fontSize: 10 } },
-      { type: 'category', data: dates, gridIndex: 1, axisLabel: { show: false } },
+        axisLine, axisLabel, axisTick: { show: false },
+        splitLine: { show: false } },
+      { type: 'category', data: dates, gridIndex: 1,
+        axisLine, axisLabel: { show: false },
+        axisTick: { show: false }, splitLine: { show: false } },
     ],
     yAxis: [
-      { scale: true, gridIndex: 0, name: '价格' },
-      { gridIndex: 1, name: '成交量', axisLabel: { show: false },
-        splitLine: { show: false } },
+      { scale: true, gridIndex: 0, axisLine: { show: false },
+        axisTick: { show: false }, axisLabel, splitLine,
+        name: '价格 (元)', nameTextStyle: { fontSize: 11, color: COLORS.muted } },
+      { gridIndex: 1, axisLine: { show: false }, axisTick: { show: false },
+        axisLabel: { show: false }, splitLine: { show: false } },
     ],
     dataZoom: [
       { type: 'inside', xAxisIndex: [0, 1], start: 60, end: 100 },
-      { type: 'slider', xAxisIndex: [0, 1], top: '92%', start: 60, end: 100 },
+      { type: 'slider', xAxisIndex: [0, 1], top: '93%', height: 18,
+        start: 60, end: 100,
+        borderColor: COLORS.line, fillerColor: 'rgba(25,23,19,0.06)',
+        handleStyle: { color: COLORS.ink },
+        textStyle: { fontSize: 10, color: COLORS.muted } },
     ],
     series: [
       { name: 'K线', type: 'candlestick', data: candles,
         xAxisIndex: 0, yAxisIndex: 0,
         itemStyle: {
-          color: '#f56c6c', color0: '#67c23a',
-          borderColor: '#f56c6c', borderColor0: '#67c23a',
+          color: COLORS.pos, color0: COLORS.neg,
+          borderColor: COLORS.pos, borderColor0: COLORS.neg,
         } },
       { name: '成交量', type: 'bar', data: volumes,
-        xAxisIndex: 1, yAxisIndex: 1 },
+        xAxisIndex: 1, yAxisIndex: 1, barWidth: '60%' },
     ],
-  }
-}
-
-/** 构造新闻来源分布饼图配置。 */
-export function buildSourcePieOption(sources) {
-  return {
-    tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-    legend: { type: 'scroll', bottom: 0, textStyle: { fontSize: 11 } },
-    series: [{
-      name: '新闻来源',
-      type: 'pie',
-      radius: ['40%', '68%'],
-      center: ['50%', '45%'],
-      data: sources.map((s) => ({ name: s.source, value: s.count })),
-      label: { fontSize: 11 },
-    }],
   }
 }
 
@@ -101,9 +124,9 @@ export function buildSourcePieOption(sources) {
  * 若这里改成国际惯例的绿涨红跌,同一页面上两张图会互相矛盾。
  */
 export const SENTIMENT_COLORS = {
-  positive: '#f56c6c',
-  negative: '#67c23a',
-  neutral: '#909399',
+  positive: COLORS.pos,
+  negative: COLORS.neg,
+  neutral: COLORS.neu,
 }
 
 export const SENTIMENT_NAMES = {
@@ -115,6 +138,10 @@ export const SENTIMENT_NAMES = {
 /**
  * 构造情感分布饼图配置。
  * counts 形如 { positive: 12, negative: 3, neutral: 5 }。
+ *
+ * 不画引导线标签:三类占比常严重倾斜(中性动辄九成),小类只有一两条,
+ * 引导线标签会挤在一起互相压字。数字由面板上方的计数条给出,饼图只负责
+ * 表达"比例形状",配底部图例即可。
  */
 export function buildSentimentPieOption(counts) {
   const order = ['positive', 'negative', 'neutral']
@@ -127,15 +154,25 @@ export function buildSentimentPieOption(counts) {
     .filter((d) => d.value > 0)
 
   return {
-    tooltip: { trigger: 'item', formatter: '{b}: {c} 条 ({d}%)' },
-    legend: { bottom: 0, textStyle: { fontSize: 11 } },
+    tooltip: {
+      trigger: 'item',
+      formatter: '{b}: {c} 条 ({d}%)',
+      textStyle: { fontSize: 12 },
+    },
+    legend: {
+      bottom: 0, icon: 'circle', itemWidth: 8, itemHeight: 8,
+      textStyle: { fontSize: 11, color: COLORS.muted },
+    },
     series: [{
       name: '情感分布',
       type: 'pie',
-      radius: ['40%', '68%'],
-      center: ['50%', '45%'],
+      radius: ['46%', '70%'],
+      center: ['50%', '44%'],
+      itemStyle: { borderColor: '#fffefb', borderWidth: 2 },
       data,
-      label: { fontSize: 11 },
+      label: { show: false },
+      labelLine: { show: false },
+      emphasis: { scale: true, scaleSize: 4 },
     }],
   }
 }
@@ -153,19 +190,37 @@ export function buildSentimentTrendOption(daily) {
   const order = ['positive', 'negative', 'neutral']
 
   return {
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    legend: { bottom: 0, textStyle: { fontSize: 11 } },
-    grid: { left: 45, right: 20, top: 20, bottom: 55 },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      textStyle: { fontSize: 12 },
+    },
+    legend: {
+      bottom: 0, icon: 'circle', itemWidth: 8, itemHeight: 8,
+      textStyle: { fontSize: 11, color: COLORS.muted },
+    },
+    grid: { left: 42, right: 16, top: 16, bottom: 56 },
     xAxis: {
       type: 'category',
       data: dates,
-      axisLabel: { fontSize: 10, rotate: dates.length > 12 ? 45 : 0 },
+      axisLine: { lineStyle: { color: COLORS.line } },
+      axisTick: { show: false },
+      axisLabel: {
+        fontSize: 10, color: COLORS.muted,
+        rotate: dates.length > 12 ? 45 : 0,
+      },
     },
-    yAxis: { type: 'value', name: '条数', minInterval: 1 },
+    yAxis: {
+      type: 'value', minInterval: 1,
+      axisLine: { show: false }, axisTick: { show: false },
+      axisLabel: { fontSize: 11, color: COLORS.muted },
+      splitLine: { lineStyle: { color: COLORS.line, type: 'dashed' } },
+    },
     series: order.map((k) => ({
       name: SENTIMENT_NAMES[k],
       type: 'bar',
       stack: 'total',
+      barWidth: '58%',
       itemStyle: { color: SENTIMENT_COLORS[k] },
       data: rows.map((d) => d?.[k] ?? 0),
     })),

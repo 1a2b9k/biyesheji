@@ -99,3 +99,8 @@ desktop.ini
 !.dsh/skills/**/fixtures/**/*.log
 !.dsh/skills/**/fixtures/**/*.json
 
+# ---------- 设计技能的工作产物 ----------
+# design-taste-frontend 的 draw.mjs 会把抽到的设计方向写到 cwd 下的
+# .taste-skill/direction.json(上游自己的 .gitignore 里也忽略它)。
+.taste-skill/
+

@@ -1,8 +1,11 @@
 <script setup>
 /**
- * 主页面:股票选择 → 概览卡片 + K 线图 + 新闻列表。
+ * 主页面:股票选择 → 概览读数 + K 线 + 新闻 + 情感分析。
  *
- * 数据流:选股 → 并行拉 overview / klines / news → 交给子组件渲染。
+ * 数据流:选股 → 并行拉 overview / klines / news / sentiment → 交给子组件渲染。
+ *
+ * 布局:两栏。左栏是"行情"(读数 + K 线),右栏是"舆情"(来源分布 + 情感)。
+ * 这样同一时刻的价与情可以对照着看,比上下堆叠更符合分析场景。
  */
 import { computed, onMounted, ref } from 'vue'
 
@@ -11,8 +14,9 @@ import EChart from './components/EChart.vue'
 import NewsList from './components/NewsList.vue'
 import OverviewCards from './components/OverviewCards.vue'
 import SentimentPanel from './components/SentimentPanel.vue'
+import SourceBreakdown from './components/SourceBreakdown.vue'
 import StockBar from './components/StockBar.vue'
-import { buildKlineOption, buildSourcePieOption } from './utils/chart.js'
+import { buildKlineOption } from './utils/chart.js'
 
 const stocks = ref([])
 const current = ref('')
@@ -26,8 +30,9 @@ const syncing = ref(false)
 const message = ref('')
 
 const klineOption = computed(() => buildKlineOption(klines.value))
-const pieOption = computed(() =>
-  buildSourcePieOption(overview.value?.news_sources ?? []))
+
+const currentName = computed(() =>
+  stocks.value.find((s) => s.code === current.value)?.name ?? '')
 
 async function loadAll(code) {
   if (!code) return
@@ -112,52 +117,129 @@ onMounted(async () => {
 
     <main class="body">
       <p v-if="message" class="msg">{{ message }}</p>
-      <p v-if="loading" class="msg">加载中…</p>
+      <p v-if="loading" class="msg loading">正在加载…</p>
 
       <OverviewCards :overview="overview" />
 
-      <div class="grid">
-        <div class="panel">
-          <h2>K 线走势 <span class="hint">最近 {{ klines.length }} 个交易日</span></h2>
-          <EChart v-if="klines.length" :option="klineOption" height="420px" />
-          <p v-else class="empty">暂无行情数据</p>
-        </div>
+      <!--
+        版面按"宽度需求"分行,而不是硬凑两栏等高:
+        K 线和新闻需要横向空间,给整行;情感与来源都是卡片式内容,并排即可。
+        这样每行左右高度天然接近,不会出现某栏底下空一大块的情况。
+      -->
+      <section class="panel">
+        <header class="head">
+          <h2>K 线走势</h2>
+          <span class="meta num">
+            {{ currentName }} · 最近 {{ klines.length }} 个交易日
+          </span>
+        </header>
+        <EChart v-if="klines.length" :option="klineOption" height="440px" />
+        <p v-else class="empty">暂无行情数据</p>
+      </section>
 
-        <div class="panel">
-          <h2>新闻来源分布</h2>
-          <EChart
-            v-if="overview?.news_sources?.length"
-            :option="pieOption"
-            height="420px"
-          />
-          <p v-else class="empty">暂无新闻数据</p>
+      <div class="cols">
+        <div class="col">
+          <SentimentPanel :data="sentiment" :info="sentimentInfo" />
+        </div>
+        <div class="col">
+          <SourceBreakdown :sources="overview?.news_sources ?? []" />
         </div>
       </div>
 
       <NewsList :news="news" />
-
-      <SentimentPanel :data="sentiment" :info="sentimentInfo" />
     </main>
   </div>
 </template>
 
 <style scoped>
-.page { min-height: 100vh; background: #f0f2f5; }
-.body { padding: 20px; max-width: 1500px; margin: 0 auto; }
-.msg {
-  background: #ecf5ff; color: #409eff; padding: 9px 14px;
-  border-radius: 4px; font-size: 13px; margin: 0 0 14px;
+.page {
+  min-height: 100vh;
+  background: var(--bg);
 }
-.grid {
-  display: grid; grid-template-columns: 2fr 1fr; gap: 16px;
+
+.body {
+  padding: 18px var(--pad-x) 40px;
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+
+.msg {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ink);
+  color: var(--ink-2);
+  padding: 10px 14px;
+  border-radius: var(--r);
+  font-size: var(--fs-body);
+  margin: 0 0 16px;
+}
+.msg.loading {
+  border-left-color: var(--muted-2);
+  color: var(--muted);
+}
+
+/* 情感与来源并排:两者都是卡片式内容,宽度需求相近 */
+.cols {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 16px;
+  align-items: start;
   margin-bottom: 16px;
 }
-@media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
-.panel {
-  background: #fff; border-radius: 6px; padding: 16px 18px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+
+.col {
+  min-width: 0;
 }
-h2 { font-size: 15px; margin: 0 0 10px; color: #303133; }
-.hint { font-size: 12px; color: #909399; font-weight: 400; }
-.empty { color: #909399; font-size: 13px; padding: 30px 0; text-align: center; }
+
+.col > :last-child {
+  margin-bottom: 0;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 18px 22px;
+  margin-bottom: 16px;
+}
+.col .panel:last-child {
+  margin-bottom: 0;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 14px;
+}
+
+h2 {
+  font-size: var(--fs-title);
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.meta {
+  font-size: var(--fs-label);
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: var(--fs-body);
+  padding: 34px 0;
+  text-align: center;
+  margin: 0;
+}
+
+@media (max-width: 1080px) {
+  .cols {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

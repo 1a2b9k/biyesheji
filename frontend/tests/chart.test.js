@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  COLORS,
   buildKlineOption,
   buildSentimentPieOption,
   buildSentimentTrendOption,
-  buildSourcePieOption,
   formatAmount,
   formatChangePct,
 } from '../src/utils/chart.js'
@@ -33,23 +33,38 @@ describe('formatAmount', () => {
   })
 })
 
+describe('COLORS', () => {
+  // 这些色值同时写在 src/style.css 的 CSS 变量里(JS 读不到 CSS 变量,
+  // 图表要的是具体色值)。锁住它们,改一处漏一处就会在这里失败。
+  it('红涨绿跌且与 style.css 变量同值', () => {
+    expect(COLORS.pos).toBe('#c8443a')
+    expect(COLORS.neg).toBe('#2e7d5b')
+    expect(COLORS.neu).toBe('#8a857d')
+  })
+
+  it('强调色为墨色而非品牌蓝', () => {
+    // 页面唯一强调色必须是墨色 —— 饱和蓝会和红绿数据色抢注意力
+    expect(COLORS.ink).toBe('#191713')
+  })
+})
+
 describe('formatChangePct', () => {
   it('上涨带 + 且为红', () => {
     const r = formatChangePct(1.98)
     expect(r.text).toBe('+1.98%')
-    expect(r.color).toBe('#f56c6c')
+    expect(r.color).toBe(COLORS.pos)
   })
 
   it('下跌为绿且不带 +', () => {
     const r = formatChangePct(-1.02)
     expect(r.text).toBe('-1.02%')
-    expect(r.color).toBe('#67c23a')
+    expect(r.color).toBe(COLORS.neg)
   })
 
   it('零为灰', () => {
     const r = formatChangePct(0)
     expect(r.text).toBe('0.00%')
-    expect(r.color).toBe('#909399')
+    expect(r.color).toBe(COLORS.neu)
   })
 
   it('非法输入返回占位符', () => {
@@ -90,9 +105,9 @@ describe('buildKlineOption', () => {
   it('成交量柱按涨跌着色', () => {
     const o = buildKlineOption(rows)
     // 第一条收 >= 开,红
-    expect(o.series[1].data[0].itemStyle.color).toBe('#f56c6c')
+    expect(o.series[1].data[0].itemStyle.color).toBe(COLORS.pos)
     // 第二条收 < 开,绿
-    expect(o.series[1].data[1].itemStyle.color).toBe('#67c23a')
+    expect(o.series[1].data[1].itemStyle.color).toBe(COLORS.neg)
   })
 
   it('空数据不报错', () => {
@@ -102,30 +117,13 @@ describe('buildKlineOption', () => {
   })
 })
 
-describe('buildSourcePieOption', () => {
-  it('映射为 name/value', () => {
-    const o = buildSourcePieOption([
-      { source: '新华财经', count: 3 },
-      { source: '界面新闻', count: 2 },
-    ])
-    expect(o.series[0].data).toEqual([
-      { name: '新华财经', value: 3 },
-      { name: '界面新闻', value: 2 },
-    ])
-  })
-
-  it('空数组不报错', () => {
-    expect(buildSourcePieOption([]).series[0].data).toEqual([])
-  })
-})
-
 describe('buildSentimentPieOption', () => {
   it('翻译成中文标签并固定配色', () => {
     const o = buildSentimentPieOption({ positive: 5, negative: 3, neutral: 2 })
     expect(o.series[0].data).toEqual([
-      { name: '利好', value: 5, itemStyle: { color: '#f56c6c' } },
-      { name: '利空', value: 3, itemStyle: { color: '#67c23a' } },
-      { name: '中性', value: 2, itemStyle: { color: '#909399' } },
+      { name: '利好', value: 5, itemStyle: { color: COLORS.pos } },
+      { name: '利空', value: 3, itemStyle: { color: COLORS.neg } },
+      { name: '中性', value: 2, itemStyle: { color: COLORS.neu } },
     ])
   })
 
@@ -149,8 +147,16 @@ describe('buildSentimentPieOption', () => {
     const o = buildSentimentPieOption({ positive: 1, negative: 1, neutral: 0 })
     const byName = Object.fromEntries(
       o.series[0].data.map((d) => [d.name, d.itemStyle.color]))
-    expect(byName['利好']).toBe('#f56c6c')
-    expect(byName['利空']).toBe('#67c23a')
+    expect(byName['利好']).toBe(COLORS.pos)
+    expect(byName['利空']).toBe(COLORS.neg)
+  })
+
+  it('不画引导线标签,避免小类标签互相压字', () => {
+    // 占比常严重倾斜(中性九成、小类一两条),引导线标签会挤在一起。
+    // 数字由面板上方的计数条给出,饼图只表达比例形状。
+    const o = buildSentimentPieOption({ positive: 1, negative: 1, neutral: 22 })
+    expect(o.series[0].label.show).toBe(false)
+    expect(o.series[0].labelLine.show).toBe(false)
   })
 })
 

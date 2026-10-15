@@ -48,4 +48,41 @@ describe('NewsList', () => {
     expect(tags[0].text()).toBe('利好')
     expect(tags[1].text()).toBe('利空')
   })
+
+  it('整行带情感类名,便于用左侧竖线扫出情绪分布', () => {
+    const w = mount(NewsList, {
+      props: {
+        news: [
+          { ...NEWS[0], sentiment: 'positive' },
+          { ...NEWS[1], sentiment: 'negative' },
+        ],
+      },
+    })
+    const rows = w.findAll('li')
+    expect(rows[0].classes()).toContain('pos')
+    expect(rows[1].classes()).toContain('neg')
+  })
+
+  it('未标注的行不带情感类名', () => {
+    const w = mount(NewsList, { props: { news: NEWS } })
+    const rows = w.findAll('li')
+    expect(rows[0].classes()).not.toContain('pos')
+    expect(rows[0].classes()).not.toContain('neg')
+    expect(rows[0].classes()).not.toContain('neu')
+  })
+
+  it('发布时间拆成日期与时刻两栏', () => {
+    const w = mount(NewsList, { props: { news: NEWS } })
+    const when = w.find('.when')
+    expect(when.find('.d').text()).toBe('2026-10-12')
+    expect(when.find('.t').text()).toBe('16:08')
+  })
+
+  it('时间格式异常时不抛错', () => {
+    const w = mount(NewsList, {
+      props: { news: [{ ...NEWS[0], publish_time: '' }] },
+    })
+    expect(w.find('.when .d').text()).toBe('-')
+    expect(w.find('.when .t').text()).toBe('')
+  })
 })
