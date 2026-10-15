@@ -1,0 +1,16 @@
+﻿{
+    "repository":  "https://github.com/Leonxlnx/taste-skill.git",
+    "commit":  "1ddeffbd3a425891dcfb67a8a9b0045e0b96b3b4",
+    "commitDate":  "2026-10-15T16:53:37+08:00",
+    "installed":  "2026-10-15T17:22:06+08:00",
+    "license":  "MIT (see .upstream/LICENSE)",
+    "all":  false,
+    "skills":  [
+                   "redesign-existing-projects",
+                   "high-end-visual-design",
+                   "minimalist-ui",
+                   "industrial-brutalist-ui",
+                   "design-taste-frontend",
+                   "full-output-enforcement"
+               ]
+}

@@ -6,17 +6,28 @@ REM (GBK on this machine) and non-ASCII bytes corrupt parsing.
 cd /d "%~dp0.."
 
 echo ============================================================
-echo  [1/2] backend tests (pytest)
+echo  [1/3] backend tests (pytest)
 echo ============================================================
 ".python\python.exe" -m pytest -q --rootdir=backend backend\tests
 if errorlevel 1 goto fail
 
 echo.
 echo ============================================================
-echo  [2/2] frontend tests (vitest)
+echo  [2/3] frontend tests (vitest)
 echo ============================================================
 node --import ./tools/vite-sandbox-shim.mjs frontend/node_modules/vitest/vitest.mjs run --root frontend
 if errorlevel 1 goto fail
+
+echo.
+echo ============================================================
+echo  [3/3] vendored skill install tests (powershell)
+echo ============================================================
+for %%F in (tests\test_*.ps1) do (
+    echo.
+    echo  --- %%F
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%%F"
+    if errorlevel 1 goto fail
+)
 
 echo.
 echo ============================================================
