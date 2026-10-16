@@ -104,3 +104,12 @@ desktop.ini
 # .taste-skill/direction.json(上游自己的 .gitignore 里也忽略它)。
 .taste-skill/
 
+# ---------- 论文材料的导出产物 ----------
+# 论文一律先用 Markdown 写(可 diff、可 grep、可版本管理),再用
+#   .python\python.exe tools\md_to_docx.py 论文\开题报告书.md
+# 导出 Word。docx 是二进制、diff 不可读,而且与 .md 同时进库必然漂移
+# (改了 .md 忘了重新导出,库里就留着一份过期 Word)。只保留 .md 作唯一
+# 事实来源,docx 随时一条命令重建。
+论文/*.docx
+~$*.docx
+
