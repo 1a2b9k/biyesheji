@@ -1,0 +1,91 @@
+{
+  "accuracy": 0.7493,
+  "macro_f1": 0.7543,
+  "weighted_f1": 0.7471,
+  "confusion_matrix": [
+    [
+      430,
+      85,
+      56,
+      70
+    ],
+    [
+      58,
+      487,
+      21,
+      52
+    ],
+    [
+      30,
+      7,
+      370,
+      0
+    ],
+    [
+      88,
+      67,
+      0,
+      309
+    ]
+  ],
+  "label_names": [
+    "negative",
+    "positive",
+    "neutral_question",
+    "neutral_statement"
+  ],
+  "per_class": {
+    "negative": {
+      "precision": 0.7096,
+      "recall": 0.6708,
+      "f1": 0.6897,
+      "support": 641
+    },
+    "positive": {
+      "precision": 0.7539,
+      "recall": 0.788,
+      "f1": 0.7706,
+      "support": 618
+    },
+    "neutral_question": {
+      "precision": 0.8277,
+      "recall": 0.9091,
+      "f1": 0.8665,
+      "support": 407
+    },
+    "neutral_statement": {
+      "precision": 0.7169,
+      "recall": 0.6659,
+      "f1": 0.6905,
+      "support": 464
+    }
+  },
+  "macro_precision": 0.752,
+  "macro_recall": 0.7585,
+  "report_text": "                   precision    recall  f1-score   support\n\n         negative     0.7096    0.6708    0.6897       641\n         positive     0.7539    0.7880    0.7706       618\n neutral_question     0.8277    0.9091    0.8665       407\nneutral_statement     0.7169    0.6659    0.6905       464\n\n         accuracy                         0.7493      2130\n        macro avg     0.7520    0.7585    0.7543      2130\n     weighted avg     0.7466    0.7493    0.7471      2130\n",
+  "mean_confidence": 0.8577,
+  "mode": "4class",
+  "n_train": 8516,
+  "n_test": 2130,
+  "seed": 42,
+  "elapsed_sec": 123.2,
+  "majority_baseline": {
+    "label": 0,
+    "accuracy": 0.3009
+  },
+  "hyperparams": {
+    "max_len": 64,
+    "batch_size": 32,
+    "epochs": 3,
+    "learning_rate": 2e-05,
+    "base_model": "bert-base-chinese",
+    "lambda_polarity": 1.0,
+    "lambda_neutral": 1.0
+  },
+  "combined": {
+    "accuracy": 0.7507,
+    "delta_vs_main": 0.0014
+  },
+  "aux_polarity_head_acc": 0.8507,
+  "aux_neutral_head_acc": 0.2445
+}

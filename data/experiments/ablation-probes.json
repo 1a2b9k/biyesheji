@@ -1,0 +1,233 @@
+{
+  "note": "本文件由 tools/ablation_study.py 生成。纯计算项可在任何机器上重建;需要模型的项在缺少 models/ 时会被标记 skipped。",
+  "macro_f1_ambiguity": {
+    "bert-3class": {
+      "f1_per_class_average": 0.7491,
+      "f1_from_macro_pr": 0.7498,
+      "delta": 0.0008,
+      "macro_precision": 0.7536,
+      "macro_recall": 0.746,
+      "reported_macro_f1": 0.7491
+    },
+    "bert-polarity": {
+      "f1_per_class_average": 0.8435,
+      "f1_from_macro_pr": 0.8439,
+      "delta": 0.0004,
+      "macro_precision": 0.844,
+      "macro_recall": 0.8439,
+      "reported_macro_f1": 0.8435
+    },
+    "bert-neutral": {
+      "f1_per_class_average": 0.7962,
+      "f1_from_macro_pr": 0.8016,
+      "delta": 0.0054,
+      "macro_precision": 0.8147,
+      "macro_recall": 0.7889,
+      "reported_macro_f1": 0.7962
+    },
+    "mtl": {
+      "f1_per_class_average": 0.7324,
+      "f1_from_macro_pr": 0.7397,
+      "delta": 0.0073,
+      "macro_precision": 0.7443,
+      "macro_recall": 0.7351,
+      "reported_macro_f1": 0.7324
+    },
+    "4class": {
+      "f1_per_class_average": 0.7543,
+      "f1_from_macro_pr": 0.7552,
+      "delta": 0.0009,
+      "macro_precision": 0.752,
+      "macro_recall": 0.7585,
+      "reported_macro_f1": 0.7543
+    },
+    "ensemble-3class": {
+      "f1_per_class_average": 0.7619,
+      "f1_from_macro_pr": 0.7623,
+      "delta": 0.0004,
+      "macro_precision": 0.765,
+      "macro_recall": 0.7596,
+      "reported_macro_f1": 0.7619
+    }
+  },
+  "label_noise": {
+    "n_train": 8516,
+    "n_test": 2130,
+    "normalized_duplicate_groups": 34,
+    "normalized_duplicate_items": 117,
+    "conflicting_label_groups": 1,
+    "conflicting_label_items": 2,
+    "conflict_examples": [
+      {
+        "normalized": "冲高回落",
+        "n": 2,
+        "labels": [
+          "negative",
+          "neutral"
+        ]
+      }
+    ],
+    "similarity_median": 0.2692,
+    "similarity_mean": 0.3094,
+    "by_threshold": {
+      "0.99": {
+        "n": 21,
+        "share": 0.0099,
+        "neighbor_label_agreement": 0.9524
+      },
+      "0.95": {
+        "n": 22,
+        "share": 0.0103,
+        "neighbor_label_agreement": 0.9545
+      },
+      "0.90": {
+        "n": 25,
+        "share": 0.0117,
+        "neighbor_label_agreement": 0.96
+      },
+      "0.80": {
+        "n": 41,
+        "share": 0.0192,
+        "neighbor_label_agreement": 0.878
+      },
+      "0.70": {
+        "n": 69,
+        "share": 0.0324,
+        "neighbor_label_agreement": 0.7826
+      }
+    },
+    "conclusion": "近重复样本极少(标签冲突组仅 1 组),数据集本身是干净的。因此「中性标签难以学习」不是标注噪声造成的假象,而是标签定义把多种语义塞进了一类。"
+  },
+  "cascade": {
+    "n_non_neutral": 1259,
+    "n_neutral": 871,
+    "non_neutral": {
+      "three_class": 0.7093,
+      "polarity_specialist": 0.8435,
+      "delta": 0.1342
+    },
+    "neutral": {
+      "three_class": 0.8186,
+      "neutral_specialist": 0.6739,
+      "neutral_specialist_note": "中性专用模型是二分类(0=中性/1=有情感),这里统计的是它在中性样本上判为 0 的比例。",
+      "delta": -0.1447
+    },
+    "strategies": {
+      "s1_direct_three_class": 0.754,
+      "s2_hard_routing": 0.7282,
+      "s2_delta": -0.0258,
+      "s3_confidence_routing": {
+        "0.5": 0.7324,
+        "0.6": 0.7362,
+        "0.7": 0.7427,
+        "0.8": 0.7502,
+        "0.9": 0.7535
+      }
+    },
+    "why_it_fails": "门控模型(中性专用,全测试集准确率 0.8099)自己的错误不可恢复:被它误判为「有情感」的中性样本,会被强制给一个极性而必错。因此级联的准确率上限就是门控的准确率。置信度路由只是延缓了这个问题 —— 阈值越高越接近直接三分类,因为越来越多的样本干脆不走门控。"
+  },
+  "aux_head": {
+    "n_non_neutral": 1259,
+    "polarity_specialist": 0.8435,
+    "heads": {
+      "4class": {
+        "accuracy": 0.8507,
+        "vs_specialist": {
+          "b": 71,
+          "c": 62,
+          "n_discordant": 133,
+          "p_value": 0.488,
+          "significant": false
+        }
+      },
+      "mtl": {
+        "accuracy": 0.838,
+        "vs_specialist": {
+          "b": 70,
+          "c": 77,
+          "n_discordant": 147,
+          "p_value": 0.6208,
+          "significant": false
+        }
+      }
+    },
+    "conclusion": "共享编码器训练出的极性头只是打平独立训练的专用模型(McNemar 均不显著),不是提升 —— 多任务没有带来额外信息。"
+  },
+  "stacking": {
+    "meta_train_accuracy": 0.9864,
+    "meta_test_accuracy": 0.7596,
+    "base_accuracy": 0.754,
+    "delta": 0.0056,
+    "leak_free": {
+      "n": 1065,
+      "meta_accuracy": 0.7737,
+      "base_accuracy": 0.7615,
+      "delta": 0.0122,
+      "mcnemar": {
+        "b": 53,
+        "c": 40,
+        "n_discordant": 93,
+        "p_value": 0.2132,
+        "significant": false
+      }
+    },
+    "mcnemar": {
+      "b": 95,
+      "c": 83,
+      "n_discordant": 178,
+      "p_value": 0.4097,
+      "significant": false
+    },
+    "conclusion": "元分类器在训练集上准确率 0.9864,但这个数字有泄漏、不能引用;在测试集上是 0.7596,只比三分类基线高 +0.0056,McNemar p=0.4097(不显著)。无泄漏对照(测试集前半训练、后半评测,1065 条)增益 +0.0122,McNemar p=0.2132(不显著)。结论:三个模型确实犯不同的错(投票上界 0.8822),但「该信谁」这个信息无法从它们的概率里学到。"
+  },
+  "hyperparam_sweep": {
+    "configs": {
+      "ep3_lr2e-05": {
+        "epochs": 3,
+        "lr": 2e-05,
+        "accuracy": 0.7539906103286385,
+        "macro_f1": 0.7490595609613231
+      },
+      "ep5_lr2e-05": {
+        "epochs": 5,
+        "lr": 2e-05,
+        "accuracy": 0.752112676056338,
+        "macro_f1": 0.7449920714553148
+      },
+      "ep8_lr2e-05": {
+        "epochs": 8,
+        "lr": 2e-05,
+        "accuracy": 0.7319248826291079,
+        "macro_f1": 0.7210831478628089
+      },
+      "ep5_lr3e-05": {
+        "epochs": 5,
+        "lr": 3e-05,
+        "accuracy": 0.7460093896713615,
+        "macro_f1": 0.7436731362510763
+      },
+      "ep5_lr1e-05": {
+        "epochs": 5,
+        "lr": 1e-05,
+        "accuracy": 0.7366197183098592,
+        "macro_f1": 0.7299166571695167
+      }
+    },
+    "baseline": "ep3_lr2e-05",
+    "conclusion": "基线配置(3 epoch / lr=2e-5)已是扫描范围内的最优。延长到 5 epoch 或 8 epoch 都让测试准确率下降:8 epoch 时训练 loss 已降到 0.0518,测试准确率反降到 0.7319,是明确的过拟合。降低学习率同样变差。这说明基线成绩不是「欠训练」造成的,换更好的超参拿不到增益。"
+  },
+  "calibration": {
+    "baseline_accuracy": 0.7653,
+    "train_prior": [
+      0.297,
+      0.2825,
+      0.4205
+    ],
+    "inverse_prior_weight": [
+      1.0,
+      1.0513,
+      0.7063
+    ],
+    "oracle_note": "在测试集上直接搜最优权重可到 acc 0.7700 / 宏 F1 0.7685,但那是选择偏差:5 折交叉验证后平均增益仅 +0.0012 且方向不稳,McNemar p=0.3634 不显著。因此本课题**不把校准算作改进**。"
+  }
+}

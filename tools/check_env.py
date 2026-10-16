@@ -171,10 +171,13 @@ for mod in ('transformers', 'sklearn', 'pandas'):
         report(False, 'ml lib %s' % mod, type(exc).__name__)
 
 # 10) 预训练 / 已训练模型(可选):只查文件在不在,不加载(加载要几秒)
-# 两类模型目录并存:
+# 三类模型目录并存:
 #   bert-base-chinese          HuggingFace 格式(config.json + 权重)
 #   sentiment-tfidf-3class     joblib 格式(model.joblib,sklearn 流水线)
+#   multitask-4class           自定义格式(config.json + model.pt,state_dict)
 # 之前只认 HF 格式,TF-IDF 模型一训练出来自检就红,这里按格式分别判断。
+# 多任务模型是「共享编码器 + 3 个头」,不是 HF 的 AutoModelForSequenceClassification,
+# 所以存的是 model.pt 而不是 safetensors —— 必须单独认,否则自检会误报不完整。
 _MODELS = os.path.join(_WS, 'models')
 if os.path.isdir(_MODELS):
     for name in sorted(os.listdir(_MODELS)):
@@ -190,6 +193,14 @@ if os.path.isdir(_MODELS):
             continue
 
         has_cfg = os.path.exists(os.path.join(d, 'config.json'))
+
+        # 自定义多任务格式:config.json 里带 n_main,权重是 model.pt
+        has_pt = os.path.exists(os.path.join(d, 'model.pt'))
+        if has_cfg and has_pt:
+            report(True, 'model %s' % name,
+                   '%.1f MB (multitask)' % (size / 1048576))
+            continue
+
         has_w = any(os.path.exists(os.path.join(d, w))
                     for w in ('model.safetensors', 'pytorch_model.bin'))
         report(has_cfg and has_w, 'model %s' % name,

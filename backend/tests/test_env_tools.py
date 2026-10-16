@@ -181,6 +181,29 @@ def test_check_env_reports_gpu_compute():
 
 
 @pytest.mark.skipif(not os.path.exists(_PY), reason='workspace interpreter missing')
+def test_check_env_accepts_multitask_model_format():
+    """多任务模型是 config.json + model.pt,自检必须认。
+
+    它既不是 HF 格式(safetensors)也不是 joblib,所以最初的自检
+    把它报成 incomplete —— 自检红了但模型其实是好的,这种误报
+    会让人去"修"一个没坏的东西,比漏报更浪费时间。
+    """
+    d = os.path.join(_REPO_ROOT, 'models', 'multitask-4class')
+    if not os.path.isdir(d):
+        pytest.skip('本机尚未训练多任务模型')
+    r = subprocess.run([_PY, os.path.join(_TOOLS, 'check_env.py')],
+                       cwd=_REPO_ROOT, capture_output=True, text=True,
+                       encoding='utf-8', errors='replace', timeout=300)
+    assert 'model multitask-4class' in r.stdout
+    assert '(multitask)' in r.stdout
+    # 关键:不能报成不完整
+    for line in r.stdout.splitlines():
+        if 'multitask-4class' in line or 'multitask-mtl' in line:
+            assert 'incomplete' not in line, line
+            assert '[PASS]' in line, line
+
+
+@pytest.mark.skipif(not os.path.exists(_PY), reason='workspace interpreter missing')
 def test_check_env_covers_0700_directory_bug():
     """自检必须覆盖「0o700 目录不可写」这个沙箱坑。
 
