@@ -16,6 +16,7 @@ Markdown → Word 转换器的测试(tools/md_to_docx.py)。
 """
 
 import os
+import re
 import sys
 import zipfile
 
@@ -285,3 +286,80 @@ def test_real_proposal_material_converts(tmp_path):
             joined += '\n' + ' '.join(c.text for c in row.cells)
     assert '0.7540' in joined
     assert '8516' in joined
+
+
+# ---------------------------------------------------------------- 引用完整性
+
+def _proposal_text():
+    src = os.path.join(_REPO_ROOT, '论文', '开题报告书.md')
+    if not os.path.isfile(src):
+        pytest.skip('尚无 论文/开题报告书.md')
+    with open(src, encoding='utf-8') as fh:
+        return fh.read()
+
+
+def _split_refs(text):
+    """把正文与参考文献表切开,返回 (正文, {编号: 条目行})。"""
+    marker = '## 七、主要参考文献'
+    assert marker in text, '开题报告书缺少参考文献章节'
+    body, _, refs = text.partition(marker)
+    entries = {}
+    for line in refs.splitlines():
+        m = re.match(r'^\[(\d+)\]\s+(.*)$', line.strip())
+        if m:
+            entries[int(m.group(1))] = m.group(2)
+    return body, entries
+
+
+def test_every_cited_number_has_a_reference_entry():
+    """正文里引用的 [n] 必须在文末参考文献表里有对应条目。
+
+    漏一条就是"引而不注",答辩时被问住很难解释。
+    """
+    body, entries = _split_refs(_proposal_text())
+    cited = {int(n) for n in re.findall(r'\[(\d+)\]', body)}
+    assert cited, '正文里一处引用都没有,文献综述还没写'
+    missing = sorted(cited - set(entries))
+    assert not missing, f'正文引用了但文末没有的编号: {missing}'
+
+
+def test_no_orphan_reference_entries():
+    """参考文献表里不能有正文从未引用的条目(凑数嫌疑)。"""
+    body, entries = _split_refs(_proposal_text())
+    cited = {int(n) for n in re.findall(r'\[(\d+)\]', body)}
+    orphan = sorted(set(entries) - cited)
+    assert not orphan, f'列在文末但正文从未引用的编号: {orphan}'
+
+
+def test_reference_numbers_are_contiguous():
+    """编号必须从 1 开始连续,不能跳号 —— 跳号说明删条目时漏改了。"""
+    _, entries = _split_refs(_proposal_text())
+    assert entries, '参考文献表是空的'
+    nums = sorted(entries)
+    assert nums == list(range(1, len(nums) + 1)), f'编号不连续: {nums}'
+
+
+def test_reference_entries_look_like_gbt7714():
+    """每条至少要有作者、题名与出处三要素,不能只写一个标题。"""
+    _, entries = _split_refs(_proposal_text())
+    for num, entry in sorted(entries.items()):
+        assert len(entry) > 25, f'[{num}] 著录过短,缺出处信息: {entry}'
+        # GB/T 7714 用 [J]/[C]/[EB/OL] 等文献类型标识
+        assert re.search(r'\[(J|C|M|D|EB/OL|R)\]', entry), \
+            f'[{num}] 缺文献类型标识([J]/[C]/[EB/OL] 等): {entry}'
+
+
+def test_reference_placeholder_is_gone():
+    """「待补」占位符必须已经填掉 —— 交上去空着就是事故。"""
+    text = _proposal_text()
+    assert '待补' not in text, '开题报告书里还留着「待补」占位符'
+
+
+def test_no_unverified_reference_markers_remain():
+    """「待核」标记必须清零。
+
+    写文献表时凡是我没亲眼核到原始页面的字段,一律标「(页码待核)」,
+    提醒自己定稿前复核 —— 交上去时这些标记必须全部消掉。
+    """
+    text = _proposal_text()
+    assert '待核' not in text, '参考文献里还有未核实的字段标记「待核」'
