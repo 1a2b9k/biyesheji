@@ -51,7 +51,7 @@ biyesheji/
 │   │   ├── service.py           业务:入库、去重、同步、情感回填
 │   │   ├── sentiment.py         情感推理(懒加载;缺模型时自动降级)
 │   │   └── main.py              FastAPI 应用与接口
-│   ├── tests/                   203 个测试
+│   ├── tests/                   300 个测试
 │   ├── conftest.py              把 pytest 临时目录挪进工作区(沙箱需要)
 │   └── pytest.ini
 ├── frontend/                    前端 (Vue3 + Vite + ECharts)
@@ -65,10 +65,13 @@ biyesheji/
 │   ├── train_sentiment.py       情感对比实验(TF-IDF 基线 + BERT 微调)
 │   ├── analyze_neutral.py       中性类瓶颈分析(问句统计 / 错误流向 / 句式切分)
 │   ├── experiment_report.py     从实验结果 JSON 生成 Markdown 报告
+│   ├── train_multitask.py       改进实验:多任务(共享编码器 + 3 头)与 4 分类标签重构
+│   ├── ensemble_sentiment.py    改进实验:多种子集成 + McNemar / bootstrap 显著性检验
+│   ├── ablation_study.py        改进实验:六类负面结论的可复现证据
 │   ├── check_env.py             环境自检
 │   ├── fetch_model.py           预训练模型下载
 │   └── use_mysql.py             一条命令切换数据库
-├── data/experiments/            实验结果 JSON + REPORT.md + NEUTRAL_ANALYSIS.md(已进版本库)
+├── data/experiments/            实验结果 JSON + REPORT.md + NEUTRAL_ANALYSIS.md + ABLATION.md(已进版本库)
 ├── scripts/                     一键启动 / 测试脚本
 ├── .env.example                 配置模板(复制为 .env)
 └── 文档/                        学校通知原件
@@ -122,7 +125,7 @@ biyesheji/
 scripts\test-all.cmd
 ```
 
-当前:**403 个测试全部通过**(后端 203 + 前端 67 + 技能安装 133)。
+当前:**500 个测试全部通过**(后端 300 + 前端 67 + 技能安装 133)。
 
 测试原则:
 - 采集解析用**离线样本**测(不发网络请求,快且稳定)
