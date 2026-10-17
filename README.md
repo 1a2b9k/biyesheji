@@ -1,4 +1,4 @@
-﻿# 财经舆情智能分析平台
+# 财经舆情智能分析平台
 
 > 本科毕业设计 · v0.3（情感分析 + 瓶颈分析 + 看板视觉）
 > 江西财经大学 · 虚拟现实技术专业
@@ -61,7 +61,7 @@ biyesheji/
 │   │   ├── analysis.py          情感指数与收益的关联分析(纯函数)
 │   │   ├── sentiment.py         情感推理(懒加载;缺模型时自动降级)
 │   │   └── main.py              FastAPI 应用与接口
-│   ├── tests/                   368 个测试
+│   ├── tests/                   411 个测试
 │   ├── conftest.py              把 pytest 临时目录挪进工作区(沙箱需要)
 │   └── pytest.ini
 ├── frontend/                    前端 (Vue3 + Vite + ECharts)
@@ -84,6 +84,7 @@ biyesheji/
 │   ├── fetch_model.py           预训练模型下载
 │   └── use_mysql.py             一条命令切换数据库
 ├── data/experiments/            实验结果 JSON + REPORT.md + NEUTRAL_ANALYSIS.md + ABLATION.md(已进版本库)
+├── 论文/                        开题报告书 / 文献综述 / 论文写作大纲(.md 进库,.docx 为构建产物)
 ├── scripts/                     一键启动 / 测试脚本
 ├── requirements.txt             依赖清单(手写,按真实 import 核对)
 ├── .env.example                 配置模板(复制为 .env)
@@ -186,7 +187,7 @@ REM 情感指数 vs 次日收益:逐股票 + 全样本汇总,可写 JSON
 scripts\test-all.cmd
 ```
 
-当前:**583 个测试全部通过**(后端 368 + 前端 82 + 技能安装 133)。
+当前:**626 个测试全部通过**(后端 411 + 前端 82 + 技能安装 133)。
 
 测试原则:
 - 采集解析用**离线样本**测(不发网络请求,快且稳定)
