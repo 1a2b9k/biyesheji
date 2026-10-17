@@ -84,6 +84,135 @@ def test_compute_change_pct_empty():
     assert collector.compute_change_pct([]) == []
 
 
+# ---------------------------------------------------------------- 腾讯备用源
+
+# 真实返回的样本(2026-10-12 ~ 10-16,前复权)。
+TENCENT_SAMPLE = json.dumps({
+    'code': 0,
+    'msg': '',
+    'data': {
+        'sh600519': {
+            'qfqday': [
+                ['2026-10-14', '1270.100', '1286.000', '1286.750', '1266.000',
+                 '23773.000'],
+                ['2026-10-15', '1286.000', '1312.970', '1317.760', '1282.000',
+                 '57677.000'],
+                ['2026-10-16', '1311.570', '1329.000', '1329.880', '1301.680',
+                 '38502.000'],
+            ],
+            'qt': {'sh600519': ['1', '贵州茅台']},
+        },
+    },
+})
+
+
+def test_parse_tencent_kline_count():
+    rows = collector.parse_tencent_kline(TENCENT_SAMPLE, '600519', 'SH')
+    assert len(rows) == 3
+
+
+def test_parse_tencent_kline_fields():
+    row = collector.parse_tencent_kline(TENCENT_SAMPLE, '600519', 'SH')[1]
+    assert row['trade_date'] == '2026-10-15'
+    assert row['open'] == 1286.0
+    assert row['close'] == 1312.97
+    assert row['high'] == 1317.76
+    assert row['low'] == 1282.0
+    assert row['volume'] == 57677.0
+
+
+def test_parse_tencent_kline_computes_amplitude_from_prev_close():
+    rows = collector.parse_tencent_kline(TENCENT_SAMPLE, '600519', 'SH')
+    # 第一行没有前收,振幅记 0
+    assert rows[0]['amplitude'] == 0.0
+    # (1317.76 - 1282.00) / 1286.00 * 100 = 2.78,与东财口径一致
+    assert rows[1]['amplitude'] == 2.78
+    # (1329.88 - 1301.68) / 1312.97 * 100 = 2.15
+    assert rows[2]['amplitude'] == 2.15
+
+
+def test_parse_tencent_kline_estimates_amount():
+    row = collector.parse_tencent_kline(TENCENT_SAMPLE, '600519', 'SH')[2]
+    # 量(手) x 100 x 收盘。东财真值 5075530000,相差约 0.8%
+    assert row['amount'] == 38502.0 * 100 * 1329.0
+
+
+def test_parse_tencent_kline_accepts_shenzhen_key():
+    raw = json.dumps({'data': {'sz300750': {
+        'qfqday': [['2026-10-16', '1', '2', '3', '0.5', '100']]}}})
+    rows = collector.parse_tencent_kline(raw, '300750', 'SZ')
+    assert len(rows) == 1
+    assert rows[0]['close'] == 2.0
+
+
+def test_parse_tencent_kline_falls_back_to_day_key():
+    raw = json.dumps({'data': {'sh600519': {
+        'day': [['2026-10-16', '1', '2', '3', '0.5', '100']]}}})
+    assert len(collector.parse_tencent_kline(raw, '600519', 'SH')) == 1
+
+
+def test_parse_tencent_kline_skips_bad_rows():
+    raw = json.dumps({'data': {'sh600519': {
+        'qfqday': [['2026-10-16'], ['bad', 'x', 'y', 'z', 'w', 'v'],
+                   ['2026-10-15', '1', '2', '3', '0.5', '100']]}}})
+    rows = collector.parse_tencent_kline(raw, '600519', 'SH')
+    assert len(rows) == 1
+    assert rows[0]['trade_date'] == '2026-10-15'
+
+
+def test_parse_tencent_kline_empty_payload():
+    assert collector.parse_tencent_kline(json.dumps({}), '600519', 'SH') == []
+    assert collector.parse_tencent_kline(
+        json.dumps({'data': None}), '600519', 'SH') == []
+    assert collector.parse_tencent_kline(
+        json.dumps({'data': {'sh600519': {}}}), '600519', 'SH') == []
+
+
+def test_tencent_url_uses_market_prefix():
+    assert 'sh600519' in collector._tencent_url('600519', 'SH')
+    assert 'sz300750' in collector._tencent_url('300750', 'SZ')
+
+
+def test_fetch_kline_falls_back_to_tencent(monkeypatch):
+    """东财不通时必须自动回退腾讯,而不是把异常抛给上层。"""
+    def boom(url, referer=None):
+        raise OSError('RemoteDisconnected')
+
+    def ok(url, referer=None):
+        return TENCENT_SAMPLE
+
+    monkeypatch.setattr(collector, '_http_get', boom)
+    # 第一次调用(东财)抛错,第二次(腾讯)返回样本
+    calls = []
+
+    def dispatch(url, referer=None):
+        calls.append(url)
+        if 'push2his' in url:
+            raise OSError('RemoteDisconnected')
+        return TENCENT_SAMPLE
+
+    monkeypatch.setattr(collector, '_http_get', dispatch)
+    rows = collector.fetch_kline('600519', 'SH')
+    assert len(rows) == 3
+    assert len(calls) == 2
+    assert 'gtimg' in calls[1]
+
+
+def test_fetch_kline_uses_eastmoney_when_available(monkeypatch):
+    """东财正常时不该多打一次腾讯。"""
+    calls = []
+
+    def only_eastmoney(url, referer=None):
+        calls.append(url)
+        return KLINE_SAMPLE
+
+    monkeypatch.setattr(collector, '_http_get', only_eastmoney)
+    rows = collector.fetch_kline('600519', 'SH')
+    assert len(rows) == 3
+    assert len(calls) == 1
+    assert 'push2his' in calls[0]
+
+
 # ---------------------------------------------------------------- 新闻
 
 NEWS_SAMPLE = (

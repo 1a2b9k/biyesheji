@@ -1,6 +1,7 @@
 """
-数据采集层 —— 从东方财富的公开接口拉行情与新闻。
+数据采集层 —— 从公开接口拉行情与新闻。
 
+行情与新闻都来自东方财富,日线在东财不通时回退腾讯。
 这些接口都是公开、免注册、免 key 的。实测(2026-10-13):
   * K 线:贵州茅台 6019 条日线
   * 新闻:关键词搜索可返回标题/来源/时间/链接
@@ -8,6 +9,8 @@
 设计要点:
   * 采集与解析分离 —— parse_* 是纯函数,不发网络请求,因此可以离线单元测试
   * 网络函数只负责拿原始 JSON,失败时抛异常,由上层决定是否重试
+  * 日线有两个源(东财 + 腾讯),`fetch_kline` 内部做回退;
+    两个源同为前复权,同一天的数据逐位一致,可以混存
 """
 
 import json
@@ -22,6 +25,7 @@ _KLINE_URL = (
     # 用 http 而不是 https:实测(2026-10-17)同一台机器上 push2his 的
     # https 端口会直接断连(RemoteDisconnected),http 端口稳定可用。
     # 这是行情接口特有的现象,新闻接口的 https 一直正常,所以不全局改。
+    # 注:2026-10-17 之后连 http 端口也被整域拒绝,见下面的腾讯备用源。
     'http://push2his.eastmoney.com/api/qt/stock/kline/get'
     '?fields1=f1,f2,f3,f4,f5,f6'
     '&fields2=f51,f52,f53,f54,f55,f56,f57,f58'
@@ -29,6 +33,17 @@ _KLINE_URL = (
 )
 _NEWS_URL = 'https://search-api-web.eastmoney.com/search/jsonp?cb=&param={param}'
 _NEWS_REFERER = 'https://so.eastmoney.com/'
+
+# 备用日线源。东财 push2his 自 2026-10-17 起整域拒绝连接
+# (所有编号主机都在 0.2 秒内 RemoteDisconnected,不是限流),
+# 腾讯这个接口稳定可用,且同为前复权 —— 实测同一交易日的
+# 开/收/高/低/量与东财逐位一致,两个源的数据可以混存。
+_TENCENT_KLINE_URL = (
+    'https://web.ifzq.gtimg.cn/appstock/app/fqkline/get'
+    '?param={symbol},day,,,{count},qfq'
+)
+# 腾讯单次最多返回 640 根(约 2.5 年),再大也只给 640,所以不必调高。
+_TENCENT_DEPTH = 640
 
 
 def to_secid(code, market):
@@ -79,9 +94,72 @@ def parse_kline(raw_json_text):
 
 
 def fetch_kline(code, market='SH'):
-    """拉取日线。返回 dict 列表(按日期升序)。"""
-    url = _KLINE_URL.format(secid=to_secid(code, market))
-    return parse_kline(_http_get(url))
+    """拉取日线。返回 dict 列表(按日期升序)。
+
+    先走东财;东财不通时回退腾讯。两个源都是前复权,同一天的
+    开/收/高/低/量实测逐位一致,所以回退不会让库里出现两套口径。
+    """
+    try:
+        return parse_kline(_http_get(_KLINE_URL.format(
+            secid=to_secid(code, market))))
+    except Exception:  # noqa: BLE001
+        return parse_tencent_kline(
+            _http_get(_tencent_url(code, market)), code, market)
+
+
+def _tencent_url(code, market):
+    """拼腾讯日线的请求地址。symbol 形如 sh600519。"""
+    prefix = 'sh' if str(market).upper() == 'SH' else 'sz'
+    return _TENCENT_KLINE_URL.format(
+        symbol=prefix + str(code), count=_TENCENT_DEPTH)
+
+
+def parse_tencent_kline(raw_json_text, code='', market='SH'):
+    """解析腾讯日线返回。纯函数,可离线测试。
+
+    每行格式:[日期, 开, 收, 高, 低, 成交量(手)]
+    与东财相比少了成交额和振幅,这里补算:
+      * 成交额取 量 x 100 x 收盘 作为近似(VWAP 拿不到,
+        与东财真值相差约 1%,只用于展示)
+      * 振幅取 (高 - 低) / 前收 x 100,与东财口径一致
+    批次第一行没有前收,振幅记 0(该行通常已在库中被跳过)。
+    """
+    prefix = 'sh' if str(market).upper() == 'SH' else 'sz'
+    key = prefix + str(code)
+
+    data = json.loads(raw_json_text)
+    node = (data.get('data') or {}).get(key) or {}
+    # 前复权在 qfqday,不复权在 day;两个键都认,优先前复权。
+    rows = node.get('qfqday') or node.get('day') or []
+
+    out = []
+    prev_close = None
+    for row in rows:
+        parts = list(row) if isinstance(row, (list, tuple)) else str(row).split(',')
+        if len(parts) < 6:
+            continue
+        try:
+            trade_date = str(parts[0])
+            open_ = float(parts[1])
+            close = float(parts[2])
+            high = float(parts[3])
+            low = float(parts[4])
+            volume = float(parts[5])
+        except (TypeError, ValueError):
+            continue
+        out.append({
+            'trade_date': trade_date,
+            'open': open_,
+            'close': close,
+            'high': high,
+            'low': low,
+            'volume': volume,
+            'amount': round(volume * 100 * close, 2),
+            'amplitude': (round((high - low) / prev_close * 100.0, 2)
+                          if prev_close else 0.0),
+        })
+        prev_close = close
+    return out
 
 
 def compute_change_pct(klines):
