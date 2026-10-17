@@ -1,4 +1,4 @@
-# 财经舆情智能分析平台
+﻿# 财经舆情智能分析平台
 
 > 本科毕业设计 · v0.3（情感分析 + 瓶颈分析 + 看板视觉）
 > 江西财经大学 · 虚拟现实技术专业
@@ -24,6 +24,9 @@
 需要两个终端。**先启动后端,再启动前端。**
 
 ```bat
+REM 首次:装依赖(必须用包装器,不要用 python -m pip)
+.python\python.exe .pysandbox\pipp.py install -r requirements.txt
+
 REM 终端 1:后端 (http://127.0.0.1:8000)
 scripts\start-backend.cmd
 
@@ -35,6 +38,12 @@ scripts\start-frontend.cmd
 
 > 首次启动会自动建库并写入 3 只默认股票,但**没有任何行情和新闻**,
 > 需要点一次「采集最新数据」。采集一只股票约 10–30 秒。
+
+`requirements.txt` 是**手写**的,不是 `pip freeze` —— 本机解释器是共用的,
+freeze 里混着 edge-tts / Flask / google-genai 等与项目无关的包。
+清单按 `backend/` 与 `tools/` 里真实出现的 import 逐条核对,
+并由 `backend/tests/test_requirements.py` 反向守护(新加 import 忘登记会测试失败)。
+torch 的 CUDA 轮子不在 PyPI 主索引,装法见清单里的注释。
 
 ---
 
@@ -52,7 +61,7 @@ biyesheji/
 │   │   ├── analysis.py          情感指数与收益的关联分析(纯函数)
 │   │   ├── sentiment.py         情感推理(懒加载;缺模型时自动降级)
 │   │   └── main.py              FastAPI 应用与接口
-│   ├── tests/                   346 个测试
+│   ├── tests/                   357 个测试
 │   ├── conftest.py              把 pytest 临时目录挪进工作区(沙箱需要)
 │   └── pytest.ini
 ├── frontend/                    前端 (Vue3 + Vite + ECharts)
@@ -76,6 +85,7 @@ biyesheji/
 │   └── use_mysql.py             一条命令切换数据库
 ├── data/experiments/            实验结果 JSON + REPORT.md + NEUTRAL_ANALYSIS.md + ABLATION.md(已进版本库)
 ├── scripts/                     一键启动 / 测试脚本
+├── requirements.txt             依赖清单(手写,按真实 import 核对)
 ├── .env.example                 配置模板(复制为 .env)
 └── 文档/                        学校通知原件
 ```
@@ -99,7 +109,7 @@ biyesheji/
 |---|---|---|
 | GET | `/api/health` | 健康检查 |
 | GET | `/api/stocks` | 股票列表(含数据量) |
-| GET | `/api/stocks/{code}/klines?limit=120` | 日线行情 |
+| GET | `/api/stocks/{code}/klines?limit=120` | 日线行情(limit 上限 20000) |
 | GET | `/api/stocks/{code}/news?limit=50` | 新闻列表 |
 | GET | `/api/stocks/{code}/overview` | 概览(最新价、来源分布) |
 | GET | `/api/stocks/{code}/sentiment?limit=500` | 单只股票的情绪统计与按日聚合 |
@@ -156,7 +166,7 @@ REM 情感指数 vs 次日收益:逐股票 + 全样本汇总,可写 JSON
 scripts\test-all.cmd
 ```
 
-当前:**561 个测试全部通过**(后端 346 + 前端 82 + 技能安装 133)。
+当前:**572 个测试全部通过**(后端 357 + 前端 82 + 技能安装 133)。
 
 测试原则:
 - 采集解析用**离线样本**测(不发网络请求,快且稳定)

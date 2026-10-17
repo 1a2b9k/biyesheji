@@ -153,6 +153,23 @@ def test_kline_limit(client, monkeypatch):
     assert rows[0]['trade_date'] == '2026-10-13'
 
 
+def test_kline_limit_allows_full_history(client):
+    """上限必须能覆盖最长的股票历史,否则老数据永远取不到。
+
+    实测平安银行(000001)有 8497 个交易日,原来的上限 5000 会让
+    最早 3497 条永远取不到。这里不真取 8000 条数据,只验证参数
+    校验不把 8000 拒掉 —— 被拒会返回 422。
+    """
+    r = client.get('/api/stocks/600519/klines?limit=8000')
+    assert r.status_code == 200
+
+
+def test_kline_limit_rejects_absurd_value(client):
+    """上限放宽了,但仍要有边界,避免一次把整库拖出来。"""
+    r = client.get('/api/stocks/600519/klines?limit=20001')
+    assert r.status_code == 422
+
+
 def test_news_returned_descending(client, monkeypatch):
     _seed(client, monkeypatch)
     rows = client.get('/api/stocks/600519/news').json()

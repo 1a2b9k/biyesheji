@@ -76,9 +76,13 @@ def list_stocks(db: Session = Depends(get_db)):
 
 
 @app.get('/api/stocks/{code}/klines')
-def get_klines(code: str, limit: int = Query(120, ge=1, le=5000),
+def get_klines(code: str, limit: int = Query(120, ge=1, le=20000),
                db: Session = Depends(get_db)):
-    """日线行情。默认返回最近 120 个交易日(按日期升序)。"""
+    """日线行情。默认返回最近 120 个交易日(按日期升序)。
+
+    上限取 20000 而不是 5000:实测平安银行(000001)有 8497 个交易日,
+    5000 的上限会让最早 3497 条永远取不到。
+    """
     _require_stock(db, code)
     rows = db.scalars(
         select(models.Kline)

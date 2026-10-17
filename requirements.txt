@@ -1,0 +1,59 @@
+# 依赖清单
+#
+# 生成方式:按 `backend/` 与 `tools/` 里实际出现的 import 逐个核对
+# (不是直接 `pip freeze` —— 本机解释器是共用的,freeze 里混着
+#  edge-tts / Flask / google-genai 等与项目无关的包)。
+#
+# 版本为 2026-10-18 在 Python 3.12.9 上实测通过的组合。
+# 装包必须走包装器,不要用 `python -m pip`(见 交接文档 第八节):
+#   .python\python.exe .pysandbox\pipp.py install -r requirements.txt
+#
+# 分四段:核心运行 / 机器学习 / 文档工具 / 测试。
+# 只跑后端服务装第一段就够;跑训练和实验才需要第二段。
+
+# ---------------------------------------------------------------- 核心运行
+# backend/app/{main,db,models,service,collector,analysis}.py
+fastapi==0.143.0
+uvicorn==0.54.0
+SQLAlchemy==2.1.4
+
+# 可选:用 MySQL 才需要(默认走 SQLite,不需要这一行)
+# backend/app/db.py 按 DATABASE_URL 决定,不 import 这个包
+PyMySQL==1.2.3
+
+# TestClient 依赖 httpx。fastapi 不强制装它,
+# 但 backend/tests/test_api.py 要用,所以放核心段
+httpx==0.28.1
+
+# ------------------------------------------------------------ 机器学习栈
+# backend/app/sentiment.py + tools/{train_sentiment,train_multitask,
+# ensemble_sentiment,ablation_study,analyze_neutral}.py
+#
+# torch 的 CUDA 版本要单独指定索引。本机实测可用的是 cu130:
+#   .python\python.exe .pysandbox\pipp.py install torch==2.14.1 \
+#       --index-url https://download.pytorch.org/whl/cu130
+# 只跑 CPU 的话去掉 +cu130 直接装即可,代码会自动回退(见 sentiment._load_bert)。
+torch==2.14.1+cu130
+transformers==5.19.0
+scikit-learn==1.9.1
+joblib==1.6.0
+numpy==2.4.6
+
+# 中文分词。sentiment.py 的 TF-IDF 路线用它,
+# BERT 路线不需要,但 import 在模块顶层所以两者都要
+jieba==0.42.1
+
+# 可选:pandas 只在 tools/check_env.py 里做「装了就要能 import」的自检,
+# 代码不依赖它。要跑自检就装
+pandas==3.0.6
+
+# ------------------------------------------------------------ 文档工具
+# tools/md_to_docx.py:Markdown → Word
+python-docx==1.2.0
+
+# tools/fetch_model.py:从 hf-mirror.com 拉预训练权重
+huggingface_hub==2.2.0
+
+# ---------------------------------------------------------------- 测试
+# backend/tests/ 全量 346 项
+pytest==9.1.1
