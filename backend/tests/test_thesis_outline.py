@@ -790,3 +790,28 @@ def test_outline_is_not_part_of_final_thesis():
     assert ('正文请你自己写' in text) or ('正文由学生本人写' in text) or \
            ('正文必须学生本人撰写' in text), \
         '大纲必须写明正文由本人撰写(学术诚信边界)'
+
+
+def test_handoff_table_and_figure_counts_match_outline():
+    """交接文档说大纲有 N 张表 / M 张图,必须与实际数量一致。
+
+    这类"文档描述另一个文档的规模"的数字最容易悄悄过期:加一张表、
+    删一张图,大纲本身没错,但交接文档就开始说谎,而且没人会发现。
+    """
+    text = _outline_text()
+    n_tables = len(re.findall(r'^### 表 ', text, re.M))
+    n_figures = len(re.findall(r'^\| 图 ', text, re.M))
+    assert n_tables > 0 and n_figures > 0, '大纲里没找到表/图'
+
+    ho_path = os.path.join(_REPO_ROOT, '交接文档.md')
+    if not os.path.isfile(ho_path):
+        pytest.skip('缺少 交接文档.md')
+    with open(ho_path, encoding='utf-8') as fh:
+        ho = fh.read()
+
+    for m in re.finditer(r'(\d+) 张数据表', ho):
+        assert int(m.group(1)) == n_tables, \
+            '交接文档写 %s 张数据表,大纲实际 %d 张' % (m.group(1), n_tables)
+    for m in re.finditer(r'(\d+) 张图', ho):
+        assert int(m.group(1)) == n_figures, \
+            '交接文档写 %s 张图,大纲实际 %d 张' % (m.group(1), n_figures)
