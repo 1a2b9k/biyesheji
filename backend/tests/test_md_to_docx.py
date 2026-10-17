@@ -335,6 +335,117 @@ def test_convert_resolves_image_relative_to_md_directory(tmp_path):
     assert '[缺图' not in '|'.join(_paragraph_texts(out))
 
 
+# ---------------------------------------------------------------- 目录域
+
+_TOC_SAMPLE = """# 论文题目
+
+<!-- TOC -->
+
+## 第 1 章 绪论
+
+正文。
+
+### 1.1 研究背景
+
+小节正文。
+
+## 第 2 章 相关技术
+
+结尾。
+"""
+
+
+def _settings_xml(path):
+    with zipfile.ZipFile(path) as z:
+        return z.read('word/settings.xml').decode('utf-8')
+
+
+def test_toc_marker_becomes_a_real_field(tmp_path):
+    """目录必须是 Word 的 TOC 域,而不是拼好的死文字。
+
+    死文字在标题改动后就错,而且错得不明显 —— 只有域才能在 Word 里按 F9
+    同步。这里查 instrText 里的域指令是否写进去了。
+    """
+    out = _convert(tmp_path, _TOC_SAMPLE)
+    xml = _document_xml(out)
+    assert 'TOC \\o "1-3"' in xml, '没有写入 TOC 域指令'
+
+
+def test_toc_field_has_begin_separate_and_end(tmp_path):
+    """域的 fldChar 必须三段齐全。
+
+    缺 separate 时 Word 认为域还没开始计算结果,打开文档会报错 ——
+    这是手写域最容易漏的一段。
+    """
+    out = _convert(tmp_path, _TOC_SAMPLE)
+    xml = _document_xml(out)
+    assert xml.count('w:fldCharType="begin"') == 1
+    assert xml.count('w:fldCharType="separate"') == 1
+    assert xml.count('w:fldCharType="end"') == 1
+
+
+def test_toc_field_has_placeholder_text(tmp_path):
+    """域结果留占位提示,不能是空白。
+
+    空白会让人以为目录坏了;一句提示至少说明了该按 F9。
+    """
+    out = _convert(tmp_path, _TOC_SAMPLE)
+    text = '|'.join(_paragraph_texts(out))
+    assert 'F9' in text
+
+
+def test_toc_title_is_not_a_heading(tmp_path):
+    """「目录」二字不能出现在它自己的目录里。
+
+    目录标题若用 Heading 样式,就会被 TOC 域收成一级条目,
+    出现「目录 … 目录」这种自指。所以它是普通段落 + 手工字体。
+    """
+    out = _convert(tmp_path, _TOC_SAMPLE)
+    xml = _document_xml(out)
+    # 找到「目　录」所在的段落,确认它没有 pStyle=Heading
+    for para in re.findall(r'<w:p\b.*?</w:p>', xml, re.S):
+        if '目　录' in para:
+            assert 'Heading' not in para and 'w:pStyle w:val="Title"' not in para, \
+                '目录标题用了标题样式,会自指'
+            break
+    else:
+        raise AssertionError('没有找到目录标题')
+
+
+def test_update_fields_is_enabled_when_toc_present(tmp_path):
+    """有目录时必须让 Word 打开就更新域,否则看到的只是占位提示。"""
+    out = _convert(tmp_path, _TOC_SAMPLE)
+    assert 'updateFields' in _settings_xml(out)
+
+
+def test_update_fields_is_absent_without_toc(tmp_path):
+    """没有目录的文档不该带上这个设置,否则 Word 会多问一次「是否更新」。"""
+    out = _convert(tmp_path, '# 只有标题\n\n正文\n')
+    assert 'updateFields' not in _settings_xml(out)
+
+
+def test_toc_marker_is_not_rendered_as_text(tmp_path):
+    """`<!-- TOC -->` 是给转换器的指令,不该原样出现在正文里。"""
+    out = _convert(tmp_path, _TOC_SAMPLE)
+    text = '|'.join(_paragraph_texts(out))
+    assert '<!-- TOC -->' not in text
+
+
+def test_toc_marker_only_takes_effect_once(tmp_path):
+    """同一文档里写了两个标记也只插一个目录。"""
+    md = '# 题目\n\n<!-- TOC -->\n\n## 第一章\n\n正文\n\n<!-- TOC -->\n\n## 第二章\n'
+    out = _convert(tmp_path, md)
+    xml = _document_xml(out)
+    assert xml.count('w:fldCharType="begin"') == 1
+
+
+def test_toc_ignores_case_and_spacing(tmp_path):
+    """`<!--toc-->` 这种写法也应识别,免得手写时大小写不一致就静默失效。"""
+    md = '# 题目\n\n<!--toc-->\n\n## 第一章\n\n正文\n'
+    out = _convert(tmp_path, md)
+    assert 'TOC \\o "1-3"' in _document_xml(out)
+
+
 # ---------------------------------------------------------------- CLI
 
 def test_main_writes_default_output(tmp_path, monkeypatch, capsys):

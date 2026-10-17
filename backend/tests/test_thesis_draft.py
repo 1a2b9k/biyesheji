@@ -82,6 +82,19 @@ def _read_csv(name):
         return list(csv.DictReader(fh))
 
 
+def _section(text, start_marker, end_marker):
+    """切出 start_marker 到 end_marker 之间的正文。
+
+    有些断言必须在单章范围内查:同一个词在别章出现不能算数,
+    否则「检索声明里承认了局限」会被别处的文字蒙过去。
+    """
+    start = text.find(start_marker)
+    assert start >= 0, '找不到章节标记「%s」' % start_marker
+    end = text.find(end_marker, start)
+    assert end > start, '找不到章节结束标记「%s」' % end_marker
+    return text[start:end]
+
+
 def _fmt(value, digits=4):
     """把数值格式化成正文里的写法,去掉末尾多余的 0(0.7540 -> 0.754)。"""
     s = ('%.*f' % (digits, value)).rstrip('0')
@@ -992,3 +1005,73 @@ def test_appendix_c_no_longer_claims_figures_are_pending():
         '附录 C 仍写「尚未绘制」,但图已由 tools/make_figures.py 生成'
     assert 'make_figures.py' in appendix, \
         '附录 C 应说明图由 tools/make_figures.py 生成,以便复现'
+
+
+# ---------------------------------------------------------------- 目录
+
+def test_toc_marker_exists_and_is_placed_before_chapter_one():
+    """目录标记要在摘要/Abstract 之后、第 1 章之前。
+
+    放错位置的后果不容易看出来 —— 目录跑到正文中间,而 docx 里
+    照样能生成,不检查就交上去了。
+    """
+    text = _draft_text()
+    assert '<!-- TOC -->' in text, '缺少目录标记,docx 不会生成目录'
+    toc_at = text.find('<!-- TOC -->')
+    assert text.find('## Abstract') < toc_at, '目录应在 Abstract 之后'
+    assert toc_at < text.find('## 第 1 章'), '目录应在第 1 章之前'
+
+
+def test_toc_marker_appears_only_once():
+    """只留一个目录标记。
+
+    两个标记会让转换器插入两个 TOC 域,Word 更新域时行为不确定。
+    """
+    text = _draft_text()
+    assert text.count('<!-- TOC -->') == 1
+
+
+# ---------------------------------------------------------------- 检索声明
+
+def test_search_statement_lists_the_databases():
+    """1.3 的「未见文献」判断必须交代检索了哪些库,否则无法复核。"""
+    body, _ = _body_and_refs()
+    section = _section(body, '## 第 1 章', '## 第 2 章')
+    for db in ('中国知网', '万方', '维普', 'Crossref', 'arXiv', 'ACL Anthology'):
+        assert db in section, '检索声明缺数据库「%s」' % db
+
+
+def test_search_statement_gives_both_chinese_and_english_queries():
+    """检索式要给中英两组,只写一句「经检索」等于没交代。"""
+    body, _ = _body_and_refs()
+    section = _section(body, '## 第 1 章', '## 第 2 章')
+    assert '股吧 AND 情感分析' in section, '缺中文检索式示例'
+    assert 'stock message board sentiment' in section, '缺英文检索式示例'
+
+
+def test_search_statement_states_the_cutoff_date():
+    """检索要写明时间截止,否则读者不知道覆盖到什么时候。"""
+    body, _ = _body_and_refs()
+    section = _section(body, '## 第 1 章', '## 第 2 章')
+    assert '检索时间截止' in section, '检索声明未写检索时间截止'
+
+
+def test_search_statement_hedges_the_negative_claim():
+    """「未见」只能限定在检索范围内,不能写成「不存在研究」。
+
+    这是学术诚信的边界:把检索不到说成不存在,是过度断言。
+    """
+    body, _ = _body_and_refs()
+    section = _section(body, '## 第 1 章', '## 第 2 章')
+    assert '而非' in section and '不存在研究' in section, \
+        '检索声明没有把「未见」限定为「在上述检索范围内」'
+    for overclaim in ('国内外均无相关研究', '该方向尚无任何研究', '没有任何研究'):
+        assert overclaim not in section, '检索声明出现过度断言「%s」' % overclaim
+
+
+def test_search_statement_admits_the_two_limitations():
+    """必须承认会员墙与未做引文追溯这两点局限。"""
+    body, _ = _body_and_refs()
+    section = _section(body, '## 第 1 章', '## 第 2 章')
+    assert '会员墙' in section, '检索声明未承认万方/维普的会员墙限制'
+    assert '引文追溯' in section, '检索声明未承认未做引文追溯'

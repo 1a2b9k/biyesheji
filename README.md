@@ -61,7 +61,7 @@ biyesheji/
 │   │   ├── analysis.py          情感指数与收益的关联分析(纯函数)
 │   │   ├── sentiment.py         情感推理(懒加载;缺模型时自动降级)
 │   │   └── main.py              FastAPI 应用与接口
-│   ├── tests/                   493 个测试
+│   ├── tests/                   509 个测试
 │   ├── conftest.py              把 pytest 临时目录挪进工作区(沙箱需要)
 │   └── pytest.ini
 ├── frontend/                    前端 (Vue3 + Vite + ECharts)
@@ -191,7 +191,7 @@ REM 情感指数 vs 次日收益:逐股票 + 全样本汇总,可写 JSON
 scripts\test-all.cmd
 ```
 
-当前:**708 个测试全部通过**(后端 493 + 前端 82 + 技能安装 133)。
+当前:**724 个测试全部通过**(后端 509 + 前端 82 + 技能安装 133)。
 
 测试原则:
 - 采集解析用**离线样本**测(不发网络请求,快且稳定)

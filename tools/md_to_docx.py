@@ -21,7 +21,14 @@ Markdown → Word(.docx) 转换器 —— 让论文材料能从纯文本重新�
     | a | b |                表格(第二行为 ---|--- 分隔行)
     ```                      代码块(等宽字体,保留缩进)
     ![说明](路径)            插图,独占一段并居中;路径相对 .md 文件所在目录
+    <!-- TOC -->             在此处插入 Word 目录域
     ---                      分隔线(忽略)
+
+目录为什么用「域」而不是把条目写死:
+    写死的目录在改过标题之后就是错的,而且错得不明显 —— 条目还在、页码全废。
+    Word 的 TOC 域由标题样式自动生成,正文标题一改,按 F9 就同步。
+    代价是刚生成时目录处只有一行占位提示,要更新一次域才显示条目,
+    所以这里同时把 settings 的 updateFields 置真,让 Word 打开时自己更新。
 
 退出码 0 = 成功。
 """
@@ -46,12 +53,20 @@ CODE_SIZE = 10.5     # 五号
 # 插图宽度上限:论文正文版心约 14.6cm(21 - 3.17*2),留一点余量。
 MAX_IMAGE_WIDTH_CM = 14.0
 
+# 目录域的标题级别范围:Heading 1-3 对应 Markdown 的 ## / ### / ####。
+# 不取到 4 级,否则小节以下的条目会把目录撑成两页。
+TOC_LEVELS = '1-3'
+
+# 目录自身的标题不用 Heading 样式 —— 用了就会把自己也列进目录里。
+TOC_TITLE = '目　录'
+
 _RE_INLINE = re.compile(r'(\*\*.+?\*\*|`[^`]+`)')
 _RE_ULIST = re.compile(r'^\s*[-*+]\s+(.*)$')
 _RE_OLIST = re.compile(r'^\s*(\d+)[.)]\s+(.*)$')
 _RE_HEAD = re.compile(r'^(#{1,6})\s+(.*)$')
 _RE_TABLE_SEP = re.compile(r'^\s*\|?[\s:|-]+\|[\s:|-]*$')
 _RE_IMAGE = re.compile(r'^!\[([^\]]*)\]\(([^)]+)\)\s*$')
+_RE_TOC = re.compile(r'^<!--\s*TOC\s*-->$', re.I)
 
 
 # ------------------------------------------------------------------ 字体工具
@@ -157,6 +172,85 @@ def image_size_cm(path, max_width=MAX_IMAGE_WIDTH_CM):
     return width_cm * scale, height_cm * scale
 
 
+# ------------------------------------------------------------------ 目录域
+
+def add_toc(doc, levels=TOC_LEVELS, title=TOC_TITLE):
+    """在文档末尾插入一个 Word 目录域(TOC field)。
+
+    为什么不用 python-docx 的 add_paragraph 拼字符串:
+        目录不是正文,是一个「域」—— Word 保存的是「请按标题样式生成目录」
+        这条指令加一份缓存条目,而不是死文字。只有写成域,改标题后按 F9
+        才会同步;写成死文字就永远是生成那一刻的快照。
+
+    域的 XML 结构固定是三段:
+        fldChar begin → instrText(指令) → fldChar separate
+        → 占位结果文字 → fldChar end
+    缺 separate 时 Word 会认为域还没开始计算结果,打开就报错。
+
+    \\o "1-3"  取 1-3 级标题
+    \\h        条目做成可点击的超链接
+    \\z        在网页视图里隐藏页码(打印不受影响)
+    \\u        用段落的大纲级别(而不只是内置标题样式)判定层级
+    """
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    # 目录标题:手工设成标题的样子,但不使用 Heading 样式,
+    # 否则「目录」二字会作为一级条目出现在自己的目录里。
+    heading = doc.add_paragraph()
+    heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = heading.add_run(title)
+    set_font(run, name=HEAD_FONT, size=BODY_SIZE + 3, bold=True)
+
+    para = doc.add_paragraph()
+
+    def _fld_char(kind):
+        el = OxmlElement('w:fldChar')
+        el.set(qn('w:fldCharType'), kind)
+        return el
+
+    begin_run = para.add_run()
+    begin_run._r.append(_fld_char('begin'))
+
+    instr_run = para.add_run()
+    instr = OxmlElement('w:instrText')
+    instr.set(qn('xml:space'), 'preserve')
+    instr.text = ' TOC \\o "%s" \\h \\z \\u ' % levels
+    instr_run._r.append(instr)
+
+    sep_run = para.add_run()
+    sep_run._r.append(_fld_char('separate'))
+
+    # 占位结果:域还没更新时显示这句,而不是一片空白。
+    # 空白会让人以为目录坏了,提示语至少说明了要做什么。
+    placeholder = para.add_run('（目录将在此处生成：在 Word 中全选后按 F9，或右键选择"更新域"）')
+    set_font(placeholder, size=BODY_SIZE)
+
+    end_run = para.add_run()
+    end_run._r.append(_fld_char('end'))
+    return para
+
+
+def enable_update_fields(doc):
+    """让 Word 打开文档时自动更新所有域(含目录)。
+
+    没有这一句,别人拿到 docx 打开看到的是一行占位提示,得自己按 F9。
+    改 settings.xml 而不是文档正文,因为「是否自动更新域」是文档级设置。
+    """
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    settings = doc.settings.element
+    # 已有就别重复加,重复的 updateFields 会让 Word 提示文档损坏
+    for existing in settings.findall(qn('w:updateFields')):
+        existing.set(qn('w:val'), 'true')
+        return
+    el = OxmlElement('w:updateFields')
+    el.set(qn('w:val'), 'true')
+    settings.append(el)
+
+
 # ------------------------------------------------------------------ 主转换
 
 def convert(md_text, out_path, base_dir=None):
@@ -194,10 +288,19 @@ def convert(md_text, out_path, base_dir=None):
 
     lines = md_text.splitlines()
     i = 0
+    toc_done = False
     while i < len(lines):
         raw = lines[i]
         line = raw.rstrip()
         stripped = line.strip()
+
+        # --- 目录域
+        if _RE_TOC.match(stripped):
+            if not toc_done:
+                add_toc(doc)
+                toc_done = True
+            i += 1
+            continue
 
         # --- 代码块
         if stripped.startswith('```'):
@@ -320,6 +423,10 @@ def convert(md_text, out_path, base_dir=None):
     out_dir = os.path.dirname(os.path.abspath(out_path))
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
+    # 只有文档里真的插了目录域,才需要打开时自动更新域;
+    # 没有目录的文档加这个设置会让 Word 多问一次「是否更新」。
+    if toc_done:
+        enable_update_fields(doc)
     doc.save(out_path)
     return out_path
 
