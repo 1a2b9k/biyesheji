@@ -23,7 +23,545 @@
         "hit_n": 43,
         "lag": 1,
         "days_with_news": 69
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-07-19",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-20",
+          "return": 1.9
+        },
+        {
+          "date": "2026-07-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-21",
+          "return": -1.3
+        },
+        {
+          "date": "2026-07-22",
+          "polarity": -0.5,
+          "mean_value": -0.5,
+          "n": 2,
+          "ret_date": "2026-07-23",
+          "return": 0.93
+        },
+        {
+          "date": "2026-07-23",
+          "polarity": -1.0,
+          "mean_value": -1.0,
+          "n": 1,
+          "ret_date": "2026-07-24",
+          "return": 0.18
+        },
+        {
+          "date": "2026-07-28",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-29",
+          "return": 0.73
+        },
+        {
+          "date": "2026-07-29",
+          "polarity": -0.6667,
+          "mean_value": -0.6667,
+          "n": 3,
+          "ret_date": "2026-07-30",
+          "return": 2.99
+        },
+        {
+          "date": "2026-07-30",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-31",
+          "return": 0.18
+        },
+        {
+          "date": "2026-07-31",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-08-03",
+          "return": -0.09
+        },
+        {
+          "date": "2026-08-04",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-05",
+          "return": -1.7
+        },
+        {
+          "date": "2026-08-05",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-08-06",
+          "return": 0.18
+        },
+        {
+          "date": "2026-08-13",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-08-14",
+          "return": -1.27
+        },
+        {
+          "date": "2026-08-14",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 20,
+          "ret_date": "2026-08-17",
+          "return": -0.09
+        },
+        {
+          "date": "2026-08-15",
+          "polarity": 0.1429,
+          "mean_value": 0.1429,
+          "n": 7,
+          "ret_date": "2026-08-17",
+          "return": -0.09
+        },
+        {
+          "date": "2026-08-16",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-17",
+          "return": -0.09
+        },
+        {
+          "date": "2026-08-17",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 20,
+          "ret_date": "2026-08-18",
+          "return": -0.46
+        },
+        {
+          "date": "2026-08-18",
+          "polarity": 0.1111,
+          "mean_value": 0.1111,
+          "n": 9,
+          "ret_date": "2026-08-19",
+          "return": 2.04
+        },
+        {
+          "date": "2026-08-19",
+          "polarity": -0.5,
+          "mean_value": -0.5,
+          "n": 2,
+          "ret_date": "2026-08-20",
+          "return": 1.18
+        },
+        {
+          "date": "2026-08-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-21",
+          "return": 0.09
+        },
+        {
+          "date": "2026-08-21",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-08-24",
+          "return": 1.34
+        },
+        {
+          "date": "2026-08-22",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-08-24",
+          "return": 1.34
+        },
+        {
+          "date": "2026-08-23",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-08-24",
+          "return": 1.34
+        },
+        {
+          "date": "2026-08-24",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 9,
+          "ret_date": "2026-08-25",
+          "return": 0.27
+        },
+        {
+          "date": "2026-08-25",
+          "polarity": 0.2727,
+          "mean_value": 0.2727,
+          "n": 11,
+          "ret_date": "2026-08-26",
+          "return": 1.23
+        },
+        {
+          "date": "2026-08-26",
+          "polarity": 0.2857,
+          "mean_value": 0.2857,
+          "n": 14,
+          "ret_date": "2026-08-27",
+          "return": -1.22
+        },
+        {
+          "date": "2026-08-27",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 10,
+          "ret_date": "2026-08-28",
+          "return": 0.53
+        },
+        {
+          "date": "2026-08-28",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-08-31",
+          "return": 0.61
+        },
+        {
+          "date": "2026-08-29",
+          "polarity": 0.125,
+          "mean_value": 0.125,
+          "n": 8,
+          "ret_date": "2026-08-31",
+          "return": 0.61
+        },
+        {
+          "date": "2026-08-30",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 5,
+          "ret_date": "2026-08-31",
+          "return": 0.61
+        },
+        {
+          "date": "2026-08-31",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 7,
+          "ret_date": "2026-09-01",
+          "return": 1.74
+        },
+        {
+          "date": "2026-09-01",
+          "polarity": 0.3,
+          "mean_value": 0.3,
+          "n": 20,
+          "ret_date": "2026-09-02",
+          "return": -0.09
+        },
+        {
+          "date": "2026-09-02",
+          "polarity": 0.12,
+          "mean_value": 0.12,
+          "n": 25,
+          "ret_date": "2026-09-03",
+          "return": -0.26
+        },
+        {
+          "date": "2026-09-03",
+          "polarity": 0.12,
+          "mean_value": 0.12,
+          "n": 25,
+          "ret_date": "2026-09-04",
+          "return": 0.09
+        },
+        {
+          "date": "2026-09-04",
+          "polarity": 0.1429,
+          "mean_value": 0.1429,
+          "n": 14,
+          "ret_date": "2026-09-07",
+          "return": -1.63
+        },
+        {
+          "date": "2026-09-05",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-09-07",
+          "return": -1.63
+        },
+        {
+          "date": "2026-09-06",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 5,
+          "ret_date": "2026-09-07",
+          "return": -1.63
+        },
+        {
+          "date": "2026-09-07",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 10,
+          "ret_date": "2026-09-08",
+          "return": 0.7
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.3,
+          "mean_value": 0.3,
+          "n": 10,
+          "ret_date": "2026-09-09",
+          "return": -0.69
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 7,
+          "ret_date": "2026-09-10",
+          "return": 1.31
+        },
+        {
+          "date": "2026-09-10",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 14,
+          "ret_date": "2026-09-11",
+          "return": -0.95
+        },
+        {
+          "date": "2026-09-11",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 9,
+          "ret_date": "2026-09-14",
+          "return": 0.96
+        },
+        {
+          "date": "2026-09-12",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-14",
+          "return": 0.96
+        },
+        {
+          "date": "2026-09-13",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-09-14",
+          "return": 0.96
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": 0.1667,
+          "mean_value": 0.1667,
+          "n": 6,
+          "ret_date": "2026-09-15",
+          "return": -0.26
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": -0.2,
+          "mean_value": -0.2,
+          "n": 5,
+          "ret_date": "2026-09-16",
+          "return": -1.04
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": -0.1818,
+          "mean_value": -0.1818,
+          "n": 11,
+          "ret_date": "2026-09-17",
+          "return": -0.79
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-09-18",
+          "return": 0.79
+        },
+        {
+          "date": "2026-09-18",
+          "polarity": 0.1,
+          "mean_value": 0.1,
+          "n": 10,
+          "ret_date": "2026-09-21",
+          "return": 0.26
+        },
+        {
+          "date": "2026-09-19",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-21",
+          "return": 0.26
+        },
+        {
+          "date": "2026-09-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-21",
+          "return": 0.26
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": 0.1111,
+          "mean_value": 0.1111,
+          "n": 9,
+          "ret_date": "2026-09-22",
+          "return": -0.17
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": -0.2222,
+          "mean_value": -0.2222,
+          "n": 9,
+          "ret_date": "2026-09-23",
+          "return": -0.96
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": 0.125,
+          "mean_value": 0.125,
+          "n": 8,
+          "ret_date": "2026-09-24",
+          "return": -0.44
+        },
+        {
+          "date": "2026-09-24",
+          "polarity": 0.4545,
+          "mean_value": 0.4545,
+          "n": 11,
+          "ret_date": "2026-09-28",
+          "return": 0.0
+        },
+        {
+          "date": "2026-09-27",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": 0.0
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": 0.625,
+          "mean_value": 0.625,
+          "n": 8,
+          "ret_date": "2026-09-29",
+          "return": 0.44
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-30",
+          "return": 1.94
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-10-08",
+          "return": 1.82
+        },
+        {
+          "date": "2026-10-01",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": 1.82
+        },
+        {
+          "date": "2026-10-07",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": 1.82
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": 0.4444,
+          "mean_value": 0.4444,
+          "n": 27,
+          "ret_date": "2026-10-09",
+          "return": -1.61
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 6,
+          "ret_date": "2026-10-12",
+          "return": 1.21
+        },
+        {
+          "date": "2026-10-10",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-10-12",
+          "return": 1.21
+        },
+        {
+          "date": "2026-10-11",
+          "polarity": -0.3333,
+          "mean_value": -0.3333,
+          "n": 3,
+          "ret_date": "2026-10-12",
+          "return": 1.21
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.3913,
+          "mean_value": 0.3913,
+          "n": 23,
+          "ret_date": "2026-10-13",
+          "return": -1.36
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.1429,
+          "mean_value": 0.1429,
+          "n": 7,
+          "ret_date": "2026-10-14",
+          "return": -0.61
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.2222,
+          "mean_value": 0.2222,
+          "n": 9,
+          "ret_date": "2026-10-15",
+          "return": -0.78
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": -0.0909,
+          "mean_value": -0.0909,
+          "n": 11,
+          "ret_date": "2026-10-16",
+          "return": 0.79
+        }
+      ]
     },
     {
       "code": "000651",
@@ -46,7 +584,665 @@
         "hit_n": 53,
         "lag": 1,
         "days_with_news": 84
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-06-17",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 8,
+          "ret_date": "2026-06-18",
+          "return": -1.22
+        },
+        {
+          "date": "2026-06-18",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-06-22",
+          "return": 0.78
+        },
+        {
+          "date": "2026-06-21",
+          "polarity": -0.5,
+          "mean_value": -0.5,
+          "n": 8,
+          "ret_date": "2026-06-22",
+          "return": 0.78
+        },
+        {
+          "date": "2026-06-22",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-06-23",
+          "return": 0.83
+        },
+        {
+          "date": "2026-06-23",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-06-24",
+          "return": -0.48
+        },
+        {
+          "date": "2026-06-24",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-06-25",
+          "return": 0.14
+        },
+        {
+          "date": "2026-06-30",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 7,
+          "ret_date": "2026-07-01",
+          "return": -0.11
+        },
+        {
+          "date": "2026-07-01",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-07-02",
+          "return": 1.52
+        },
+        {
+          "date": "2026-07-06",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-07-07",
+          "return": -1.62
+        },
+        {
+          "date": "2026-07-07",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 5,
+          "ret_date": "2026-07-08",
+          "return": 0.38
+        },
+        {
+          "date": "2026-07-15",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-07-16",
+          "return": 0.0
+        },
+        {
+          "date": "2026-07-20",
+          "polarity": -1.0,
+          "mean_value": -1.0,
+          "n": 1,
+          "ret_date": "2026-07-21",
+          "return": 0.03
+        },
+        {
+          "date": "2026-07-21",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 2,
+          "ret_date": "2026-07-22",
+          "return": 0.7
+        },
+        {
+          "date": "2026-07-22",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-07-23",
+          "return": -0.75
+        },
+        {
+          "date": "2026-07-23",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-07-24",
+          "return": -0.29
+        },
+        {
+          "date": "2026-07-24",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 8,
+          "ret_date": "2026-07-27",
+          "return": -0.18
+        },
+        {
+          "date": "2026-07-25",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-07-27",
+          "return": -0.18
+        },
+        {
+          "date": "2026-07-27",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-07-28",
+          "return": 1.07
+        },
+        {
+          "date": "2026-07-28",
+          "polarity": 0.5714,
+          "mean_value": 0.5714,
+          "n": 7,
+          "ret_date": "2026-07-29",
+          "return": 2.19
+        },
+        {
+          "date": "2026-07-29",
+          "polarity": 0.4118,
+          "mean_value": 0.4118,
+          "n": 17,
+          "ret_date": "2026-07-30",
+          "return": 2.07
+        },
+        {
+          "date": "2026-07-30",
+          "polarity": 0.5385,
+          "mean_value": 0.5385,
+          "n": 13,
+          "ret_date": "2026-07-31",
+          "return": -0.42
+        },
+        {
+          "date": "2026-07-31",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-08-03",
+          "return": -3.33
+        },
+        {
+          "date": "2026-08-01",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-03",
+          "return": -3.33
+        },
+        {
+          "date": "2026-08-03",
+          "polarity": 0.125,
+          "mean_value": 0.125,
+          "n": 8,
+          "ret_date": "2026-08-04",
+          "return": -1.13
+        },
+        {
+          "date": "2026-08-04",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 14,
+          "ret_date": "2026-08-05",
+          "return": -0.65
+        },
+        {
+          "date": "2026-08-05",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-06",
+          "return": -0.05
+        },
+        {
+          "date": "2026-08-06",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 2,
+          "ret_date": "2026-08-07",
+          "return": -0.39
+        },
+        {
+          "date": "2026-08-07",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-08-10",
+          "return": 1.5
+        },
+        {
+          "date": "2026-08-10",
+          "polarity": 0.75,
+          "mean_value": 0.75,
+          "n": 8,
+          "ret_date": "2026-08-11",
+          "return": -0.34
+        },
+        {
+          "date": "2026-08-11",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 6,
+          "ret_date": "2026-08-12",
+          "return": -0.8
+        },
+        {
+          "date": "2026-08-12",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-08-13",
+          "return": 0.03
+        },
+        {
+          "date": "2026-08-13",
+          "polarity": 0.75,
+          "mean_value": 0.75,
+          "n": 4,
+          "ret_date": "2026-08-14",
+          "return": -0.89
+        },
+        {
+          "date": "2026-08-14",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 3,
+          "ret_date": "2026-08-17",
+          "return": -0.03
+        },
+        {
+          "date": "2026-08-15",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-17",
+          "return": -0.03
+        },
+        {
+          "date": "2026-08-16",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-17",
+          "return": -0.03
+        },
+        {
+          "date": "2026-08-17",
+          "polarity": 0.2857,
+          "mean_value": 0.2857,
+          "n": 7,
+          "ret_date": "2026-08-18",
+          "return": 0.45
+        },
+        {
+          "date": "2026-08-18",
+          "polarity": 0.1818,
+          "mean_value": 0.1818,
+          "n": 22,
+          "ret_date": "2026-08-19",
+          "return": 3.31
+        },
+        {
+          "date": "2026-08-19",
+          "polarity": 0.3077,
+          "mean_value": 0.3077,
+          "n": 13,
+          "ret_date": "2026-08-20",
+          "return": 0.25
+        },
+        {
+          "date": "2026-08-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-08-21",
+          "return": -0.46
+        },
+        {
+          "date": "2026-08-21",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-08-24",
+          "return": 0.54
+        },
+        {
+          "date": "2026-08-22",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-24",
+          "return": 0.54
+        },
+        {
+          "date": "2026-08-24",
+          "polarity": 0.7778,
+          "mean_value": 0.7778,
+          "n": 9,
+          "ret_date": "2026-08-25",
+          "return": 0.43
+        },
+        {
+          "date": "2026-08-25",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-08-26",
+          "return": -0.1
+        },
+        {
+          "date": "2026-08-26",
+          "polarity": 0.3,
+          "mean_value": 0.3,
+          "n": 20,
+          "ret_date": "2026-08-27",
+          "return": -0.78
+        },
+        {
+          "date": "2026-08-27",
+          "polarity": -0.0385,
+          "mean_value": -0.0385,
+          "n": 26,
+          "ret_date": "2026-08-28",
+          "return": -0.69
+        },
+        {
+          "date": "2026-08-28",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-08-31",
+          "return": -0.13
+        },
+        {
+          "date": "2026-08-29",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-31",
+          "return": -0.13
+        },
+        {
+          "date": "2026-08-30",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-08-31",
+          "return": -0.13
+        },
+        {
+          "date": "2026-08-31",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 6,
+          "ret_date": "2026-09-01",
+          "return": -1.03
+        },
+        {
+          "date": "2026-09-01",
+          "polarity": 0.6154,
+          "mean_value": 0.6154,
+          "n": 13,
+          "ret_date": "2026-09-02",
+          "return": -0.18
+        },
+        {
+          "date": "2026-09-02",
+          "polarity": -0.1667,
+          "mean_value": -0.1667,
+          "n": 6,
+          "ret_date": "2026-09-03",
+          "return": 0.68
+        },
+        {
+          "date": "2026-09-03",
+          "polarity": 0.6,
+          "mean_value": 0.6,
+          "n": 5,
+          "ret_date": "2026-09-04",
+          "return": 0.62
+        },
+        {
+          "date": "2026-09-04",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 6,
+          "ret_date": "2026-09-07",
+          "return": -0.21
+        },
+        {
+          "date": "2026-09-06",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-07",
+          "return": -0.21
+        },
+        {
+          "date": "2026-09-07",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 7,
+          "ret_date": "2026-09-08",
+          "return": -1.57
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.0667,
+          "mean_value": 0.0667,
+          "n": 15,
+          "ret_date": "2026-09-09",
+          "return": 1.51
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 8,
+          "ret_date": "2026-09-10",
+          "return": 0.21
+        },
+        {
+          "date": "2026-09-10",
+          "polarity": 0.8333,
+          "mean_value": 0.8333,
+          "n": 6,
+          "ret_date": "2026-09-11",
+          "return": -0.54
+        },
+        {
+          "date": "2026-09-11",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-09-14",
+          "return": -0.08
+        },
+        {
+          "date": "2026-09-12",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-09-14",
+          "return": -0.08
+        },
+        {
+          "date": "2026-09-13",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-09-14",
+          "return": -0.08
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 8,
+          "ret_date": "2026-09-15",
+          "return": -1.06
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 3,
+          "ret_date": "2026-09-16",
+          "return": -0.52
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-09-17",
+          "return": -0.31
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-09-18",
+          "return": 1.53
+        },
+        {
+          "date": "2026-09-18",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-09-21",
+          "return": -1.45
+        },
+        {
+          "date": "2026-09-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 7,
+          "ret_date": "2026-09-21",
+          "return": -1.45
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": -0.1667,
+          "mean_value": -0.1667,
+          "n": 6,
+          "ret_date": "2026-09-22",
+          "return": 0.47
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 6,
+          "ret_date": "2026-09-23",
+          "return": 0.47
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-09-24",
+          "return": 0.36
+        },
+        {
+          "date": "2026-09-24",
+          "polarity": 0.125,
+          "mean_value": 0.125,
+          "n": 8,
+          "ret_date": "2026-09-28",
+          "return": -0.26
+        },
+        {
+          "date": "2026-09-25",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -0.26
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 5,
+          "ret_date": "2026-09-29",
+          "return": -0.78
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-30",
+          "return": 0.47
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 6,
+          "ret_date": "2026-10-08",
+          "return": 0.1
+        },
+        {
+          "date": "2026-10-05",
+          "polarity": 0.1667,
+          "mean_value": 0.1667,
+          "n": 6,
+          "ret_date": "2026-10-08",
+          "return": 0.1
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": 0.5833,
+          "mean_value": 0.5833,
+          "n": 12,
+          "ret_date": "2026-10-09",
+          "return": 1.33
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 5,
+          "ret_date": "2026-10-12",
+          "return": 1.96
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 9,
+          "ret_date": "2026-10-13",
+          "return": 0.1
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.4444,
+          "mean_value": 0.4444,
+          "n": 9,
+          "ret_date": "2026-10-14",
+          "return": 0.23
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 9,
+          "ret_date": "2026-10-15",
+          "return": -0.05
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 8,
+          "ret_date": "2026-10-16",
+          "return": -0.53
+        }
+      ]
     },
     {
       "code": "000858",
@@ -69,7 +1265,633 @@
         "hit_n": 49,
         "lag": 1,
         "days_with_news": 80
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-07-08",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-09",
+          "return": -0.84
+        },
+        {
+          "date": "2026-07-09",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-07-10",
+          "return": 4.08
+        },
+        {
+          "date": "2026-07-10",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-13",
+          "return": -1.22
+        },
+        {
+          "date": "2026-07-13",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-07-14",
+          "return": 0.83
+        },
+        {
+          "date": "2026-07-14",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 10,
+          "ret_date": "2026-07-15",
+          "return": 4.24
+        },
+        {
+          "date": "2026-07-15",
+          "polarity": 0.1111,
+          "mean_value": 0.1111,
+          "n": 9,
+          "ret_date": "2026-07-16",
+          "return": 0.11
+        },
+        {
+          "date": "2026-07-16",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-17",
+          "return": -1.54
+        },
+        {
+          "date": "2026-07-17",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 5,
+          "ret_date": "2026-07-20",
+          "return": 4.78
+        },
+        {
+          "date": "2026-07-21",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-07-22",
+          "return": 0.5
+        },
+        {
+          "date": "2026-07-26",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-07-27",
+          "return": 0.45
+        },
+        {
+          "date": "2026-07-27",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-07-28",
+          "return": 1.22
+        },
+        {
+          "date": "2026-07-28",
+          "polarity": -0.0769,
+          "mean_value": -0.0769,
+          "n": 13,
+          "ret_date": "2026-07-29",
+          "return": 0.49
+        },
+        {
+          "date": "2026-07-29",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 6,
+          "ret_date": "2026-07-30",
+          "return": 4.51
+        },
+        {
+          "date": "2026-07-30",
+          "polarity": 0.8,
+          "mean_value": 0.8,
+          "n": 5,
+          "ret_date": "2026-07-31",
+          "return": -0.71
+        },
+        {
+          "date": "2026-07-31",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-03",
+          "return": 0.08
+        },
+        {
+          "date": "2026-08-03",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 14,
+          "ret_date": "2026-08-04",
+          "return": -1.51
+        },
+        {
+          "date": "2026-08-04",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 6,
+          "ret_date": "2026-08-05",
+          "return": -1.8
+        },
+        {
+          "date": "2026-08-05",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-06",
+          "return": -1.35
+        },
+        {
+          "date": "2026-08-06",
+          "polarity": 0.7273,
+          "mean_value": 0.7273,
+          "n": 11,
+          "ret_date": "2026-08-07",
+          "return": 0.85
+        },
+        {
+          "date": "2026-08-07",
+          "polarity": 0.75,
+          "mean_value": 0.75,
+          "n": 4,
+          "ret_date": "2026-08-10",
+          "return": 1.44
+        },
+        {
+          "date": "2026-08-09",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-08-10",
+          "return": 1.44
+        },
+        {
+          "date": "2026-08-10",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 5,
+          "ret_date": "2026-08-11",
+          "return": -1.56
+        },
+        {
+          "date": "2026-08-11",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-08-12",
+          "return": 0.37
+        },
+        {
+          "date": "2026-08-12",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 7,
+          "ret_date": "2026-08-13",
+          "return": -0.21
+        },
+        {
+          "date": "2026-08-13",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 7,
+          "ret_date": "2026-08-14",
+          "return": -1.82
+        },
+        {
+          "date": "2026-08-14",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 6,
+          "ret_date": "2026-08-17",
+          "return": -1.63
+        },
+        {
+          "date": "2026-08-15",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-17",
+          "return": -1.63
+        },
+        {
+          "date": "2026-08-16",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-17",
+          "return": -1.63
+        },
+        {
+          "date": "2026-08-17",
+          "polarity": -0.4286,
+          "mean_value": -0.4286,
+          "n": 7,
+          "ret_date": "2026-08-18",
+          "return": 0.01
+        },
+        {
+          "date": "2026-08-18",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 4,
+          "ret_date": "2026-08-19",
+          "return": -0.92
+        },
+        {
+          "date": "2026-08-19",
+          "polarity": -0.2,
+          "mean_value": -0.2,
+          "n": 5,
+          "ret_date": "2026-08-20",
+          "return": 0.28
+        },
+        {
+          "date": "2026-08-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-21",
+          "return": -1.25
+        },
+        {
+          "date": "2026-08-21",
+          "polarity": -0.5,
+          "mean_value": -0.5,
+          "n": 2,
+          "ret_date": "2026-08-24",
+          "return": 0.41
+        },
+        {
+          "date": "2026-08-24",
+          "polarity": 0.1667,
+          "mean_value": 0.1667,
+          "n": 6,
+          "ret_date": "2026-08-25",
+          "return": 0.06
+        },
+        {
+          "date": "2026-08-25",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-08-26",
+          "return": 0.53
+        },
+        {
+          "date": "2026-08-26",
+          "polarity": -0.25,
+          "mean_value": -0.25,
+          "n": 4,
+          "ret_date": "2026-08-27",
+          "return": -1.08
+        },
+        {
+          "date": "2026-08-27",
+          "polarity": 0.0556,
+          "mean_value": 0.0556,
+          "n": 18,
+          "ret_date": "2026-08-28",
+          "return": 0.55
+        },
+        {
+          "date": "2026-08-28",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 24,
+          "ret_date": "2026-08-31",
+          "return": -0.34
+        },
+        {
+          "date": "2026-08-29",
+          "polarity": -0.1667,
+          "mean_value": -0.1667,
+          "n": 6,
+          "ret_date": "2026-08-31",
+          "return": -0.34
+        },
+        {
+          "date": "2026-08-30",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-08-31",
+          "return": -0.34
+        },
+        {
+          "date": "2026-08-31",
+          "polarity": 0.0833,
+          "mean_value": 0.0833,
+          "n": 12,
+          "ret_date": "2026-09-01",
+          "return": 0.79
+        },
+        {
+          "date": "2026-09-01",
+          "polarity": 0.5833,
+          "mean_value": 0.5833,
+          "n": 12,
+          "ret_date": "2026-09-02",
+          "return": -1.41
+        },
+        {
+          "date": "2026-09-02",
+          "polarity": 0.2759,
+          "mean_value": 0.2759,
+          "n": 29,
+          "ret_date": "2026-09-03",
+          "return": -0.2
+        },
+        {
+          "date": "2026-09-03",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 14,
+          "ret_date": "2026-09-04",
+          "return": 1.84
+        },
+        {
+          "date": "2026-09-04",
+          "polarity": 0.7,
+          "mean_value": 0.7,
+          "n": 10,
+          "ret_date": "2026-09-07",
+          "return": -0.72
+        },
+        {
+          "date": "2026-09-05",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-07",
+          "return": -0.72
+        },
+        {
+          "date": "2026-09-06",
+          "polarity": -0.3333,
+          "mean_value": -0.3333,
+          "n": 3,
+          "ret_date": "2026-09-07",
+          "return": -0.72
+        },
+        {
+          "date": "2026-09-07",
+          "polarity": 0.6,
+          "mean_value": 0.6,
+          "n": 5,
+          "ret_date": "2026-09-08",
+          "return": 0.27
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.1429,
+          "mean_value": 0.1429,
+          "n": 7,
+          "ret_date": "2026-09-09",
+          "return": -0.68
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 2,
+          "ret_date": "2026-09-10",
+          "return": -0.96
+        },
+        {
+          "date": "2026-09-10",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-09-11",
+          "return": -1.04
+        },
+        {
+          "date": "2026-09-11",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-09-14",
+          "return": 0.14
+        },
+        {
+          "date": "2026-09-13",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-09-14",
+          "return": 0.14
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 4,
+          "ret_date": "2026-09-15",
+          "return": -0.21
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 6,
+          "ret_date": "2026-09-16",
+          "return": -0.63
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-09-17",
+          "return": -0.19
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": -0.4,
+          "mean_value": -0.4,
+          "n": 5,
+          "ret_date": "2026-09-18",
+          "return": 1.26
+        },
+        {
+          "date": "2026-09-18",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-09-21",
+          "return": 0.39
+        },
+        {
+          "date": "2026-09-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-21",
+          "return": 0.39
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": 0.2857,
+          "mean_value": 0.2857,
+          "n": 7,
+          "ret_date": "2026-09-22",
+          "return": 0.38
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 5,
+          "ret_date": "2026-09-23",
+          "return": -0.28
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 12,
+          "ret_date": "2026-09-24",
+          "return": -0.95
+        },
+        {
+          "date": "2026-09-24",
+          "polarity": 0.1429,
+          "mean_value": 0.1429,
+          "n": 7,
+          "ret_date": "2026-09-28",
+          "return": -1.09
+        },
+        {
+          "date": "2026-09-25",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -1.09
+        },
+        {
+          "date": "2026-09-26",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -1.09
+        },
+        {
+          "date": "2026-09-27",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-28",
+          "return": -1.09
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": 0.7,
+          "mean_value": 0.7,
+          "n": 10,
+          "ret_date": "2026-09-29",
+          "return": -0.2
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 4,
+          "ret_date": "2026-09-30",
+          "return": 1.88
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 0.5556,
+          "mean_value": 0.5556,
+          "n": 9,
+          "ret_date": "2026-10-08",
+          "return": 0.11
+        },
+        {
+          "date": "2026-10-07",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": 0.11
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 5,
+          "ret_date": "2026-10-09",
+          "return": 0.6
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.7143,
+          "mean_value": 0.7143,
+          "n": 14,
+          "ret_date": "2026-10-12",
+          "return": 0.71
+        },
+        {
+          "date": "2026-10-10",
+          "polarity": -0.2857,
+          "mean_value": -0.2857,
+          "n": 7,
+          "ret_date": "2026-10-12",
+          "return": 0.71
+        },
+        {
+          "date": "2026-10-11",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-12",
+          "return": 0.71
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.1818,
+          "mean_value": 0.1818,
+          "n": 11,
+          "ret_date": "2026-10-13",
+          "return": -0.84
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.1,
+          "mean_value": 0.1,
+          "n": 10,
+          "ret_date": "2026-10-14",
+          "return": 0.51
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.1429,
+          "mean_value": 0.1429,
+          "n": 7,
+          "ret_date": "2026-10-15",
+          "return": 0.68
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 10,
+          "ret_date": "2026-10-16",
+          "return": 1.08
+        }
+      ]
     },
     {
       "code": "002415",
@@ -92,7 +1914,617 @@
         "hit_n": 47,
         "lag": 1,
         "days_with_news": 78
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-07-07",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-08",
+          "return": 1.47
+        },
+        {
+          "date": "2026-07-08",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-09",
+          "return": 3.08
+        },
+        {
+          "date": "2026-07-09",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-10",
+          "return": -2.7
+        },
+        {
+          "date": "2026-07-10",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-07-13",
+          "return": -3.72
+        },
+        {
+          "date": "2026-07-11",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-13",
+          "return": -3.72
+        },
+        {
+          "date": "2026-07-13",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-14",
+          "return": 1.19
+        },
+        {
+          "date": "2026-07-17",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-07-20",
+          "return": 3.47
+        },
+        {
+          "date": "2026-07-18",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-20",
+          "return": 3.47
+        },
+        {
+          "date": "2026-07-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 9,
+          "ret_date": "2026-07-21",
+          "return": 2.46
+        },
+        {
+          "date": "2026-07-21",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-07-22",
+          "return": 1.5
+        },
+        {
+          "date": "2026-07-24",
+          "polarity": 0.0588,
+          "mean_value": 0.0588,
+          "n": 17,
+          "ret_date": "2026-07-27",
+          "return": 4.29
+        },
+        {
+          "date": "2026-07-25",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 6,
+          "ret_date": "2026-07-27",
+          "return": 4.29
+        },
+        {
+          "date": "2026-07-26",
+          "polarity": 0.75,
+          "mean_value": 0.75,
+          "n": 4,
+          "ret_date": "2026-07-27",
+          "return": 4.29
+        },
+        {
+          "date": "2026-07-27",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 5,
+          "ret_date": "2026-07-28",
+          "return": -2.33
+        },
+        {
+          "date": "2026-07-28",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-07-29",
+          "return": -1.12
+        },
+        {
+          "date": "2026-07-31",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-03",
+          "return": 0.81
+        },
+        {
+          "date": "2026-08-02",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-03",
+          "return": 0.81
+        },
+        {
+          "date": "2026-08-07",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-10",
+          "return": 0.55
+        },
+        {
+          "date": "2026-08-08",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-10",
+          "return": 0.55
+        },
+        {
+          "date": "2026-08-10",
+          "polarity": 0.4444,
+          "mean_value": 0.4444,
+          "n": 9,
+          "ret_date": "2026-08-11",
+          "return": -2.9
+        },
+        {
+          "date": "2026-08-11",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 6,
+          "ret_date": "2026-08-12",
+          "return": 0.28
+        },
+        {
+          "date": "2026-08-12",
+          "polarity": 0.2222,
+          "mean_value": 0.2222,
+          "n": 9,
+          "ret_date": "2026-08-13",
+          "return": -2.26
+        },
+        {
+          "date": "2026-08-13",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 10,
+          "ret_date": "2026-08-14",
+          "return": -2.22
+        },
+        {
+          "date": "2026-08-14",
+          "polarity": 0.8,
+          "mean_value": 0.8,
+          "n": 5,
+          "ret_date": "2026-08-17",
+          "return": 0.61
+        },
+        {
+          "date": "2026-08-15",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-08-17",
+          "return": 0.61
+        },
+        {
+          "date": "2026-08-16",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 4,
+          "ret_date": "2026-08-17",
+          "return": 0.61
+        },
+        {
+          "date": "2026-08-17",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 8,
+          "ret_date": "2026-08-18",
+          "return": 0.26
+        },
+        {
+          "date": "2026-08-18",
+          "polarity": 0.5385,
+          "mean_value": 0.5385,
+          "n": 13,
+          "ret_date": "2026-08-19",
+          "return": -2.14
+        },
+        {
+          "date": "2026-08-19",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 7,
+          "ret_date": "2026-08-20",
+          "return": 0.53
+        },
+        {
+          "date": "2026-08-20",
+          "polarity": 0.625,
+          "mean_value": 0.625,
+          "n": 8,
+          "ret_date": "2026-08-21",
+          "return": 0.97
+        },
+        {
+          "date": "2026-08-21",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-08-24",
+          "return": -0.73
+        },
+        {
+          "date": "2026-08-22",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-24",
+          "return": -0.73
+        },
+        {
+          "date": "2026-08-23",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-24",
+          "return": -0.73
+        },
+        {
+          "date": "2026-08-24",
+          "polarity": 0.5882,
+          "mean_value": 0.5882,
+          "n": 17,
+          "ret_date": "2026-08-25",
+          "return": 1.76
+        },
+        {
+          "date": "2026-08-25",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 9,
+          "ret_date": "2026-08-26",
+          "return": 0.09
+        },
+        {
+          "date": "2026-08-26",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 6,
+          "ret_date": "2026-08-27",
+          "return": 1.47
+        },
+        {
+          "date": "2026-08-27",
+          "polarity": 0.3636,
+          "mean_value": 0.3636,
+          "n": 11,
+          "ret_date": "2026-08-28",
+          "return": -0.54
+        },
+        {
+          "date": "2026-08-28",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 5,
+          "ret_date": "2026-08-31",
+          "return": 1.97
+        },
+        {
+          "date": "2026-08-30",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-31",
+          "return": 1.97
+        },
+        {
+          "date": "2026-08-31",
+          "polarity": 0.5714,
+          "mean_value": 0.5714,
+          "n": 7,
+          "ret_date": "2026-09-01",
+          "return": 0.36
+        },
+        {
+          "date": "2026-09-01",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 10,
+          "ret_date": "2026-09-02",
+          "return": -2.06
+        },
+        {
+          "date": "2026-09-02",
+          "polarity": 0.1429,
+          "mean_value": 0.1429,
+          "n": 7,
+          "ret_date": "2026-09-03",
+          "return": -0.57
+        },
+        {
+          "date": "2026-09-03",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-09-04",
+          "return": -0.31
+        },
+        {
+          "date": "2026-09-04",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-09-07",
+          "return": 0.0
+        },
+        {
+          "date": "2026-09-06",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-07",
+          "return": 0.0
+        },
+        {
+          "date": "2026-09-07",
+          "polarity": 0.1481,
+          "mean_value": 0.1481,
+          "n": 27,
+          "ret_date": "2026-09-08",
+          "return": -3.5
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.1923,
+          "mean_value": 0.1923,
+          "n": 26,
+          "ret_date": "2026-09-09",
+          "return": 0.3
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 6,
+          "ret_date": "2026-09-10",
+          "return": -0.71
+        },
+        {
+          "date": "2026-09-10",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-11",
+          "return": -0.78
+        },
+        {
+          "date": "2026-09-11",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 8,
+          "ret_date": "2026-09-14",
+          "return": -0.27
+        },
+        {
+          "date": "2026-09-12",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 3,
+          "ret_date": "2026-09-14",
+          "return": -0.27
+        },
+        {
+          "date": "2026-09-13",
+          "polarity": -0.5,
+          "mean_value": -0.5,
+          "n": 2,
+          "ret_date": "2026-09-14",
+          "return": -0.27
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": 0.4444,
+          "mean_value": 0.4444,
+          "n": 9,
+          "ret_date": "2026-09-15",
+          "return": -1.18
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": 0.375,
+          "mean_value": 0.375,
+          "n": 8,
+          "ret_date": "2026-09-16",
+          "return": -0.49
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": 0.375,
+          "mean_value": 0.375,
+          "n": 8,
+          "ret_date": "2026-09-17",
+          "return": -0.49
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 5,
+          "ret_date": "2026-09-18",
+          "return": 1.51
+        },
+        {
+          "date": "2026-09-18",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 6,
+          "ret_date": "2026-09-21",
+          "return": -1.09
+        },
+        {
+          "date": "2026-09-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-21",
+          "return": -1.09
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 5,
+          "ret_date": "2026-09-22",
+          "return": 1.84
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": 0.6875,
+          "mean_value": 0.6875,
+          "n": 16,
+          "ret_date": "2026-09-23",
+          "return": -0.21
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 5,
+          "ret_date": "2026-09-24",
+          "return": -1.45
+        },
+        {
+          "date": "2026-09-24",
+          "polarity": 0.4615,
+          "mean_value": 0.4615,
+          "n": 13,
+          "ret_date": "2026-09-28",
+          "return": -1.44
+        },
+        {
+          "date": "2026-09-25",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -1.44
+        },
+        {
+          "date": "2026-09-26",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -1.44
+        },
+        {
+          "date": "2026-09-27",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -1.44
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 6,
+          "ret_date": "2026-09-29",
+          "return": -0.16
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.75,
+          "mean_value": 0.75,
+          "n": 4,
+          "ret_date": "2026-09-30",
+          "return": 1.09
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-10-08",
+          "return": 1.66
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": 0.6,
+          "mean_value": 0.6,
+          "n": 5,
+          "ret_date": "2026-10-09",
+          "return": -0.09
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.3,
+          "mean_value": 0.3,
+          "n": 10,
+          "ret_date": "2026-10-12",
+          "return": 0.82
+        },
+        {
+          "date": "2026-10-10",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-10-12",
+          "return": 0.82
+        },
+        {
+          "date": "2026-10-11",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-10-12",
+          "return": 0.82
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.375,
+          "mean_value": 0.375,
+          "n": 8,
+          "ret_date": "2026-10-13",
+          "return": 1.14
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.1818,
+          "mean_value": 0.1818,
+          "n": 11,
+          "ret_date": "2026-10-14",
+          "return": 1.31
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.4444,
+          "mean_value": 0.4444,
+          "n": 9,
+          "ret_date": "2026-10-15",
+          "return": -0.59
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": 0.5556,
+          "mean_value": 0.5556,
+          "n": 9,
+          "ret_date": "2026-10-16",
+          "return": -0.59
+        }
+      ]
     },
     {
       "code": "002594",
@@ -115,7 +2547,329 @@
         "hit_n": 30,
         "lag": 1,
         "days_with_news": 42
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-08-31",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-01",
+          "return": 0.58
+        },
+        {
+          "date": "2026-09-01",
+          "polarity": 0.125,
+          "mean_value": 0.125,
+          "n": 8,
+          "ret_date": "2026-09-02",
+          "return": -2.15
+        },
+        {
+          "date": "2026-09-02",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 7,
+          "ret_date": "2026-09-03",
+          "return": 0.59
+        },
+        {
+          "date": "2026-09-03",
+          "polarity": 0.0769,
+          "mean_value": 0.0769,
+          "n": 13,
+          "ret_date": "2026-09-04",
+          "return": 0.1
+        },
+        {
+          "date": "2026-09-04",
+          "polarity": 0.3,
+          "mean_value": 0.3,
+          "n": 10,
+          "ret_date": "2026-09-07",
+          "return": -1.02
+        },
+        {
+          "date": "2026-09-05",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-07",
+          "return": -1.02
+        },
+        {
+          "date": "2026-09-07",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-09-08",
+          "return": 0.07
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 9,
+          "ret_date": "2026-09-09",
+          "return": -0.8
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 7,
+          "ret_date": "2026-09-10",
+          "return": -2.75
+        },
+        {
+          "date": "2026-09-10",
+          "polarity": 0.2727,
+          "mean_value": 0.2727,
+          "n": 11,
+          "ret_date": "2026-09-11",
+          "return": 0.57
+        },
+        {
+          "date": "2026-09-11",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-14",
+          "return": 1.7
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": -0.1111,
+          "mean_value": -0.1111,
+          "n": 9,
+          "ret_date": "2026-09-15",
+          "return": -1.32
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": 0.1429,
+          "mean_value": 0.1429,
+          "n": 7,
+          "ret_date": "2026-09-16",
+          "return": -0.4
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-09-17",
+          "return": 1.2
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": 0.3077,
+          "mean_value": 0.3077,
+          "n": 13,
+          "ret_date": "2026-09-18",
+          "return": -0.79
+        },
+        {
+          "date": "2026-09-18",
+          "polarity": -0.1,
+          "mean_value": -0.1,
+          "n": 10,
+          "ret_date": "2026-09-21",
+          "return": 1.09
+        },
+        {
+          "date": "2026-09-19",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-21",
+          "return": 1.09
+        },
+        {
+          "date": "2026-09-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-21",
+          "return": 1.09
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": 0.1667,
+          "mean_value": 0.1667,
+          "n": 6,
+          "ret_date": "2026-09-22",
+          "return": 1.6
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-09-23",
+          "return": -0.84
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": -0.5,
+          "mean_value": -0.5,
+          "n": 2,
+          "ret_date": "2026-09-24",
+          "return": -1.76
+        },
+        {
+          "date": "2026-09-24",
+          "polarity": 0.2857,
+          "mean_value": 0.2857,
+          "n": 7,
+          "ret_date": "2026-09-28",
+          "return": -1.17
+        },
+        {
+          "date": "2026-09-25",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-09-28",
+          "return": -1.17
+        },
+        {
+          "date": "2026-09-26",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -1.17
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-09-29",
+          "return": -1.6
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.3077,
+          "mean_value": 0.3077,
+          "n": 13,
+          "ret_date": "2026-09-30",
+          "return": 1.57
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 10,
+          "ret_date": "2026-10-08",
+          "return": -1.91
+        },
+        {
+          "date": "2026-10-01",
+          "polarity": 0.1667,
+          "mean_value": 0.1667,
+          "n": 6,
+          "ret_date": "2026-10-08",
+          "return": -1.91
+        },
+        {
+          "date": "2026-10-02",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -1.91
+        },
+        {
+          "date": "2026-10-03",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -1.91
+        },
+        {
+          "date": "2026-10-06",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 3,
+          "ret_date": "2026-10-08",
+          "return": -1.91
+        },
+        {
+          "date": "2026-10-07",
+          "polarity": -0.1667,
+          "mean_value": -0.1667,
+          "n": 6,
+          "ret_date": "2026-10-08",
+          "return": -1.91
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": 0.2941,
+          "mean_value": 0.2941,
+          "n": 17,
+          "ret_date": "2026-10-09",
+          "return": 3.95
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.413,
+          "mean_value": 0.413,
+          "n": 46,
+          "ret_date": "2026-10-12",
+          "return": -0.41
+        },
+        {
+          "date": "2026-10-10",
+          "polarity": -0.1579,
+          "mean_value": -0.1579,
+          "n": 19,
+          "ret_date": "2026-10-12",
+          "return": -0.41
+        },
+        {
+          "date": "2026-10-11",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 4,
+          "ret_date": "2026-10-12",
+          "return": -0.41
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.2245,
+          "mean_value": 0.2245,
+          "n": 49,
+          "ret_date": "2026-10-13",
+          "return": -2.86
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.0227,
+          "mean_value": 0.0227,
+          "n": 44,
+          "ret_date": "2026-10-14",
+          "return": -0.9
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.1091,
+          "mean_value": 0.1091,
+          "n": 55,
+          "ret_date": "2026-10-15",
+          "return": 0.98
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": 0.1111,
+          "mean_value": 0.1111,
+          "n": 27,
+          "ret_date": "2026-10-16",
+          "return": 0.58
+        }
+      ]
     },
     {
       "code": "300750",
@@ -138,7 +2892,297 @@
         "hit_n": 28,
         "lag": 1,
         "days_with_news": 38
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-09-06",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-09-07",
+          "return": -0.8
+        },
+        {
+          "date": "2026-09-07",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 5,
+          "ret_date": "2026-09-08",
+          "return": -3.65
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 12,
+          "ret_date": "2026-09-09",
+          "return": 0.4
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": 0.0714,
+          "mean_value": 0.0714,
+          "n": 14,
+          "ret_date": "2026-09-10",
+          "return": 0.36
+        },
+        {
+          "date": "2026-09-10",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-09-11",
+          "return": -2.23
+        },
+        {
+          "date": "2026-09-11",
+          "polarity": 0.5263,
+          "mean_value": 0.5263,
+          "n": 19,
+          "ret_date": "2026-09-14",
+          "return": 2.0
+        },
+        {
+          "date": "2026-09-12",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-09-14",
+          "return": 2.0
+        },
+        {
+          "date": "2026-09-13",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-09-14",
+          "return": 2.0
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": 0.5714,
+          "mean_value": 0.5714,
+          "n": 7,
+          "ret_date": "2026-09-15",
+          "return": -6.16
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": -0.2647,
+          "mean_value": -0.2647,
+          "n": 34,
+          "ret_date": "2026-09-16",
+          "return": -3.44
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": -0.2581,
+          "mean_value": -0.2581,
+          "n": 31,
+          "ret_date": "2026-09-17",
+          "return": -0.39
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": -0.0714,
+          "mean_value": -0.0714,
+          "n": 28,
+          "ret_date": "2026-09-18",
+          "return": -0.77
+        },
+        {
+          "date": "2026-09-18",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 12,
+          "ret_date": "2026-09-21",
+          "return": -1.61
+        },
+        {
+          "date": "2026-09-19",
+          "polarity": -0.2,
+          "mean_value": -0.2,
+          "n": 5,
+          "ret_date": "2026-09-21",
+          "return": -1.61
+        },
+        {
+          "date": "2026-09-20",
+          "polarity": -0.1,
+          "mean_value": -0.1,
+          "n": 10,
+          "ret_date": "2026-09-21",
+          "return": -1.61
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": 0.3529,
+          "mean_value": 0.3529,
+          "n": 17,
+          "ret_date": "2026-09-22",
+          "return": 2.53
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 20,
+          "ret_date": "2026-09-23",
+          "return": -1.19
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": 0.2857,
+          "mean_value": 0.2857,
+          "n": 14,
+          "ret_date": "2026-09-24",
+          "return": -2.49
+        },
+        {
+          "date": "2026-09-24",
+          "polarity": 0.1667,
+          "mean_value": 0.1667,
+          "n": 12,
+          "ret_date": "2026-09-28",
+          "return": -0.51
+        },
+        {
+          "date": "2026-09-25",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -0.51
+        },
+        {
+          "date": "2026-09-26",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -0.51
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": -0.2143,
+          "mean_value": -0.2143,
+          "n": 14,
+          "ret_date": "2026-09-29",
+          "return": -1.78
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.4444,
+          "mean_value": 0.4444,
+          "n": 9,
+          "ret_date": "2026-09-30",
+          "return": 1.5
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 0.2727,
+          "mean_value": 0.2727,
+          "n": 11,
+          "ret_date": "2026-10-08",
+          "return": -1.5
+        },
+        {
+          "date": "2026-10-02",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-10-08",
+          "return": -1.5
+        },
+        {
+          "date": "2026-10-05",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -1.5
+        },
+        {
+          "date": "2026-10-06",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-10-08",
+          "return": -1.5
+        },
+        {
+          "date": "2026-10-07",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-10-08",
+          "return": -1.5
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": 0.3571,
+          "mean_value": 0.3571,
+          "n": 14,
+          "ret_date": "2026-10-09",
+          "return": 3.84
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 14,
+          "ret_date": "2026-10-12",
+          "return": 0.21
+        },
+        {
+          "date": "2026-10-10",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-10-12",
+          "return": 0.21
+        },
+        {
+          "date": "2026-10-11",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 10,
+          "ret_date": "2026-10-12",
+          "return": 0.21
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.3889,
+          "mean_value": 0.3889,
+          "n": 18,
+          "ret_date": "2026-10-13",
+          "return": -3.11
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.16,
+          "mean_value": 0.16,
+          "n": 25,
+          "ret_date": "2026-10-14",
+          "return": -3.11
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.28,
+          "mean_value": 0.28,
+          "n": 25,
+          "ret_date": "2026-10-15",
+          "return": -0.58
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": 0.1356,
+          "mean_value": 0.1356,
+          "n": 59,
+          "ret_date": "2026-10-16",
+          "return": -0.54
+        }
+      ]
     },
     {
       "code": "600030",
@@ -161,7 +3205,289 @@
         "hit_n": 27,
         "lag": 1,
         "days_with_news": 37
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-09-06",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-07",
+          "return": -1.14
+        },
+        {
+          "date": "2026-09-07",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 6,
+          "ret_date": "2026-09-08",
+          "return": -1.19
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.5714,
+          "mean_value": 0.5714,
+          "n": 7,
+          "ret_date": "2026-09-09",
+          "return": -0.04
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 3,
+          "ret_date": "2026-09-10",
+          "return": 0.99
+        },
+        {
+          "date": "2026-09-10",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 9,
+          "ret_date": "2026-09-11",
+          "return": -2.46
+        },
+        {
+          "date": "2026-09-11",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-09-14",
+          "return": -1.15
+        },
+        {
+          "date": "2026-09-12",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-14",
+          "return": -1.15
+        },
+        {
+          "date": "2026-09-13",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-14",
+          "return": -1.15
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": 0.7143,
+          "mean_value": 0.7143,
+          "n": 7,
+          "ret_date": "2026-09-15",
+          "return": -0.98
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": 0.3636,
+          "mean_value": 0.3636,
+          "n": 11,
+          "ret_date": "2026-09-16",
+          "return": 0.38
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": 0.5714,
+          "mean_value": 0.5714,
+          "n": 7,
+          "ret_date": "2026-09-17",
+          "return": -1.1
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": 0.2857,
+          "mean_value": 0.2857,
+          "n": 7,
+          "ret_date": "2026-09-18",
+          "return": 1.45
+        },
+        {
+          "date": "2026-09-18",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-21",
+          "return": 0.75
+        },
+        {
+          "date": "2026-09-19",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-09-21",
+          "return": 0.75
+        },
+        {
+          "date": "2026-09-20",
+          "polarity": 0.6,
+          "mean_value": 0.6,
+          "n": 5,
+          "ret_date": "2026-09-21",
+          "return": 0.75
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 8,
+          "ret_date": "2026-09-22",
+          "return": 0.56
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 3,
+          "ret_date": "2026-09-23",
+          "return": -0.37
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 20,
+          "ret_date": "2026-09-24",
+          "return": -1.87
+        },
+        {
+          "date": "2026-09-24",
+          "polarity": 0.5714,
+          "mean_value": 0.5714,
+          "n": 7,
+          "ret_date": "2026-09-28",
+          "return": -1.33
+        },
+        {
+          "date": "2026-09-25",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 2,
+          "ret_date": "2026-09-28",
+          "return": -1.33
+        },
+        {
+          "date": "2026-09-27",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-28",
+          "return": -1.33
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": 0.0323,
+          "mean_value": 0.0323,
+          "n": 31,
+          "ret_date": "2026-09-29",
+          "return": -0.46
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 8,
+          "ret_date": "2026-09-30",
+          "return": 0.15
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 0.125,
+          "mean_value": 0.125,
+          "n": 8,
+          "ret_date": "2026-10-08",
+          "return": -1.78
+        },
+        {
+          "date": "2026-10-01",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -1.78
+        },
+        {
+          "date": "2026-10-03",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-10-08",
+          "return": -1.78
+        },
+        {
+          "date": "2026-10-05",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -1.78
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": 0.4444,
+          "mean_value": 0.4444,
+          "n": 9,
+          "ret_date": "2026-10-09",
+          "return": 2.01
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.15,
+          "mean_value": 0.15,
+          "n": 20,
+          "ret_date": "2026-10-12",
+          "return": 0.58
+        },
+        {
+          "date": "2026-10-10",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 4,
+          "ret_date": "2026-10-12",
+          "return": 0.58
+        },
+        {
+          "date": "2026-10-11",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 5,
+          "ret_date": "2026-10-12",
+          "return": 0.58
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.3235,
+          "mean_value": 0.3235,
+          "n": 34,
+          "ret_date": "2026-10-13",
+          "return": -0.27
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.375,
+          "mean_value": 0.375,
+          "n": 40,
+          "ret_date": "2026-10-14",
+          "return": -0.42
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.2545,
+          "mean_value": 0.2545,
+          "n": 55,
+          "ret_date": "2026-10-15",
+          "return": 1.35
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": 0.2051,
+          "mean_value": 0.2051,
+          "n": 78,
+          "ret_date": "2026-10-16",
+          "return": -0.42
+        }
+      ]
     },
     {
       "code": "600036",
@@ -184,7 +3510,377 @@
         "hit_n": 26,
         "lag": 1,
         "days_with_news": 48
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-08-11",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-08-12",
+          "return": -0.64
+        },
+        {
+          "date": "2026-08-12",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-13",
+          "return": 0.18
+        },
+        {
+          "date": "2026-08-17",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-18",
+          "return": 0.24
+        },
+        {
+          "date": "2026-08-18",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-08-19",
+          "return": 2.25
+        },
+        {
+          "date": "2026-08-19",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-20",
+          "return": -0.74
+        },
+        {
+          "date": "2026-08-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-21",
+          "return": 0.1
+        },
+        {
+          "date": "2026-08-26",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-08-27",
+          "return": -0.55
+        },
+        {
+          "date": "2026-08-27",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-28",
+          "return": -0.58
+        },
+        {
+          "date": "2026-08-28",
+          "polarity": 0.1,
+          "mean_value": 0.1,
+          "n": 10,
+          "ret_date": "2026-08-31",
+          "return": 1.96
+        },
+        {
+          "date": "2026-08-29",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-08-31",
+          "return": 1.96
+        },
+        {
+          "date": "2026-08-31",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 11,
+          "ret_date": "2026-09-01",
+          "return": 1.84
+        },
+        {
+          "date": "2026-09-01",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-02",
+          "return": 0.02
+        },
+        {
+          "date": "2026-09-07",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 8,
+          "ret_date": "2026-09-08",
+          "return": -0.41
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-09-09",
+          "return": 0.24
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-10",
+          "return": 1.39
+        },
+        {
+          "date": "2026-09-10",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-11",
+          "return": -0.53
+        },
+        {
+          "date": "2026-09-11",
+          "polarity": -0.1429,
+          "mean_value": -0.1429,
+          "n": 7,
+          "ret_date": "2026-09-14",
+          "return": 1.16
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-09-15",
+          "return": -1.75
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": 0.1429,
+          "mean_value": 0.1429,
+          "n": 7,
+          "ret_date": "2026-09-16",
+          "return": -0.44
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": -0.1429,
+          "mean_value": -0.1429,
+          "n": 7,
+          "ret_date": "2026-09-17",
+          "return": -0.78
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 8,
+          "ret_date": "2026-09-18",
+          "return": -0.02
+        },
+        {
+          "date": "2026-09-18",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 6,
+          "ret_date": "2026-09-21",
+          "return": 1.11
+        },
+        {
+          "date": "2026-09-19",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-21",
+          "return": 1.11
+        },
+        {
+          "date": "2026-09-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-21",
+          "return": 1.11
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": 0.1667,
+          "mean_value": 0.1667,
+          "n": 24,
+          "ret_date": "2026-09-22",
+          "return": -0.54
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": 0.1111,
+          "mean_value": 0.1111,
+          "n": 18,
+          "ret_date": "2026-09-23",
+          "return": -0.54
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": 0.1818,
+          "mean_value": 0.1818,
+          "n": 22,
+          "ret_date": "2026-09-24",
+          "return": 0.22
+        },
+        {
+          "date": "2026-09-24",
+          "polarity": 0.5294,
+          "mean_value": 0.5294,
+          "n": 17,
+          "ret_date": "2026-09-28",
+          "return": -0.12
+        },
+        {
+          "date": "2026-09-26",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -0.12
+        },
+        {
+          "date": "2026-09-27",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-28",
+          "return": -0.12
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": 0.4706,
+          "mean_value": 0.4706,
+          "n": 17,
+          "ret_date": "2026-09-29",
+          "return": -0.32
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.4091,
+          "mean_value": 0.4091,
+          "n": 22,
+          "ret_date": "2026-09-30",
+          "return": 1.85
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 0.1515,
+          "mean_value": 0.1515,
+          "n": 33,
+          "ret_date": "2026-10-08",
+          "return": 1.09
+        },
+        {
+          "date": "2026-10-01",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-10-08",
+          "return": 1.09
+        },
+        {
+          "date": "2026-10-02",
+          "polarity": -1.0,
+          "mean_value": -1.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": 1.09
+        },
+        {
+          "date": "2026-10-03",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": 1.09
+        },
+        {
+          "date": "2026-10-04",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": 1.09
+        },
+        {
+          "date": "2026-10-07",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": 1.09
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": 0.28,
+          "mean_value": 0.28,
+          "n": 25,
+          "ret_date": "2026-10-09",
+          "return": -0.7
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.32,
+          "mean_value": 0.32,
+          "n": 25,
+          "ret_date": "2026-10-12",
+          "return": 3.24
+        },
+        {
+          "date": "2026-10-10",
+          "polarity": 0.375,
+          "mean_value": 0.375,
+          "n": 8,
+          "ret_date": "2026-10-12",
+          "return": 3.24
+        },
+        {
+          "date": "2026-10-11",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 5,
+          "ret_date": "2026-10-12",
+          "return": 3.24
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.4821,
+          "mean_value": 0.4821,
+          "n": 56,
+          "ret_date": "2026-10-13",
+          "return": 0.09
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 16,
+          "ret_date": "2026-10-14",
+          "return": -0.3
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.129,
+          "mean_value": 0.129,
+          "n": 31,
+          "ret_date": "2026-10-15",
+          "return": -0.02
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": 0.3143,
+          "mean_value": 0.3143,
+          "n": 35,
+          "ret_date": "2026-10-16",
+          "return": -0.49
+        }
+      ]
     },
     {
       "code": "600276",
@@ -207,7 +3903,393 @@
         "hit_n": 26,
         "lag": 1,
         "days_with_news": 50
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-08-10",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-11",
+          "return": 1.46
+        },
+        {
+          "date": "2026-08-11",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-12",
+          "return": -1.11
+        },
+        {
+          "date": "2026-08-12",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 11,
+          "ret_date": "2026-08-13",
+          "return": -1.1
+        },
+        {
+          "date": "2026-08-14",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-17",
+          "return": 0.48
+        },
+        {
+          "date": "2026-08-19",
+          "polarity": -0.0455,
+          "mean_value": -0.0455,
+          "n": 22,
+          "ret_date": "2026-08-20",
+          "return": -6.0
+        },
+        {
+          "date": "2026-08-20",
+          "polarity": 0.0625,
+          "mean_value": 0.0625,
+          "n": 32,
+          "ret_date": "2026-08-21",
+          "return": -3.56
+        },
+        {
+          "date": "2026-08-21",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-08-24",
+          "return": -2.05
+        },
+        {
+          "date": "2026-08-24",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-25",
+          "return": -0.58
+        },
+        {
+          "date": "2026-08-25",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-26",
+          "return": 0.54
+        },
+        {
+          "date": "2026-08-26",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-08-27",
+          "return": 1.86
+        },
+        {
+          "date": "2026-08-31",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-01",
+          "return": 0.35
+        },
+        {
+          "date": "2026-09-01",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-09-02",
+          "return": -1.43
+        },
+        {
+          "date": "2026-09-02",
+          "polarity": 0.0833,
+          "mean_value": 0.0833,
+          "n": 12,
+          "ret_date": "2026-09-03",
+          "return": 0.86
+        },
+        {
+          "date": "2026-09-03",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 11,
+          "ret_date": "2026-09-04",
+          "return": 0.13
+        },
+        {
+          "date": "2026-09-06",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-07",
+          "return": 0.52
+        },
+        {
+          "date": "2026-09-07",
+          "polarity": 0.0476,
+          "mean_value": 0.0476,
+          "n": 21,
+          "ret_date": "2026-09-08",
+          "return": -1.19
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-09",
+          "return": -2.19
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": -0.1667,
+          "mean_value": -0.1667,
+          "n": 6,
+          "ret_date": "2026-09-10",
+          "return": -3.98
+        },
+        {
+          "date": "2026-09-10",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 10,
+          "ret_date": "2026-09-11",
+          "return": -0.61
+        },
+        {
+          "date": "2026-09-11",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-14",
+          "return": 1.12
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-09-15",
+          "return": -0.05
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 14,
+          "ret_date": "2026-09-16",
+          "return": 0.9
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 10,
+          "ret_date": "2026-09-17",
+          "return": -0.67
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": 0.5789,
+          "mean_value": 0.5789,
+          "n": 19,
+          "ret_date": "2026-09-18",
+          "return": 1.57
+        },
+        {
+          "date": "2026-09-18",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 12,
+          "ret_date": "2026-09-21",
+          "return": 4.85
+        },
+        {
+          "date": "2026-09-20",
+          "polarity": 0.6,
+          "mean_value": 0.6,
+          "n": 5,
+          "ret_date": "2026-09-21",
+          "return": 4.85
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": 0.5122,
+          "mean_value": 0.5122,
+          "n": 41,
+          "ret_date": "2026-09-22",
+          "return": -0.7
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 12,
+          "ret_date": "2026-09-23",
+          "return": -0.31
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": 0.15,
+          "mean_value": 0.15,
+          "n": 20,
+          "ret_date": "2026-09-24",
+          "return": -1.58
+        },
+        {
+          "date": "2026-09-24",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-09-28",
+          "return": -0.87
+        },
+        {
+          "date": "2026-09-25",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-09-28",
+          "return": -0.87
+        },
+        {
+          "date": "2026-09-26",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -0.87
+        },
+        {
+          "date": "2026-09-27",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-09-28",
+          "return": -0.87
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-09-29",
+          "return": 2.59
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.3095,
+          "mean_value": 0.3095,
+          "n": 42,
+          "ret_date": "2026-09-30",
+          "return": 3.46
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 0.5385,
+          "mean_value": 0.5385,
+          "n": 52,
+          "ret_date": "2026-10-08",
+          "return": -0.4
+        },
+        {
+          "date": "2026-10-01",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -0.4
+        },
+        {
+          "date": "2026-10-02",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-10-08",
+          "return": -0.4
+        },
+        {
+          "date": "2026-10-05",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -0.4
+        },
+        {
+          "date": "2026-10-06",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -0.4
+        },
+        {
+          "date": "2026-10-07",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -0.4
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": 0.15,
+          "mean_value": 0.15,
+          "n": 20,
+          "ret_date": "2026-10-09",
+          "return": -0.34
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.0769,
+          "mean_value": 0.0769,
+          "n": 13,
+          "ret_date": "2026-10-12",
+          "return": -1.71
+        },
+        {
+          "date": "2026-10-10",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 2,
+          "ret_date": "2026-10-12",
+          "return": -1.71
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.4444,
+          "mean_value": 0.4444,
+          "n": 9,
+          "ret_date": "2026-10-13",
+          "return": -1.17
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 20,
+          "ret_date": "2026-10-14",
+          "return": -0.04
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 8,
+          "ret_date": "2026-10-15",
+          "return": 2.44
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": 0.625,
+          "mean_value": 0.625,
+          "n": 8,
+          "ret_date": "2026-10-16",
+          "return": 0.06
+        }
+      ]
     },
     {
       "code": "600519",
@@ -230,7 +4312,353 @@
         "hit_n": 31,
         "lag": 1,
         "days_with_news": 45
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-08-14",
+          "polarity": -0.05,
+          "mean_value": -0.05,
+          "n": 20,
+          "ret_date": "2026-08-17",
+          "return": -3.64
+        },
+        {
+          "date": "2026-08-15",
+          "polarity": -0.125,
+          "mean_value": -0.125,
+          "n": 8,
+          "ret_date": "2026-08-17",
+          "return": -3.64
+        },
+        {
+          "date": "2026-08-17",
+          "polarity": -0.5789,
+          "mean_value": -0.5789,
+          "n": 19,
+          "ret_date": "2026-08-18",
+          "return": 0.38
+        },
+        {
+          "date": "2026-08-18",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-08-19",
+          "return": 0.76
+        },
+        {
+          "date": "2026-08-19",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-20",
+          "return": -1.25
+        },
+        {
+          "date": "2026-08-21",
+          "polarity": -0.0323,
+          "mean_value": -0.0323,
+          "n": 31,
+          "ret_date": "2026-08-24",
+          "return": 2.5
+        },
+        {
+          "date": "2026-08-22",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-24",
+          "return": 2.5
+        },
+        {
+          "date": "2026-08-23",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-24",
+          "return": 2.5
+        },
+        {
+          "date": "2026-08-24",
+          "polarity": 0.8182,
+          "mean_value": 0.8182,
+          "n": 11,
+          "ret_date": "2026-08-25",
+          "return": -0.05
+        },
+        {
+          "date": "2026-08-25",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-08-26",
+          "return": -0.09
+        },
+        {
+          "date": "2026-08-26",
+          "polarity": -1.0,
+          "mean_value": -1.0,
+          "n": 1,
+          "ret_date": "2026-08-27",
+          "return": -0.81
+        },
+        {
+          "date": "2026-08-27",
+          "polarity": -0.5,
+          "mean_value": -0.5,
+          "n": 2,
+          "ret_date": "2026-08-28",
+          "return": 0.39
+        },
+        {
+          "date": "2026-08-28",
+          "polarity": -1.0,
+          "mean_value": -1.0,
+          "n": 1,
+          "ret_date": "2026-08-31",
+          "return": 0.16
+        },
+        {
+          "date": "2026-08-31",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-01",
+          "return": 0.0
+        },
+        {
+          "date": "2026-09-02",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-09-03",
+          "return": 0.11
+        },
+        {
+          "date": "2026-09-03",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-04",
+          "return": 2.4
+        },
+        {
+          "date": "2026-09-04",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 4,
+          "ret_date": "2026-09-07",
+          "return": -1.05
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-09",
+          "return": -1.41
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-10",
+          "return": -0.45
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-09-15",
+          "return": -0.41
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": -0.3333,
+          "mean_value": -0.3333,
+          "n": 3,
+          "ret_date": "2026-09-16",
+          "return": -1.16
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-09-17",
+          "return": 0.71
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": -1.0,
+          "mean_value": -1.0,
+          "n": 1,
+          "ret_date": "2026-09-18",
+          "return": -0.78
+        },
+        {
+          "date": "2026-09-19",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-21",
+          "return": -0.36
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": -0.3333,
+          "mean_value": -0.3333,
+          "n": 3,
+          "ret_date": "2026-09-22",
+          "return": 0.1
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": 0.2105,
+          "mean_value": 0.2105,
+          "n": 19,
+          "ret_date": "2026-09-23",
+          "return": -0.2
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 14,
+          "ret_date": "2026-09-24",
+          "return": -1.14
+        },
+        {
+          "date": "2026-09-24",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-09-28",
+          "return": 0.56
+        },
+        {
+          "date": "2026-09-26",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-09-28",
+          "return": 0.56
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": 0.6333,
+          "mean_value": 0.6333,
+          "n": 30,
+          "ret_date": "2026-09-29",
+          "return": -0.67
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.2143,
+          "mean_value": 0.2143,
+          "n": 14,
+          "ret_date": "2026-09-30",
+          "return": 1.86
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 0.3913,
+          "mean_value": 0.3913,
+          "n": 23,
+          "ret_date": "2026-10-08",
+          "return": -0.22
+        },
+        {
+          "date": "2026-10-01",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -0.22
+        },
+        {
+          "date": "2026-10-02",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -0.22
+        },
+        {
+          "date": "2026-10-06",
+          "polarity": -0.5,
+          "mean_value": -0.5,
+          "n": 2,
+          "ret_date": "2026-10-08",
+          "return": -0.22
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": 0.5556,
+          "mean_value": 0.5556,
+          "n": 9,
+          "ret_date": "2026-10-09",
+          "return": 0.57
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 14,
+          "ret_date": "2026-10-12",
+          "return": 1.98
+        },
+        {
+          "date": "2026-10-10",
+          "polarity": -0.1667,
+          "mean_value": -0.1667,
+          "n": 6,
+          "ret_date": "2026-10-12",
+          "return": 1.98
+        },
+        {
+          "date": "2026-10-11",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 7,
+          "ret_date": "2026-10-12",
+          "return": 1.98
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.2917,
+          "mean_value": 0.2917,
+          "n": 72,
+          "ret_date": "2026-10-13",
+          "return": -1.02
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.3721,
+          "mean_value": 0.3721,
+          "n": 43,
+          "ret_date": "2026-10-14",
+          "return": 0.87
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.2941,
+          "mean_value": 0.2941,
+          "n": 34,
+          "ret_date": "2026-10-15",
+          "return": 2.1
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": 0.4348,
+          "mean_value": 0.4348,
+          "n": 46,
+          "ret_date": "2026-10-16",
+          "return": 1.22
+        }
+      ]
     },
     {
       "code": "600887",
@@ -253,7 +4681,593 @@
         "hit_n": 59,
         "lag": 1,
         "days_with_news": 74
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-06-09",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-06-10",
+          "return": 1.83
+        },
+        {
+          "date": "2026-06-29",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-06-30",
+          "return": -2.52
+        },
+        {
+          "date": "2026-07-01",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-07-02",
+          "return": 0.58
+        },
+        {
+          "date": "2026-07-07",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-08",
+          "return": 0.6
+        },
+        {
+          "date": "2026-07-10",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-07-13",
+          "return": 0.6
+        },
+        {
+          "date": "2026-07-13",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-07-14",
+          "return": 1.0
+        },
+        {
+          "date": "2026-07-14",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-07-15",
+          "return": 2.57
+        },
+        {
+          "date": "2026-07-15",
+          "polarity": 0.7,
+          "mean_value": 0.7,
+          "n": 10,
+          "ret_date": "2026-07-16",
+          "return": 0.39
+        },
+        {
+          "date": "2026-07-16",
+          "polarity": 0.75,
+          "mean_value": 0.75,
+          "n": 8,
+          "ret_date": "2026-07-17",
+          "return": 0.31
+        },
+        {
+          "date": "2026-07-17",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-07-20",
+          "return": 3.41
+        },
+        {
+          "date": "2026-07-19",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-07-20",
+          "return": 3.41
+        },
+        {
+          "date": "2026-07-20",
+          "polarity": 0.3704,
+          "mean_value": 0.3704,
+          "n": 27,
+          "ret_date": "2026-07-21",
+          "return": 0.26
+        },
+        {
+          "date": "2026-07-21",
+          "polarity": 0.0526,
+          "mean_value": 0.0526,
+          "n": 19,
+          "ret_date": "2026-07-22",
+          "return": 1.15
+        },
+        {
+          "date": "2026-07-22",
+          "polarity": 0.1765,
+          "mean_value": 0.1765,
+          "n": 17,
+          "ret_date": "2026-07-23",
+          "return": -0.55
+        },
+        {
+          "date": "2026-07-23",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 2,
+          "ret_date": "2026-07-24",
+          "return": -0.7
+        },
+        {
+          "date": "2026-07-27",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 3,
+          "ret_date": "2026-07-28",
+          "return": 2.0
+        },
+        {
+          "date": "2026-07-28",
+          "polarity": 0.85,
+          "mean_value": 0.85,
+          "n": 20,
+          "ret_date": "2026-07-29",
+          "return": 2.75
+        },
+        {
+          "date": "2026-07-29",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 15,
+          "ret_date": "2026-07-30",
+          "return": 1.39
+        },
+        {
+          "date": "2026-07-30",
+          "polarity": 0.8125,
+          "mean_value": 0.8125,
+          "n": 16,
+          "ret_date": "2026-07-31",
+          "return": -2.13
+        },
+        {
+          "date": "2026-07-31",
+          "polarity": 0.375,
+          "mean_value": 0.375,
+          "n": 8,
+          "ret_date": "2026-08-03",
+          "return": 0.07
+        },
+        {
+          "date": "2026-08-03",
+          "polarity": 0.5714,
+          "mean_value": 0.5714,
+          "n": 7,
+          "ret_date": "2026-08-04",
+          "return": -2.77
+        },
+        {
+          "date": "2026-08-04",
+          "polarity": 0.1667,
+          "mean_value": 0.1667,
+          "n": 6,
+          "ret_date": "2026-08-05",
+          "return": 0.0
+        },
+        {
+          "date": "2026-08-05",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-08-06",
+          "return": -0.19
+        },
+        {
+          "date": "2026-08-06",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-07",
+          "return": -0.42
+        },
+        {
+          "date": "2026-08-07",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 6,
+          "ret_date": "2026-08-10",
+          "return": 0.19
+        },
+        {
+          "date": "2026-08-09",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-10",
+          "return": 0.19
+        },
+        {
+          "date": "2026-08-10",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 20,
+          "ret_date": "2026-08-11",
+          "return": -0.61
+        },
+        {
+          "date": "2026-08-11",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-12",
+          "return": -0.73
+        },
+        {
+          "date": "2026-08-12",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 4,
+          "ret_date": "2026-08-13",
+          "return": -0.08
+        },
+        {
+          "date": "2026-08-13",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 4,
+          "ret_date": "2026-08-14",
+          "return": -1.47
+        },
+        {
+          "date": "2026-08-14",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-08-17",
+          "return": -1.1
+        },
+        {
+          "date": "2026-08-17",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 6,
+          "ret_date": "2026-08-18",
+          "return": -0.32
+        },
+        {
+          "date": "2026-08-18",
+          "polarity": 0.875,
+          "mean_value": 0.875,
+          "n": 8,
+          "ret_date": "2026-08-19",
+          "return": 0.32
+        },
+        {
+          "date": "2026-08-19",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-08-20",
+          "return": 1.15
+        },
+        {
+          "date": "2026-08-20",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-08-21",
+          "return": -0.47
+        },
+        {
+          "date": "2026-08-21",
+          "polarity": -1.0,
+          "mean_value": -1.0,
+          "n": 1,
+          "ret_date": "2026-08-24",
+          "return": 1.73
+        },
+        {
+          "date": "2026-08-24",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 5,
+          "ret_date": "2026-08-25",
+          "return": 0.23
+        },
+        {
+          "date": "2026-08-25",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 3,
+          "ret_date": "2026-08-26",
+          "return": 0.77
+        },
+        {
+          "date": "2026-08-26",
+          "polarity": 0.1515,
+          "mean_value": 0.1515,
+          "n": 33,
+          "ret_date": "2026-08-27",
+          "return": 1.34
+        },
+        {
+          "date": "2026-08-27",
+          "polarity": 0.2963,
+          "mean_value": 0.2963,
+          "n": 27,
+          "ret_date": "2026-08-28",
+          "return": 1.55
+        },
+        {
+          "date": "2026-08-28",
+          "polarity": 0.6,
+          "mean_value": 0.6,
+          "n": 5,
+          "ret_date": "2026-08-31",
+          "return": -1.34
+        },
+        {
+          "date": "2026-08-30",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-31",
+          "return": -1.34
+        },
+        {
+          "date": "2026-08-31",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-01",
+          "return": 0.0
+        },
+        {
+          "date": "2026-09-01",
+          "polarity": 0.7143,
+          "mean_value": 0.7143,
+          "n": 14,
+          "ret_date": "2026-09-02",
+          "return": 0.26
+        },
+        {
+          "date": "2026-09-02",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 7,
+          "ret_date": "2026-09-03",
+          "return": -0.04
+        },
+        {
+          "date": "2026-09-03",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 7,
+          "ret_date": "2026-09-04",
+          "return": 1.13
+        },
+        {
+          "date": "2026-09-04",
+          "polarity": 0.7059,
+          "mean_value": 0.7059,
+          "n": 17,
+          "ret_date": "2026-09-07",
+          "return": -0.93
+        },
+        {
+          "date": "2026-09-07",
+          "polarity": 0.1875,
+          "mean_value": 0.1875,
+          "n": 16,
+          "ret_date": "2026-09-08",
+          "return": -0.3
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.1818,
+          "mean_value": 0.1818,
+          "n": 11,
+          "ret_date": "2026-09-09",
+          "return": -0.3
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": 0.75,
+          "mean_value": 0.75,
+          "n": 4,
+          "ret_date": "2026-09-10",
+          "return": 0.34
+        },
+        {
+          "date": "2026-09-10",
+          "polarity": 0.6,
+          "mean_value": 0.6,
+          "n": 5,
+          "ret_date": "2026-09-11",
+          "return": 0.45
+        },
+        {
+          "date": "2026-09-11",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 3,
+          "ret_date": "2026-09-14",
+          "return": 0.71
+        },
+        {
+          "date": "2026-09-13",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-09-14",
+          "return": 0.71
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": 0.1818,
+          "mean_value": 0.1818,
+          "n": 11,
+          "ret_date": "2026-09-15",
+          "return": -2.16
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": 0.75,
+          "mean_value": 0.75,
+          "n": 4,
+          "ret_date": "2026-09-16",
+          "return": -0.65
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": -0.1429,
+          "mean_value": -0.1429,
+          "n": 7,
+          "ret_date": "2026-09-17",
+          "return": 1.76
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-09-18",
+          "return": 0.15
+        },
+        {
+          "date": "2026-09-18",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-21",
+          "return": 0.19
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 4,
+          "ret_date": "2026-09-22",
+          "return": 0.45
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": 0.75,
+          "mean_value": 0.75,
+          "n": 4,
+          "ret_date": "2026-09-23",
+          "return": 0.56
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": 0.625,
+          "mean_value": 0.625,
+          "n": 8,
+          "ret_date": "2026-09-24",
+          "return": -0.07
+        },
+        {
+          "date": "2026-09-27",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": 0.48
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": 0.5714,
+          "mean_value": 0.5714,
+          "n": 7,
+          "ret_date": "2026-09-29",
+          "return": 0.78
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.75,
+          "mean_value": 0.75,
+          "n": 4,
+          "ret_date": "2026-09-30",
+          "return": 0.22
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 3,
+          "ret_date": "2026-10-08",
+          "return": 0.07
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": -0.5,
+          "mean_value": -0.5,
+          "n": 2,
+          "ret_date": "2026-10-09",
+          "return": 1.24
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.7,
+          "mean_value": 0.7,
+          "n": 10,
+          "ret_date": "2026-10-12",
+          "return": 1.08
+        },
+        {
+          "date": "2026-10-10",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-10-12",
+          "return": 1.08
+        },
+        {
+          "date": "2026-10-11",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-12",
+          "return": 1.08
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-10-13",
+          "return": -0.68
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-10-14",
+          "return": 1.3
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 3,
+          "ret_date": "2026-10-15",
+          "return": -0.11
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": 0.1667,
+          "mean_value": 0.1667,
+          "n": 6,
+          "ret_date": "2026-10-16",
+          "return": 0.36
+        }
+      ]
     },
     {
       "code": "601318",
@@ -276,7 +5290,481 @@
         "hit_n": 40,
         "lag": 1,
         "days_with_news": 60
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-07-27",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-28",
+          "return": 1.51
+        },
+        {
+          "date": "2026-07-28",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-07-29",
+          "return": 0.19
+        },
+        {
+          "date": "2026-07-29",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-07-30",
+          "return": 2.81
+        },
+        {
+          "date": "2026-07-30",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-07-31",
+          "return": -1.64
+        },
+        {
+          "date": "2026-07-31",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-08-03",
+          "return": 1.21
+        },
+        {
+          "date": "2026-08-03",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-08-04",
+          "return": -2.97
+        },
+        {
+          "date": "2026-08-04",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 5,
+          "ret_date": "2026-08-05",
+          "return": 0.17
+        },
+        {
+          "date": "2026-08-11",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-08-12",
+          "return": 0.1
+        },
+        {
+          "date": "2026-08-13",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-08-14",
+          "return": -2.03
+        },
+        {
+          "date": "2026-08-20",
+          "polarity": 0.0312,
+          "mean_value": 0.0312,
+          "n": 32,
+          "ret_date": "2026-08-21",
+          "return": 2.37
+        },
+        {
+          "date": "2026-08-21",
+          "polarity": 0.2373,
+          "mean_value": 0.2373,
+          "n": 59,
+          "ret_date": "2026-08-24",
+          "return": 3.0
+        },
+        {
+          "date": "2026-08-22",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-08-24",
+          "return": 3.0
+        },
+        {
+          "date": "2026-08-24",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-08-25",
+          "return": 0.17
+        },
+        {
+          "date": "2026-08-25",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-08-26",
+          "return": 2.07
+        },
+        {
+          "date": "2026-08-26",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-27",
+          "return": -0.47
+        },
+        {
+          "date": "2026-08-27",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-28",
+          "return": -0.04
+        },
+        {
+          "date": "2026-08-28",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-08-31",
+          "return": -0.05
+        },
+        {
+          "date": "2026-08-31",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-09-01",
+          "return": 2.57
+        },
+        {
+          "date": "2026-09-01",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 6,
+          "ret_date": "2026-09-02",
+          "return": -1.07
+        },
+        {
+          "date": "2026-09-02",
+          "polarity": 0.2222,
+          "mean_value": 0.2222,
+          "n": 9,
+          "ret_date": "2026-09-03",
+          "return": 2.46
+        },
+        {
+          "date": "2026-09-03",
+          "polarity": -0.25,
+          "mean_value": -0.25,
+          "n": 8,
+          "ret_date": "2026-09-04",
+          "return": 0.42
+        },
+        {
+          "date": "2026-09-04",
+          "polarity": 0.0833,
+          "mean_value": 0.0833,
+          "n": 12,
+          "ret_date": "2026-09-07",
+          "return": -3.28
+        },
+        {
+          "date": "2026-09-05",
+          "polarity": -0.5,
+          "mean_value": -0.5,
+          "n": 2,
+          "ret_date": "2026-09-07",
+          "return": -3.28
+        },
+        {
+          "date": "2026-09-06",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-07",
+          "return": -3.28
+        },
+        {
+          "date": "2026-09-07",
+          "polarity": 0.0556,
+          "mean_value": 0.0556,
+          "n": 18,
+          "ret_date": "2026-09-08",
+          "return": -1.19
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.3636,
+          "mean_value": 0.3636,
+          "n": 33,
+          "ret_date": "2026-09-09",
+          "return": 1.02
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 12,
+          "ret_date": "2026-09-10",
+          "return": 0.43
+        },
+        {
+          "date": "2026-09-10",
+          "polarity": 0.1429,
+          "mean_value": 0.1429,
+          "n": 7,
+          "ret_date": "2026-09-11",
+          "return": -1.24
+        },
+        {
+          "date": "2026-09-11",
+          "polarity": 0.4286,
+          "mean_value": 0.4286,
+          "n": 7,
+          "ret_date": "2026-09-14",
+          "return": -0.18
+        },
+        {
+          "date": "2026-09-12",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-14",
+          "return": -0.18
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": 0.3846,
+          "mean_value": 0.3846,
+          "n": 13,
+          "ret_date": "2026-09-15",
+          "return": -1.52
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": 0.5455,
+          "mean_value": 0.5455,
+          "n": 11,
+          "ret_date": "2026-09-16",
+          "return": -0.72
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": 0.6,
+          "mean_value": 0.6,
+          "n": 10,
+          "ret_date": "2026-09-17",
+          "return": -0.3
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": -0.1,
+          "mean_value": -0.1,
+          "n": 10,
+          "ret_date": "2026-09-18",
+          "return": 0.04
+        },
+        {
+          "date": "2026-09-18",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 16,
+          "ret_date": "2026-09-21",
+          "return": 1.14
+        },
+        {
+          "date": "2026-09-19",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-21",
+          "return": 1.14
+        },
+        {
+          "date": "2026-09-20",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-21",
+          "return": 1.14
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": 0.2857,
+          "mean_value": 0.2857,
+          "n": 7,
+          "ret_date": "2026-09-22",
+          "return": 0.89
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 15,
+          "ret_date": "2026-09-23",
+          "return": -1.08
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": 0.1667,
+          "mean_value": 0.1667,
+          "n": 12,
+          "ret_date": "2026-09-24",
+          "return": -1.15
+        },
+        {
+          "date": "2026-09-24",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 16,
+          "ret_date": "2026-09-28",
+          "return": -1.6
+        },
+        {
+          "date": "2026-09-25",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-09-28",
+          "return": -1.6
+        },
+        {
+          "date": "2026-09-26",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -1.6
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": 0.8333,
+          "mean_value": 0.8333,
+          "n": 6,
+          "ret_date": "2026-09-29",
+          "return": 0.19
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 7,
+          "ret_date": "2026-09-30",
+          "return": 1.5
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 3,
+          "ret_date": "2026-10-08",
+          "return": -1.16
+        },
+        {
+          "date": "2026-10-02",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-10-08",
+          "return": -1.16
+        },
+        {
+          "date": "2026-10-03",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -1.16
+        },
+        {
+          "date": "2026-10-05",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-10-08",
+          "return": -1.16
+        },
+        {
+          "date": "2026-10-06",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-10-08",
+          "return": -1.16
+        },
+        {
+          "date": "2026-10-07",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-10-08",
+          "return": -1.16
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 6,
+          "ret_date": "2026-10-09",
+          "return": 0.3
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.4444,
+          "mean_value": 0.4444,
+          "n": 9,
+          "ret_date": "2026-10-12",
+          "return": 0.78
+        },
+        {
+          "date": "2026-10-10",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-10-12",
+          "return": 0.78
+        },
+        {
+          "date": "2026-10-11",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-10-12",
+          "return": 0.78
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.6154,
+          "mean_value": 0.6154,
+          "n": 13,
+          "ret_date": "2026-10-13",
+          "return": -2.91
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.2273,
+          "mean_value": 0.2273,
+          "n": 22,
+          "ret_date": "2026-10-14",
+          "return": -0.89
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 11,
+          "ret_date": "2026-10-15",
+          "return": 1.07
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 24,
+          "ret_date": "2026-10-16",
+          "return": 0.19
+        }
+      ]
     },
     {
       "code": "601899",
@@ -299,7 +5787,497 @@
         "hit_n": 37,
         "lag": 1,
         "days_with_news": 62
-      }
+      },
+      "pairs": [
+        {
+          "date": "2026-08-05",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-06",
+          "return": 1.19
+        },
+        {
+          "date": "2026-08-06",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-08-07",
+          "return": 1.91
+        },
+        {
+          "date": "2026-08-07",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 5,
+          "ret_date": "2026-08-10",
+          "return": 0.86
+        },
+        {
+          "date": "2026-08-10",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-08-11",
+          "return": -6.48
+        },
+        {
+          "date": "2026-08-11",
+          "polarity": -0.6,
+          "mean_value": -0.6,
+          "n": 5,
+          "ret_date": "2026-08-12",
+          "return": 1.22
+        },
+        {
+          "date": "2026-08-12",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-13",
+          "return": -4.13
+        },
+        {
+          "date": "2026-08-13",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-08-14",
+          "return": 1.01
+        },
+        {
+          "date": "2026-08-14",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-17",
+          "return": 2.58
+        },
+        {
+          "date": "2026-08-16",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-17",
+          "return": 2.58
+        },
+        {
+          "date": "2026-08-17",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-08-18",
+          "return": 0.61
+        },
+        {
+          "date": "2026-08-18",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-19",
+          "return": -2.41
+        },
+        {
+          "date": "2026-08-20",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 4,
+          "ret_date": "2026-08-21",
+          "return": 2.69
+        },
+        {
+          "date": "2026-08-21",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 12,
+          "ret_date": "2026-08-24",
+          "return": -0.58
+        },
+        {
+          "date": "2026-08-22",
+          "polarity": -0.25,
+          "mean_value": -0.25,
+          "n": 4,
+          "ret_date": "2026-08-24",
+          "return": -0.58
+        },
+        {
+          "date": "2026-08-23",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-08-24",
+          "return": -0.58
+        },
+        {
+          "date": "2026-08-24",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-25",
+          "return": -2.49
+        },
+        {
+          "date": "2026-08-25",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-26",
+          "return": 2.35
+        },
+        {
+          "date": "2026-08-26",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-08-27",
+          "return": 0.29
+        },
+        {
+          "date": "2026-08-27",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-08-28",
+          "return": 0.23
+        },
+        {
+          "date": "2026-08-28",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 2,
+          "ret_date": "2026-08-31",
+          "return": -2.83
+        },
+        {
+          "date": "2026-08-29",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-08-31",
+          "return": -2.83
+        },
+        {
+          "date": "2026-08-31",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-09-01",
+          "return": 0.18
+        },
+        {
+          "date": "2026-09-01",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-09-02",
+          "return": -2.31
+        },
+        {
+          "date": "2026-09-02",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-09-03",
+          "return": 1.09
+        },
+        {
+          "date": "2026-09-03",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 3,
+          "ret_date": "2026-09-04",
+          "return": 0.12
+        },
+        {
+          "date": "2026-09-04",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-09-07",
+          "return": -1.44
+        },
+        {
+          "date": "2026-09-06",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 12,
+          "ret_date": "2026-09-07",
+          "return": -1.44
+        },
+        {
+          "date": "2026-09-07",
+          "polarity": -0.25,
+          "mean_value": -0.25,
+          "n": 8,
+          "ret_date": "2026-09-08",
+          "return": 3.01
+        },
+        {
+          "date": "2026-09-08",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 3,
+          "ret_date": "2026-09-09",
+          "return": 1.59
+        },
+        {
+          "date": "2026-09-09",
+          "polarity": 0.4,
+          "mean_value": 0.4,
+          "n": 5,
+          "ret_date": "2026-09-10",
+          "return": -0.84
+        },
+        {
+          "date": "2026-09-10",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 5,
+          "ret_date": "2026-09-11",
+          "return": -5.42
+        },
+        {
+          "date": "2026-09-11",
+          "polarity": -0.3684,
+          "mean_value": -0.3684,
+          "n": 19,
+          "ret_date": "2026-09-14",
+          "return": -0.03
+        },
+        {
+          "date": "2026-09-14",
+          "polarity": 0.2727,
+          "mean_value": 0.2727,
+          "n": 11,
+          "ret_date": "2026-09-15",
+          "return": -1.77
+        },
+        {
+          "date": "2026-09-15",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 15,
+          "ret_date": "2026-09-16",
+          "return": 1.55
+        },
+        {
+          "date": "2026-09-16",
+          "polarity": 0.7,
+          "mean_value": 0.7,
+          "n": 20,
+          "ret_date": "2026-09-17",
+          "return": -3.95
+        },
+        {
+          "date": "2026-09-17",
+          "polarity": 0.129,
+          "mean_value": 0.129,
+          "n": 31,
+          "ret_date": "2026-09-18",
+          "return": 1.65
+        },
+        {
+          "date": "2026-09-18",
+          "polarity": 0.8,
+          "mean_value": 0.8,
+          "n": 10,
+          "ret_date": "2026-09-21",
+          "return": -0.35
+        },
+        {
+          "date": "2026-09-20",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-09-21",
+          "return": -0.35
+        },
+        {
+          "date": "2026-09-21",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 6,
+          "ret_date": "2026-09-22",
+          "return": 0.35
+        },
+        {
+          "date": "2026-09-22",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 9,
+          "ret_date": "2026-09-23",
+          "return": 0.0
+        },
+        {
+          "date": "2026-09-23",
+          "polarity": 0.6667,
+          "mean_value": 0.6667,
+          "n": 9,
+          "ret_date": "2026-09-24",
+          "return": -4.46
+        },
+        {
+          "date": "2026-09-24",
+          "polarity": 0.2941,
+          "mean_value": 0.2941,
+          "n": 17,
+          "ret_date": "2026-09-28",
+          "return": -1.97
+        },
+        {
+          "date": "2026-09-25",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -1.97
+        },
+        {
+          "date": "2026-09-26",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 1,
+          "ret_date": "2026-09-28",
+          "return": -1.97
+        },
+        {
+          "date": "2026-09-28",
+          "polarity": 0.3077,
+          "mean_value": 0.3077,
+          "n": 26,
+          "ret_date": "2026-09-29",
+          "return": 0.14
+        },
+        {
+          "date": "2026-09-29",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 10,
+          "ret_date": "2026-09-30",
+          "return": 1.12
+        },
+        {
+          "date": "2026-09-30",
+          "polarity": 0.25,
+          "mean_value": 0.25,
+          "n": 16,
+          "ret_date": "2026-10-08",
+          "return": -1.41
+        },
+        {
+          "date": "2026-10-01",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 2,
+          "ret_date": "2026-10-08",
+          "return": -1.41
+        },
+        {
+          "date": "2026-10-02",
+          "polarity": 0.75,
+          "mean_value": 0.75,
+          "n": 4,
+          "ret_date": "2026-10-08",
+          "return": -1.41
+        },
+        {
+          "date": "2026-10-03",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 1,
+          "ret_date": "2026-10-08",
+          "return": -1.41
+        },
+        {
+          "date": "2026-10-04",
+          "polarity": 1.0,
+          "mean_value": 1.0,
+          "n": 2,
+          "ret_date": "2026-10-08",
+          "return": -1.41
+        },
+        {
+          "date": "2026-10-06",
+          "polarity": 0.5,
+          "mean_value": 0.5,
+          "n": 2,
+          "ret_date": "2026-10-08",
+          "return": -1.41
+        },
+        {
+          "date": "2026-10-07",
+          "polarity": 0.2,
+          "mean_value": 0.2,
+          "n": 5,
+          "ret_date": "2026-10-08",
+          "return": -1.41
+        },
+        {
+          "date": "2026-10-08",
+          "polarity": 0.3077,
+          "mean_value": 0.3077,
+          "n": 13,
+          "ret_date": "2026-10-09",
+          "return": 4.87
+        },
+        {
+          "date": "2026-10-09",
+          "polarity": 0.64,
+          "mean_value": 0.64,
+          "n": 50,
+          "ret_date": "2026-10-12",
+          "return": -1.88
+        },
+        {
+          "date": "2026-10-10",
+          "polarity": 0.0,
+          "mean_value": 0.0,
+          "n": 4,
+          "ret_date": "2026-10-12",
+          "return": -1.88
+        },
+        {
+          "date": "2026-10-11",
+          "polarity": -0.5,
+          "mean_value": -0.5,
+          "n": 2,
+          "ret_date": "2026-10-12",
+          "return": -1.88
+        },
+        {
+          "date": "2026-10-12",
+          "polarity": 0.3333,
+          "mean_value": 0.3333,
+          "n": 33,
+          "ret_date": "2026-10-13",
+          "return": 0.6
+        },
+        {
+          "date": "2026-10-13",
+          "polarity": 0.7,
+          "mean_value": 0.7,
+          "n": 10,
+          "ret_date": "2026-10-14",
+          "return": -1.38
+        },
+        {
+          "date": "2026-10-14",
+          "polarity": 0.1538,
+          "mean_value": 0.1538,
+          "n": 13,
+          "ret_date": "2026-10-15",
+          "return": -2.0
+        },
+        {
+          "date": "2026-10-15",
+          "polarity": 0.3077,
+          "mean_value": 0.3077,
+          "n": 26,
+          "ret_date": "2026-10-16",
+          "return": 1.84
+        }
+      ]
     }
   ],
   "overall": {

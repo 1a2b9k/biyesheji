@@ -42,6 +42,9 @@ _IMPORT_TO_DIST = {
     'pymysql': 'PyMySQL',
     'sqlalchemy': 'SQLAlchemy',
     'huggingface_hub': 'huggingface_hub',
+    # md_to_docx.image_size_cm 用 PIL 读图片像素定尺寸。
+    # 注意 Pillow 的 import 名与发行包名不同,不写映射会被判成未登记。
+    'PIL': 'Pillow',
 }
 
 # 不靠 import 出现、但运行必需的依赖。
@@ -63,7 +66,7 @@ _LOCAL_MODULES = {
     'experiment_report', 'fetch_dataset', 'fetch_model', 'fetch_wheel',
     'md_to_docx', 'make_vision_test', 'train_multitask', 'train_sentiment',
     'use_mysql', 'check_env', 'check_datasource', 'setup_python',
-    'sitecustomize',
+    'sitecustomize', 'make_figures',
 }
 
 _IMPORT_RE = re.compile(

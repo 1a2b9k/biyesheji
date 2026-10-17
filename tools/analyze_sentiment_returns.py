@@ -117,6 +117,9 @@ def main(argv=None):
                 'news_total': len(rows),
                 'kline_total': len(ks),
                 'stats': stats,
+                # 配对样本一并存下:图 7-4 的散点图要逐点画,
+                # 只存相关系数就画不出来,也就没法从结果文件复现图。
+                'pairs': pairs,
             })
             all_pairs.extend(pairs)
 

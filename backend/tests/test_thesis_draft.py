@@ -32,8 +32,9 @@ import pytest
 
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
-_DRAFT = os.path.join(_REPO_ROOT, '论文', '毕业论文初稿.md')
-_OUTLINE = os.path.join(_REPO_ROOT, '论文', '论文写作大纲.md')
+_PAPER_DIR = os.path.join(_REPO_ROOT, '论文')
+_DRAFT = os.path.join(_PAPER_DIR, '毕业论文初稿.md')
+_OUTLINE = os.path.join(_PAPER_DIR, '论文写作大纲.md')
 _EXP = os.path.join(_REPO_ROOT, 'data', 'experiments')
 _RAW = os.path.join(_REPO_ROOT, 'data', 'raw')
 
@@ -912,3 +913,82 @@ def test_draft_tables_are_all_present():
         pattern = r'^\*\*表 %s [^\n]*\n\n(\|.*?\n)+' % re.escape(name)
         assert re.search(pattern, body, re.M), \
             '表 %s 只有标题没有表格内容' % name
+
+
+# ---------------------------------------------------------------- 插图
+
+_FIGURE_RE = re.compile(r'^!\[([^\]]*)\]\(([^)]+)\)\s*$', re.M)
+_FIG_NO_RE = re.compile(r'图 (\d-\d+)')
+
+
+def _figure_refs():
+    """返回 [(图号, 图片相对路径, 图注)]。"""
+    body, _ = _body_and_refs()
+    out = []
+    for alt, path in _FIGURE_RE.findall(body):
+        m = _FIG_NO_RE.search(alt)
+        out.append((m.group(1) if m else '', path.strip(), alt))
+    return out
+
+
+def test_every_embedded_figure_file_exists():
+    """正文用 ![](...) 嵌入的图,文件必须真的在。"""
+    missing = []
+    for no, rel, _ in _figure_refs():
+        full = os.path.join(_PAPER_DIR, rel.replace('/', os.sep))
+        if not os.path.isfile(full):
+            missing.append('图 %s -> %s' % (no, rel))
+    assert not missing, '正文嵌入了不存在的图: %s' % missing
+
+
+def test_every_embedded_figure_has_caption_and_number():
+    """图注里必须带「图 X-Y」编号,否则正文引用与图对不上。"""
+    bad = [alt for no, _, alt in _figure_refs() if not no]
+    assert not bad, '这些图注缺少「图 X-Y」编号: %s' % bad
+
+
+def test_figure_numbers_are_unique():
+    nums = [no for no, _, _ in _figure_refs() if no]
+    dup = {n for n in nums if nums.count(n) > 1}
+    assert not dup, '图号重复: %s' % sorted(dup)
+
+
+def test_referenced_figures_are_embedded():
+    """正文写「如图 X-Y 所示」的图,必须真的嵌进来了。
+
+    图 7-3 是系统界面截图,需作者本人截取,豁免。
+    """
+    body, _ = _body_and_refs()
+    referenced = set(re.findall(r'图 (\d-\d+)', body))
+    embedded = {no for no, _, _ in _figure_refs()}
+    exempt = {'7-3'}
+    missing = sorted(referenced - embedded - exempt)
+    assert not missing, '正文引用了但未嵌入的图: %s' % missing
+
+
+def _appendix_c():
+    """附录 C 在参考文献之后,不在 _body_and_refs() 的 body 范围内。"""
+    text = _draft_text()
+    start = text.find('### 附录 C')
+    assert start > 0, '缺少附录 C'
+    return text[start:]
+
+
+def test_appendix_c_lists_every_figure():
+    """附录 C 的图表清单必须与正文实际插图一一对应。"""
+    appendix = _appendix_c()
+    listed = set(re.findall(r'\| 图 (\d-\d+) \|', appendix))
+    embedded = {no for no, _, _ in _figure_refs()}
+    assert listed - embedded == {'7-3'}, \
+        '附录 C 列出了但正文没插的图: %s' % sorted(listed - embedded - {'7-3'})
+    assert embedded - listed == set(), \
+        '正文插了但附录 C 没登记的图: %s' % sorted(embedded - listed)
+
+
+def test_appendix_c_no_longer_claims_figures_are_pending():
+    """出图已完成后,附录 C 不许再说「尚未绘制」。"""
+    appendix = _appendix_c()
+    assert '尚未绘制' not in appendix, \
+        '附录 C 仍写「尚未绘制」,但图已由 tools/make_figures.py 生成'
+    assert 'make_figures.py' in appendix, \
+        '附录 C 应说明图由 tools/make_figures.py 生成,以便复现'

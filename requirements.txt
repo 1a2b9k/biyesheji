@@ -51,9 +51,17 @@ pandas==3.0.6
 # tools/md_to_docx.py:Markdown → Word
 python-docx==1.2.0
 
+# tools/md_to_docx.py 的 image_size_cm() 用 PIL 读图片像素来折算物理尺寸。
+# 缺了它,带插图的论文转 docx 会直接报错
+Pillow==12.2.0
+
+# tools/make_figures.py:生成论文里的 13 张图。
+# 注意 MPLCONFIGDIR 必须在 import matplotlib 之前指到可写目录(脚本已内置)
+matplotlib==3.11.2
+
 # tools/fetch_model.py:从 hf-mirror.com 拉预训练权重
 huggingface_hub==2.2.0
 
 # ---------------------------------------------------------------- 测试
-# backend/tests/ 全量 346 项
+# backend/tests/ 全量 493 项
 pytest==9.1.1

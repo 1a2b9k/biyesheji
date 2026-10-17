@@ -244,6 +244,97 @@ def test_page_is_a4_with_thesis_margins(tmp_path):
     assert abs(s.left_margin - Cm(3.17)) < 1000
 
 
+# ---------------------------------------------------------------- 插图
+
+def _make_png(path, size=(800, 400)):
+    """造一张纯色 PNG,尺寸可控,用来验证插图与缩放。"""
+    from PIL import Image
+    Image.new('RGB', size, (200, 180, 150)).save(str(path))
+    return str(path)
+
+
+def test_image_is_embedded_into_docx(tmp_path):
+    img = _make_png(tmp_path / 'a.png')
+    md = '上文\n\n![图 1-1 测试图](%s)\n\n下文\n' % img
+    path = _convert(tmp_path, md)
+    xml = _document_xml(path)
+    # 真插图会在 document.xml 里留下 drawing 与图片关系引用
+    assert '<w:drawing>' in xml or '<w:pict>' in xml
+    assert 'r:embed' in xml
+
+
+def test_image_caption_is_the_alt_text(tmp_path):
+    img = _make_png(tmp_path / 'a.png')
+    md = '![图 3-1 训练集标签分布](%s)\n' % img
+    path = _convert(tmp_path, md)
+    texts = _paragraph_texts(path)
+    assert '图 3-1 训练集标签分布' in texts
+
+
+def test_image_without_alt_has_no_caption(tmp_path):
+    img = _make_png(tmp_path / 'a.png')
+    path = _convert(tmp_path, '![]( %s )\n' % img)
+    texts = _paragraph_texts(path)
+    # 只该有图片本身,不该多出一个空图注段落
+    assert all(t.strip() == '' or '[缺图' in t for t in texts)
+
+
+def test_missing_image_leaves_visible_marker(tmp_path):
+    path = _convert(tmp_path, '![图 9-9 不存在](nope/zzz.png)\n')
+    texts = _paragraph_texts(path)
+    joined = '|'.join(texts)
+    # 漏图必须显眼,不能被悄悄跳过
+    assert '[缺图' in joined and 'nope/zzz.png' in joined
+
+
+def test_resolve_image_path_tries_base_dir_then_workspace(tmp_path):
+    sub = tmp_path / 'sub'
+    sub.mkdir()
+    img = _make_png(sub / 'x.png')
+    # 相对 base_dir 能解析
+    got = md_to_docx.resolve_image_path('x.png', str(sub))
+    assert got and os.path.samefile(got, img)
+    # 不存在则返回 None,由调用方决定怎么处理
+    assert md_to_docx.resolve_image_path('nope.png', str(sub)) is None
+    # 绝对路径直接命中
+    assert md_to_docx.resolve_image_path(img, str(tmp_path)) == img
+
+
+def test_image_size_caps_width(tmp_path):
+    img = _make_png(tmp_path / 'wide.png', size=(4000, 500))
+    width_cm, height_cm = md_to_docx.image_size_cm(img)
+    assert width_cm <= md_to_docx.MAX_IMAGE_WIDTH_CM + 1e-6
+    # 等比缩放,宽高比保持
+    assert abs(width_cm / height_cm - 8.0) < 0.05
+
+
+def test_image_size_caps_height_for_tall_images(tmp_path):
+    # 只限宽会让竖长图超过一页被 Word 截断,所以高度也要封顶
+    img = _make_png(tmp_path / 'tall.png', size=(300, 6000))
+    width_cm, height_cm = md_to_docx.image_size_cm(img)
+    assert height_cm <= 20.0 + 1e-6
+    assert width_cm <= md_to_docx.MAX_IMAGE_WIDTH_CM + 1e-6
+
+
+def test_image_size_keeps_small_image_unscaled(tmp_path):
+    img = _make_png(tmp_path / 'small.png', size=(96, 96))
+    width_cm, height_cm = md_to_docx.image_size_cm(img)
+    # 96px @96DPI = 1 英寸 = 2.54cm,小图不该被放大
+    assert abs(width_cm - 2.54) < 0.01
+    assert abs(height_cm - 2.54) < 0.01
+
+
+def test_convert_resolves_image_relative_to_md_directory(tmp_path):
+    # 论文里写 figures/fig-3-1.png,相对 .md 所在目录解析
+    doc_dir = tmp_path / 'paper'
+    (doc_dir / 'figures').mkdir(parents=True)
+    _make_png(doc_dir / 'figures' / 'f.png')
+    md = '![图 1-1 相对路径](figures/f.png)\n'
+    out = str(tmp_path / 'out.docx')
+    md_to_docx.convert(md, out, base_dir=str(doc_dir))
+    assert '[缺图' not in '|'.join(_paragraph_texts(out))
+
+
 # ---------------------------------------------------------------- CLI
 
 def test_main_writes_default_output(tmp_path, monkeypatch, capsys):

@@ -20,6 +20,7 @@ Markdown → Word(.docx) 转换器 —— 让论文材料能从纯文本重新�
     >                        引用
     | a | b |                表格(第二行为 ---|--- 分隔行)
     ```                      代码块(等宽字体,保留缩进)
+    ![说明](路径)            插图,独占一段并居中;路径相对 .md 文件所在目录
     ---                      分隔线(忽略)
 
 退出码 0 = 成功。
@@ -42,11 +43,15 @@ MONO_FONT = 'Consolas'
 BODY_SIZE = 12.0     # 小四
 CODE_SIZE = 10.5     # 五号
 
+# 插图宽度上限:论文正文版心约 14.6cm(21 - 3.17*2),留一点余量。
+MAX_IMAGE_WIDTH_CM = 14.0
+
 _RE_INLINE = re.compile(r'(\*\*.+?\*\*|`[^`]+`)')
 _RE_ULIST = re.compile(r'^\s*[-*+]\s+(.*)$')
 _RE_OLIST = re.compile(r'^\s*(\d+)[.)]\s+(.*)$')
 _RE_HEAD = re.compile(r'^(#{1,6})\s+(.*)$')
 _RE_TABLE_SEP = re.compile(r'^\s*\|?[\s:|-]+\|[\s:|-]*$')
+_RE_IMAGE = re.compile(r'^!\[([^\]]*)\]\(([^)]+)\)\s*$')
 
 
 # ------------------------------------------------------------------ 字体工具
@@ -110,13 +115,62 @@ def is_table_sep(line):
     return bool(_RE_TABLE_SEP.match(s))
 
 
+def resolve_image_path(raw_path, base_dir):
+    """把 Markdown 里的图片路径解析成绝对路径。
+
+    支持相对 .md 所在目录、相对工作区根目录、以及绝对路径三种写法。
+    找不到就返回 None,由调用方决定报错还是跳过。
+    """
+    path = raw_path.strip().strip('<>')
+    if os.path.isabs(path):
+        return path if os.path.isfile(path) else None
+    for root in (base_dir, _WS):
+        candidate = os.path.join(root, path)
+        if os.path.isfile(candidate):
+            return candidate
+    return None
+
+
+def image_size_cm(path, max_width=MAX_IMAGE_WIDTH_CM):
+    """按版心宽度等比缩放,返回 (宽, 高),单位 cm。
+
+    只限宽不限高会出事:一张竖长的架构图按 14cm 宽缩放后高度可能超过一页,
+    Word 会把图截断或挤到下一页留半页空白。所以高度也要封顶。
+    """
+    from PIL import Image
+
+    with Image.open(path) as im:
+        px_w, px_h = im.size
+    if px_w <= 0 or px_h <= 0:
+        return max_width, max_width
+
+    # 按 96 DPI 估算原始物理尺寸,再决定是否缩放
+    width_cm = px_w / 96.0 * 2.54
+    height_cm = px_h / 96.0 * 2.54
+
+    scale = 1.0
+    if width_cm > max_width:
+        scale = min(scale, max_width / width_cm)
+    max_height = 20.0   # 版心高度约 24.6cm,留出图注空间
+    if height_cm * scale > max_height:
+        scale = min(scale, max_height / height_cm)
+    return width_cm * scale, height_cm * scale
+
+
 # ------------------------------------------------------------------ 主转换
 
-def convert(md_text, out_path):
-    """把 Markdown 文本写成 .docx,返回写入路径。"""
+def convert(md_text, out_path, base_dir=None):
+    """把 Markdown 文本写成 .docx,返回写入路径。
+
+    base_dir 用于解析 ![说明](相对路径) 里的图片路径;
+    默认取当前工作目录。
+    """
     from docx import Document
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     from docx.shared import Cm, Pt
+
+    if base_dir is None:
+        base_dir = os.getcwd()
 
     doc = Document()
 
@@ -159,6 +213,32 @@ def convert(md_text, out_path):
                 p.paragraph_format.space_after = Pt(0)
                 run = p.add_run(cl if cl.strip() else ' ')
                 set_font(run, size=CODE_SIZE, mono=True)
+            continue
+
+        # --- 插图
+        m = _RE_IMAGE.match(stripped)
+        if m:
+            alt, raw_path = m.group(1), m.group(2)
+            found = resolve_image_path(raw_path, base_dir)
+            if found is None:
+                # 不静默跳过:漏图是定稿前必须发现的问题,
+                # 在 docx 里留一个显眼的标记比悄悄少一张图好。
+                p = doc.add_paragraph()
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                run = p.add_run('[缺图: %s]' % raw_path)
+                set_font(run, size=BODY_SIZE, bold=True)
+                i += 1
+                continue
+            p = doc.add_paragraph()
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            width_cm, _ = image_size_cm(found)
+            p.add_run().add_picture(found, width=Cm(width_cm))
+            if alt:
+                cap = doc.add_paragraph()
+                cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                run = cap.add_run(alt)
+                set_font(run, size=BODY_SIZE - 1)
+            i += 1
             continue
 
         # --- 表格
@@ -262,7 +342,9 @@ def main(argv=None):
         base = os.path.splitext(args.input)[0]
         out = base + '.docx'
 
-    convert(md_text, out)
+    # 图片路径相对 .md 所在目录解析,这样 论文/毕业论文初稿.md 里的
+    # figures/fig-3-1.png 能直接找到,不用写成 论文/figures/...
+    convert(md_text, out, base_dir=os.path.dirname(os.path.abspath(args.input)))
     print('已生成 %s' % os.path.relpath(out, _WS))
     return 0
 
