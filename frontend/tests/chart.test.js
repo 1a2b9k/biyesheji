@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   COLORS,
   buildKlineOption,
+  buildReturnsScatterOption,
   buildSentimentPieOption,
   buildSentimentTrendOption,
   formatAmount,
@@ -190,5 +191,66 @@ describe('buildSentimentTrendOption', () => {
   it('空数组与 undefined 都不报错', () => {
     expect(buildSentimentTrendOption([]).xAxis.data).toEqual([])
     expect(buildSentimentTrendOption(undefined).xAxis.data).toEqual([])
+  })
+})
+
+describe('buildReturnsScatterOption', () => {
+  const pairs = [
+    { polarity: -1, return: -2 },
+    { polarity: -0.5, return: -1 },
+    { polarity: 0, return: 0 },
+    { polarity: 0.5, return: 1 },
+    { polarity: 1, return: 2 },
+  ]
+
+  it('散点取 [情感指数, 收益] 二元组', () => {
+    const o = buildReturnsScatterOption(pairs)
+    const scatter = o.series.find((s) => s.name === '样本')
+    expect(scatter.type).toBe('scatter')
+    expect(scatter.data[0]).toEqual([-1, -2])
+    expect(scatter.data).toHaveLength(5)
+  })
+
+  it('横轴固定 -1..1,让不同股票的图可以直接对比', () => {
+    const o = buildReturnsScatterOption(pairs)
+    expect(o.xAxis.min).toBe(-1)
+    expect(o.xAxis.max).toBe(1)
+  })
+
+  it('样本够时画拟合线,斜率与数据方向一致', () => {
+    const o = buildReturnsScatterOption(pairs)
+    const fit = o.series.find((s) => s.name === '拟合线')
+    expect(fit).toBeTruthy()
+    expect(fit.type).toBe('line')
+    // 完美线性:y = 2x,两端点应为 (-1,-2) 与 (1,2)
+    expect(fit.data[0]).toEqual([-1, -2])
+    expect(fit.data[1]).toEqual([1, 2])
+  })
+
+  it('拟合线不响应鼠标,避免 tooltip 抢散点的位置', () => {
+    const o = buildReturnsScatterOption(pairs)
+    expect(o.series.find((s) => s.name === '拟合线').silent).toBe(true)
+  })
+
+  it('样本少于 3 个不画拟合线', () => {
+    const o = buildReturnsScatterOption(pairs.slice(0, 2))
+    expect(o.series.find((s) => s.name === '拟合线')).toBeUndefined()
+    expect(o.series).toHaveLength(1)
+  })
+
+  it('情感指数全相同(方差为 0)时不画拟合线', () => {
+    // 分母为 0 会算出 Infinity,必须挡住
+    const flat = [
+      { polarity: 0.5, return: 1 },
+      { polarity: 0.5, return: 2 },
+      { polarity: 0.5, return: 3 },
+    ]
+    const o = buildReturnsScatterOption(flat)
+    expect(o.series.find((s) => s.name === '拟合线')).toBeUndefined()
+  })
+
+  it('空数组与 undefined 都不报错', () => {
+    expect(buildReturnsScatterOption([]).series[0].data).toEqual([])
+    expect(buildReturnsScatterOption(undefined).series[0].data).toEqual([])
   })
 })

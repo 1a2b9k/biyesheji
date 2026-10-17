@@ -12,13 +12,17 @@
 
 import json
 import re
+import time
 import urllib.parse
 import urllib.request
 
 from . import config
 
 _KLINE_URL = (
-    'https://push2his.eastmoney.com/api/qt/stock/kline/get'
+    # 用 http 而不是 https:实测(2026-10-17)同一台机器上 push2his 的
+    # https 端口会直接断连(RemoteDisconnected),http 端口稳定可用。
+    # 这是行情接口特有的现象,新闻接口的 https 一直正常,所以不全局改。
+    'http://push2his.eastmoney.com/api/qt/stock/kline/get'
     '?fields1=f1,f2,f3,f4,f5,f6'
     '&fields2=f51,f52,f53,f54,f55,f56,f57,f58'
     '&klt=101&fqt=1&secid={secid}&beg=0&end=20500101&lmt=100000'
@@ -130,8 +134,8 @@ def _strip_tags(text):
     return re.sub(r'<[^>]+>', '', text)
 
 
-def fetch_news(keyword, page_size=20):
-    """按关键词搜索新闻。返回 dict 列表。"""
+def _news_url(keyword, page_index, page_size):
+    """拼出某一页新闻搜索的请求地址。"""
     param = {
         'uid': '',
         'keyword': keyword,
@@ -142,12 +146,58 @@ def fetch_news(keyword, page_size=20):
         'param': {'cmsArticleWebOld': {
             'searchScope': 'default',
             'sort': 'default',
-            'pageIndex': 1,
+            'pageIndex': page_index,
             'pageSize': page_size,
             'preTag': '',
             'postTag': '',
         }},
     }
-    url = _NEWS_URL.format(
+    return _NEWS_URL.format(
         param=urllib.parse.quote(json.dumps(param, ensure_ascii=False)))
-    return parse_news(_http_get(url, referer=_NEWS_REFERER))
+
+
+def fetch_news(keyword, page_size=20):
+    """按关键词搜索新闻(只取第一页)。返回 dict 列表。"""
+    return parse_news(
+        _http_get(_news_url(keyword, 1, page_size), referer=_NEWS_REFERER))
+
+
+def fetch_news_pages(keyword, pages=1, page_size=20, sleep=0.3):
+    """按关键词翻多页新闻。返回 dict 列表(已按 url 去重)。
+
+    分页是实测过的(2026-10-17):同一关键词第 1/2/3 页共 60 条 url 无重叠,
+    翻到第 40 页仍有数据、日期可回溯到约 3 个月前。所以多翻几页能显著
+    扩大样本量,这是把新闻从 89 条扩到几千条的主要手段。
+
+    单页失败不抛异常 —— 已拿到的页仍然有价值,不该因为第 7 页超时
+    就把前 6 页丢掉。调用方看返回条数即可判断是否全军覆没。
+
+    sleep 是给接口留的间隔,避免连续请求被限流;测试里传 0。
+    """
+    if pages < 1:
+        pages = 1
+
+    out = []
+    seen = set()
+    for page in range(1, pages + 1):
+        if page > 1 and sleep:
+            time.sleep(sleep)
+        try:
+            rows = parse_news(
+                _http_get(_news_url(keyword, page, page_size),
+                          referer=_NEWS_REFERER))
+        except Exception:  # noqa: BLE001
+            break
+        if not rows:
+            break  # 没数据了,再翻也是空
+        added = 0
+        for row in rows:
+            if row['url'] in seen:
+                continue
+            seen.add(row['url'])
+            out.append(row)
+            added += 1
+        if added == 0:
+            break  # 整页都是重复的,说明已经翻到底
+    return out
+

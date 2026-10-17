@@ -49,19 +49,22 @@ biyesheji/
 │   │   ├── models.py            数据模型:Stock / Kline / News
 │   │   ├── collector.py         数据采集(东财接口)+ 解析
 │   │   ├── service.py           业务:入库、去重、同步、情感回填
+│   │   ├── analysis.py          情感指数与收益的关联分析(纯函数)
 │   │   ├── sentiment.py         情感推理(懒加载;缺模型时自动降级)
 │   │   └── main.py              FastAPI 应用与接口
-│   ├── tests/                   300 个测试
+│   ├── tests/                   346 个测试
 │   ├── conftest.py              把 pytest 临时目录挪进工作区(沙箱需要)
 │   └── pytest.ini
 ├── frontend/                    前端 (Vue3 + Vite + ECharts)
 │   ├── src/
 │   │   ├── api/index.js         接口封装
 │   │   ├── utils/chart.js       图表配置构造(纯函数,可单测)
-│   │   ├── components/          EChart / StockBar / OverviewCards / NewsList / SentimentPanel / SourceBreakdown
+│   │   ├── components/          EChart / StockBar / OverviewCards / NewsList / SentimentPanel / SourceBreakdown / ReturnsPanel
 │   │   └── App.vue              主页面
-│   └── tests/                   67 个测试
+│   └── tests/                   82 个测试
 ├── tools/                       环境、下载与实验工具
+│   ├── collect_corpus.py        批量采集(多股票 x 多页新闻)
+│   ├── analyze_sentiment_returns.py  情感指数 vs 次日收益
 │   ├── train_sentiment.py       情感对比实验(TF-IDF 基线 + BERT 微调)
 │   ├── analyze_neutral.py       中性类瓶颈分析(问句统计 / 错误流向 / 句式切分)
 │   ├── experiment_report.py     从实验结果 JSON 生成 Markdown 报告
@@ -100,11 +103,37 @@ biyesheji/
 | GET | `/api/stocks/{code}/news?limit=50` | 新闻列表 |
 | GET | `/api/stocks/{code}/overview` | 概览(最新价、来源分布) |
 | GET | `/api/stocks/{code}/sentiment?limit=500` | 单只股票的情绪统计与按日聚合 |
-| POST | `/api/stocks/{code}/sync` | 触发采集(行情 + 新闻 + 情感回填) |
+| GET | `/api/stocks/{code}/returns?lag=1&min_news=1` | 情感指数与未来收益的关联分析 |
+| POST | `/api/stocks/{code}/sync?news_pages=1` | 触发采集(行情 + 新闻 + 情感回填) |
 | GET | `/api/sentiment/info` | 情感模型可用性与指标 |
 | POST | `/api/sentiment/analyze` | 对任意文本批量判情感(最多 200 条) |
 
 自动生成的接口文档:**http://127.0.0.1:8000/docs**
+
+---
+
+## 批量采集与分析
+
+单只股票单次采集只覆盖最近 20 条新闻,样本量不足以做统计分析。
+仓库里带两个命令行工具:
+
+```bat
+REM 批量采集:13 只股票 x 25 页 x 20 条/页,约 5000 条新闻
+.python\python.exe tools\collect_corpus.py --pages 25 --sleep 1.2
+
+REM 情感指数 vs 次日收益:逐股票 + 全样本汇总,可写 JSON
+.python\python.exe tools\analyze_sentiment_returns.py --out data/experiments/returns.json
+```
+
+`collect_corpus.py` 的股票池是 `backend/app/config.py` 里的
+`DEFAULT_STOCKS` + `EXTENDED_STOCKS`(写死而非动态拉取:
+接口限流不可靠,且论文样本必须可复现)。每只股票独立 try/except,
+一只失败不影响其余;已入库的新闻按 url 去重,重复跑是安全的。
+
+`analyze_sentiment_returns.py` 的口径:`polarity = (正面 - 负面) / 当日新闻数`,
+即 Antweiler & Frank(2004) 的 bullishness;收益取之后第 `lag` 个交易日的
+涨跌幅(`lag=1` 为次日)。新闻按「发布日之前(含当天)最后一个交易日」归属,
+周末新闻归到周五,再加 lag —— 这样周六的新闻不会被错推到周二。
 
 ---
 
@@ -113,9 +142,11 @@ biyesheji/
 | 数据 | 接口 | 说明 |
 |---|---|---|
 | 日线行情 | 东方财富 `push2his` | 免注册免 key,实测单只 6000+ 条 |
-| 财经新闻 | 东方财富搜索 | 关键词检索,含标题/来源/时间/链接 |
+| 财经新闻 | 东方财富搜索 | 关键词检索,含标题/来源/时间/链接,支持分页 |
 
-实测(2026-10-13):贵州茅台 6019 条日线、宁德时代 2022 条、平安银行 8494 条。
+实测(2026-10-13):13 只股票共 72235 条日线、1296 条新闻(每只约 100 条),
+全部完成情感标注。行情接口必须走 `http` —— 同一台机器上 `https` 端口会稳定
+`RemoteDisconnected`,新闻接口的 `https` 则一直正常。
 
 ---
 
@@ -125,7 +156,7 @@ biyesheji/
 scripts\test-all.cmd
 ```
 
-当前:**500 个测试全部通过**(后端 300 + 前端 67 + 技能安装 133)。
+当前:**561 个测试全部通过**(后端 346 + 前端 82 + 技能安装 133)。
 
 测试原则:
 - 采集解析用**离线样本**测(不发网络请求,快且稳定)
@@ -209,6 +240,28 @@ REM 由结果 JSON 生成 Markdown 报告(论文实验章节素材)
 结论:**"中性"是复合标签**,把"真的没有态度"和"只是在提问"混成了一类,
 模型在这条边界上系统性犯错。改进方向见报告的第五节。
 
+### 情感指数与收益:相关但不显著
+
+`data/experiments/returns.json`(重跑:`.python\python.exe tools\analyze_sentiment_returns.py --out data/experiments/returns.json`)
+
+13 只股票、**6420 条已标注新闻**、**744 个股票-日样本**,`lag=1`(次日):
+
+| 口径 | 值 |
+|---|---|
+| Pearson r | **-0.0019**(p=0.9579) |
+| Spearman ρ | 0.0090 |
+| 分组次日收益 | 低情感 -0.097% / 中 0.026% / 高 -0.062% |
+| 方向命中率 | 0.4778(n=496) |
+
+**结论是负面的**:在全样本上,情感指数与次日收益没有可检出的线性关系。
+单只股票里只有恒瑞医药 600276 达到 p<0.05(Pearson 0.2829, p=0.0455),
+13 只股票做 13 次检验,按多重比较预期就该有约 0.65 个假阳性 ——
+一个显著结果不构成证据。
+
+值得记录的是**样本量对结论的影响**:第一轮只有 1296 条新闻(228 个样本)时,
+Pearson 是 +0.0526;扩到 6420 条后掉到 -0.0019。小样本下的相关系数
+基本是噪声,这也是为什么这个实验值得做到 5000 条以上再下结论。
+
 ---
 
 ## 已知限制
@@ -219,7 +272,8 @@ REM 由结果 JSON 生成 Markdown 报告(论文实验章节素材)
   与 jsdom 测试互补（前者测逻辑，后者测渲染）
 - 新闻搜索结果是滚动的,老新闻会被挤出窗口 —— 系统靠"拉取即落库"保留快照
 - 情感分析模型权重不进版本库,干净检出需先训练或下载
-- 数据集只有 3 只股票,不足以支撑"板块级"结论;标签体系本身有复合性缺陷(见上)
+- 情感—收益关联在全样本上不显著,且只有 13 只股票,不足以支撑"板块级"结论
+- 标签体系本身有复合性缺陷(见上)
 
 ---
 
@@ -229,5 +283,6 @@ REM 由结果 JSON 生成 Markdown 报告(论文实验章节素材)
 |---|---|
 | **v0.1** ✅ | 采集 + 存储 + 展示 |
 | **v0.2** ✅ | 情感分析(两条路线对比 + 后端接口 + 前端展示) |
-| **v0.3** ✅ | 前端视觉重设计 + 中性类瓶颈分析(标注体系缺陷)(**当前**) |
-| v0.4 | 自选股、情感预警订阅、情感与股价关联性分析 |
+| **v0.3** ✅ | 前端视觉重设计 + 中性类瓶颈分析(标注体系缺陷) |
+| **v0.4** ✅ | 扩充到 13 只股票 / 6420 条新闻 + 情感指数与收益关联分析(**当前**) |
+| v0.5 | 自选股、情感预警订阅、定时增量采集 |

@@ -9,10 +9,11 @@
  */
 import { computed, onMounted, ref } from 'vue'
 
-import { getKlines, getNews, getOverview, getSentimentInfo, getStockSentiment, listStocks, syncStock } from './api'
+import { getKlines, getNews, getOverview, getSentimentInfo, getStockReturns, getStockSentiment, listStocks, syncStock } from './api'
 import EChart from './components/EChart.vue'
 import NewsList from './components/NewsList.vue'
 import OverviewCards from './components/OverviewCards.vue'
+import ReturnsPanel from './components/ReturnsPanel.vue'
 import SentimentPanel from './components/SentimentPanel.vue'
 import SourceBreakdown from './components/SourceBreakdown.vue'
 import StockBar from './components/StockBar.vue'
@@ -25,6 +26,7 @@ const klines = ref([])
 const news = ref([])
 const sentiment = ref(null)
 const sentimentInfo = ref(null)
+const returns = ref(null)
 const loading = ref(false)
 const syncing = ref(false)
 const message = ref('')
@@ -39,18 +41,21 @@ async function loadAll(code) {
   loading.value = true
   message.value = ''
   try {
-    const [o, k, n, s] = await Promise.all([
+    const [o, k, n, s, r] = await Promise.all([
       getOverview(code),
       getKlines(code, 250),
       getNews(code, 50),
       // 情感数据失败不该让整页打不开:模型可能压根没训练,
       // 这时后端返回空统计,单独 catch 更稳妥。
       getStockSentiment(code).catch(() => null),
+      // 关联分析同理:样本不足是常态,不该阻断主页面。
+      getStockReturns(code).catch(() => null),
     ])
     overview.value = o
     klines.value = k
     news.value = n
     sentiment.value = s
+    returns.value = r
     if (!k.length && !n.length) {
       message.value = '该股票还没有数据,请点击「采集最新数据」。'
     }
@@ -145,6 +150,8 @@ onMounted(async () => {
           <SourceBreakdown :sources="overview?.news_sources ?? []" />
         </div>
       </div>
+
+      <ReturnsPanel :data="returns" />
 
       <NewsList :news="news" />
     </main>

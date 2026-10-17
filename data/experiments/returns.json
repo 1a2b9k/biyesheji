@@ -1,0 +1,321 @@
+{
+  "lag": 1,
+  "min_news": 1,
+  "per_stock": [
+    {
+      "code": "000001",
+      "name": "平安银行",
+      "news_total": 497,
+      "kline_total": 8497,
+      "stats": {
+        "n": 67,
+        "pearson": -0.1138,
+        "spearman": -0.1087,
+        "p_value": 0.3557,
+        "polarity_mean": 0.1089,
+        "return_mean": 0.263,
+        "groups": {
+          "low": 0.2768,
+          "mid": 0.433,
+          "high": 0.0714
+        },
+        "hit_rate": 0.4419,
+        "hit_n": 43,
+        "lag": 1,
+        "days_with_news": 69
+      }
+    },
+    {
+      "code": "000651",
+      "name": "格力电器",
+      "news_total": 497,
+      "kline_total": 7028,
+      "stats": {
+        "n": 82,
+        "pearson": 0.1025,
+        "spearman": 0.0473,
+        "p_value": 0.3565,
+        "polarity_mean": 0.2763,
+        "return_mean": -0.02,
+        "groups": {
+          "low": -0.273,
+          "mid": 0.1004,
+          "high": 0.1081
+        },
+        "hit_rate": 0.4528,
+        "hit_n": 53,
+        "lag": 1,
+        "days_with_news": 84
+      }
+    },
+    {
+      "code": "000858",
+      "name": "五粮液",
+      "news_total": 493,
+      "kline_total": 6766,
+      "stats": {
+        "n": 78,
+        "pearson": -0.0778,
+        "spearman": -0.0488,
+        "p_value": 0.4961,
+        "polarity_mean": 0.1751,
+        "return_mean": 0.0526,
+        "groups": {
+          "low": 0.2142,
+          "mid": 0.1731,
+          "high": -0.2296
+        },
+        "hit_rate": 0.4694,
+        "hit_n": 49,
+        "lag": 1,
+        "days_with_news": 80
+      }
+    },
+    {
+      "code": "002415",
+      "name": "海康威视",
+      "news_total": 497,
+      "kline_total": 3923,
+      "stats": {
+        "n": 76,
+        "pearson": -0.0028,
+        "spearman": -0.0275,
+        "p_value": 0.9809,
+        "polarity_mean": 0.2558,
+        "return_mean": 0.0955,
+        "groups": {
+          "low": 0.168,
+          "mid": 0.2323,
+          "high": -0.1192
+        },
+        "hit_rate": 0.4894,
+        "hit_n": 47,
+        "lag": 1,
+        "days_with_news": 78
+      }
+    },
+    {
+      "code": "002594",
+      "name": "比亚迪",
+      "news_total": 488,
+      "kline_total": 3702,
+      "stats": {
+        "n": 40,
+        "pearson": 0.0469,
+        "spearman": 0.0288,
+        "p_value": 0.7721,
+        "polarity_mean": 0.1733,
+        "return_mean": -0.4412,
+        "groups": {
+          "low": -0.2415,
+          "mid": -0.7829,
+          "high": -0.2731
+        },
+        "hit_rate": 0.4333,
+        "hit_n": 30,
+        "lag": 1,
+        "days_with_news": 42
+      }
+    },
+    {
+      "code": "300750",
+      "name": "宁德时代",
+      "news_total": 496,
+      "kline_total": 2025,
+      "stats": {
+        "n": 36,
+        "pearson": 0.2294,
+        "spearman": 0.2553,
+        "p_value": 0.1694,
+        "polarity_mean": 0.2143,
+        "return_mean": -0.8011,
+        "groups": {
+          "low": -1.2875,
+          "mid": -0.8275,
+          "high": -0.2883
+        },
+        "hit_rate": 0.5357,
+        "hit_n": 28,
+        "lag": 1,
+        "days_with_news": 38
+      }
+    },
+    {
+      "code": "600030",
+      "name": "中信证券",
+      "news_total": 493,
+      "kline_total": 5673,
+      "stats": {
+        "n": 35,
+        "pearson": 0.0622,
+        "spearman": 0.152,
+        "p_value": 0.7204,
+        "polarity_mean": 0.322,
+        "return_mean": -0.4114,
+        "groups": {
+          "low": -0.8264,
+          "mid": 0.1354,
+          "high": -0.6427
+        },
+        "hit_rate": 0.4074,
+        "hit_n": 27,
+        "lag": 1,
+        "days_with_news": 37
+      }
+    },
+    {
+      "code": "600036",
+      "name": "招商银行",
+      "news_total": 489,
+      "kline_total": 5879,
+      "stats": {
+        "n": 46,
+        "pearson": 0.135,
+        "spearman": 0.1706,
+        "p_value": 0.366,
+        "polarity_mean": 0.1394,
+        "return_mean": 0.5083,
+        "groups": {
+          "low": 0.0453,
+          "mid": 0.6375,
+          "high": 0.8333
+        },
+        "hit_rate": 0.5385,
+        "hit_n": 26,
+        "lag": 1,
+        "days_with_news": 48
+      }
+    },
+    {
+      "code": "600276",
+      "name": "恒瑞医药",
+      "news_total": 494,
+      "kline_total": 6257,
+      "stats": {
+        "n": 48,
+        "pearson": 0.2829,
+        "spearman": 0.2014,
+        "p_value": 0.0455,
+        "polarity_mean": 0.1979,
+        "return_mean": -0.2067,
+        "groups": {
+          "low": -0.8169,
+          "mid": -0.6863,
+          "high": 0.8831
+        },
+        "hit_rate": 0.4231,
+        "hit_n": 26,
+        "lag": 1,
+        "days_with_news": 50
+      }
+    },
+    {
+      "code": "600519",
+      "name": "贵州茅台",
+      "news_total": 493,
+      "kline_total": 6022,
+      "stats": {
+        "n": 43,
+        "pearson": 0.1103,
+        "spearman": 0.1144,
+        "p_value": 0.4775,
+        "polarity_mean": 0.0875,
+        "return_mean": 0.167,
+        "groups": {
+          "low": -0.2493,
+          "mid": 0.5053,
+          "high": 0.2207
+        },
+        "hit_rate": 0.5161,
+        "hit_n": 31,
+        "lag": 1,
+        "days_with_news": 45
+      }
+    },
+    {
+      "code": "600887",
+      "name": "伊利股份",
+      "news_total": 498,
+      "kline_total": 7315,
+      "stats": {
+        "n": 73,
+        "pearson": -0.1221,
+        "spearman": -0.0475,
+        "p_value": 0.2999,
+        "polarity_mean": 0.4326,
+        "return_mean": 0.3042,
+        "groups": {
+          "low": 0.24,
+          "mid": 0.4816,
+          "high": 0.1837
+        },
+        "hit_rate": 0.6271,
+        "hit_n": 59,
+        "lag": 1,
+        "days_with_news": 74
+      }
+    },
+    {
+      "code": "601318",
+      "name": "中国平安",
+      "news_total": 491,
+      "kline_total": 4704,
+      "stats": {
+        "n": 59,
+        "pearson": -0.0174,
+        "spearman": -0.1008,
+        "p_value": 0.8955,
+        "polarity_mean": 0.2528,
+        "return_mean": -0.132,
+        "groups": {
+          "low": -0.0084,
+          "mid": 0.0424,
+          "high": -0.4484
+        },
+        "hit_rate": 0.45,
+        "hit_n": 40,
+        "lag": 1,
+        "days_with_news": 60
+      }
+    },
+    {
+      "code": "601899",
+      "name": "紫金矿业",
+      "news_total": 494,
+      "kline_total": 4444,
+      "stats": {
+        "n": 61,
+        "pearson": -0.237,
+        "spearman": -0.2042,
+        "p_value": 0.061,
+        "polarity_mean": 0.2491,
+        "return_mean": -0.5646,
+        "groups": {
+          "low": 0.1455,
+          "mid": -0.611,
+          "high": -1.226
+        },
+        "hit_rate": 0.3514,
+        "hit_n": 37,
+        "lag": 1,
+        "days_with_news": 62
+      }
+    }
+  ],
+  "overall": {
+    "n": 744,
+    "pearson": -0.0019,
+    "spearman": 0.009,
+    "p_value": 0.9579,
+    "polarity_mean": 0.229,
+    "return_mean": -0.0443,
+    "groups": {
+      "low": -0.0973,
+      "mid": 0.0265,
+      "high": -0.062
+    },
+    "hit_rate": 0.4778,
+    "hit_n": 496,
+    "lag": 1
+  }
+}

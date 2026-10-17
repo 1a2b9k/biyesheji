@@ -29,8 +29,10 @@ export const getOverview = (code) =>
   http.get(`/stocks/${code}/overview`).then((r) => r.data)
 
 /** 触发一次采集 */
-export const syncStock = (code) =>
-  http.post(`/stocks/${code}/sync`).then((r) => r.data)
+export const syncStock = (code, newsPages = 1) =>
+  http
+    .post(`/stocks/${code}/sync`, null, { params: { news_pages: newsPages } })
+    .then((r) => r.data)
 
 /** 情感模型状态(可用性 + 测试集指标) */
 export const getSentimentInfo = () =>
@@ -39,5 +41,11 @@ export const getSentimentInfo = () =>
 /** 单只股票的情感分布 */
 export const getStockSentiment = (code, limit = 500) =>
   http.get(`/stocks/${code}/sentiment`, { params: { limit } }).then((r) => r.data)
+
+/** 情感指数与未来收益的关联分析 */
+export const getStockReturns = (code, lag = 1, minNews = 1) =>
+  http
+    .get(`/stocks/${code}/returns`, { params: { lag, min_news: minNews } })
+    .then((r) => r.data)
 
 export default http

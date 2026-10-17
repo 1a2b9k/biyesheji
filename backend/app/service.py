@@ -117,8 +117,12 @@ def annotate_sentiment(db: Session, code, limit=None):
     return done, model.kind
 
 
-def sync_stock(db: Session, code, name, market='SH', news_size=20):
-    """完整同步一只股票:基本信息 + 日线 + 新闻 + 情感标注。返回统计字典。"""
+def sync_stock(db: Session, code, name, market='SH', news_size=20, news_pages=1):
+    """完整同步一只股票:基本信息 + 日线 + 新闻 + 情感标注。返回统计字典。
+
+    news_pages > 1 时会翻多页新闻 —— 这是把样本量做大的主要手段。
+    每页 news_size 条,实际入库量受去重影响。
+    """
     upsert_stock(db, code, name, market)
 
     kline_added = 0
@@ -134,7 +138,8 @@ def sync_stock(db: Session, code, name, market='SH', news_size=20):
         errors.append('kline: %s: %s' % (type(exc).__name__, exc))
 
     try:
-        news = collector.fetch_news(name, page_size=news_size)
+        news = collector.fetch_news_pages(name, pages=news_pages,
+                                          page_size=news_size)
         news_added = save_news(db, code, news)
     except Exception as exc:  # noqa: BLE001
         errors.append('news: %s: %s' % (type(exc).__name__, exc))

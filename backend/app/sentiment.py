@@ -129,13 +129,27 @@ def _load_bert(d):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model.to(device).eval()
 
-    def fn(texts):
+    def _forward(texts):
         enc = tok(texts, padding=True, truncation=True,
                   max_length=64, return_tensors='pt')
         with torch.no_grad():
             logits = model(input_ids=enc['input_ids'].to(device),
                            attention_mask=enc['attention_mask'].to(device)).logits
-            probs = torch.softmax(logits, dim=-1).cpu().tolist()
+            return torch.softmax(logits, dim=-1).cpu().tolist()
+
+    def fn(texts):
+        nonlocal device
+        try:
+            probs = _forward(texts)
+        except RuntimeError as exc:
+            # 显存不够时(比如同一张卡还在跑游戏/别的训练)退回 CPU 重算这一批。
+            # 只在 OOM 上回退,其它 RuntimeError 照常抛出,免得掩盖真实故障。
+            if 'out of memory' not in str(exc).lower() or device == 'cpu':
+                raise
+            torch.cuda.empty_cache()
+            device = 'cpu'
+            model.to(device)
+            probs = _forward(texts)
         out = []
         for row in probs:
             idx = int(max(range(len(row)), key=lambda i: row[i]))

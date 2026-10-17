@@ -109,7 +109,8 @@ def _seed(client, monkeypatch):
         {'trade_date': '2026-10-13', 'open': 2.0, 'close': 3.0, 'high': 4.0,
          'low': 1.5, 'volume': 150.0, 'amount': 300.0, 'amplitude': 1.5},
     ])
-    monkeypatch.setattr(collector, 'fetch_news', lambda kw, page_size=20: [
+    monkeypatch.setattr(collector, 'fetch_news_pages',
+                        lambda kw, pages=1, page_size=20, sleep=0.3: [
         {'title': '测试新闻A', 'url': 'https://t/a', 'source': '来源A',
          'publish_time': '2026-10-13 10:00:00'},
         {'title': '测试新闻B', 'url': 'https://t/b', 'source': '来源B',
@@ -187,7 +188,7 @@ def test_sync_records_collector_error(client, monkeypatch):
         raise RuntimeError('模拟网络故障')
 
     monkeypatch.setattr(collector, 'fetch_kline', boom)
-    monkeypatch.setattr(collector, 'fetch_news', boom)
+    monkeypatch.setattr(collector, 'fetch_news_pages', boom)
 
     r = client.post('/api/stocks/600519/sync')
     assert r.status_code == 200
@@ -346,3 +347,130 @@ def test_sync_sentiment_failure_isolated(client, monkeypatch):
     body = _seed(client, monkeypatch).json()
     assert body['news_added'] == 2
     assert any('sentiment' in e for e in body['errors'])
+
+
+# --------------------------------------------------- 情感—股价关联分析接口
+
+def _seed_returns(client, monkeypatch):
+    """写入一批带情感的新闻 + 足够长的行情,用于关联分析接口。
+
+    构造思路:情感越高、次日涨得越多,这样相关系数应该显著为正,
+    断言才有明确的方向可验。
+
+    注意 sync_stock 会用 compute_change_pct 从收盘价**重算**涨跌幅,
+    所以这里必须由目标收益率反推收盘价,直接写 change_pct 会被覆盖。
+    """
+    from app import collector
+
+    klines = []
+    news = []
+    close = 100.0
+    # 10 个交易日,收益率从 -4.5% 递增到 +4.5%,与情感同向
+    for i in range(10):
+        day = '2026-03-%02d' % (i + 2)  # 03-02 .. 03-11,全在周内
+        ret = -4.5 + i
+        klines.append({
+            'trade_date': day, 'open': close, 'close': close * (1 + ret / 100),
+            'high': close * 1.01, 'low': close * 0.99,
+            'volume': 100.0, 'amount': 200.0, 'amplitude': 1.0,
+        })
+        close = close * (1 + ret / 100)
+        label = 'positive' if i >= 5 else 'negative'
+        news.append({
+            'title': '新闻%d' % i, 'url': 'https://r/%d' % i,
+            'source': '来源', 'publish_time': day + ' 15:00:00',
+            '_label': label,
+        })
+
+    monkeypatch.setattr(collector, 'fetch_kline',
+                        lambda code, market='SH': [dict(k) for k in klines])
+    monkeypatch.setattr(collector, 'fetch_news_pages',
+                        lambda kw, pages=1, page_size=20, sleep=0.3: [
+        {k: v for k, v in n.items() if k != '_label'} for n in news])
+
+    from app import sentiment as sent_mod
+    labels = {n['title']: n['_label'] for n in news}
+
+    class FakeModel:
+        kind = 'fake'
+
+        def predict(self, texts):
+            return [{'label': labels.get(t, 'neutral'), 'score': 0.9,
+                     'scores': {'negative': 0.05, 'positive': 0.9,
+                                'neutral': 0.05}} for t in texts]
+
+    monkeypatch.setattr(sent_mod, 'load', lambda kind=None: FakeModel())
+    return client.post('/api/stocks/600519/sync')
+
+
+def test_returns_404_for_unknown_stock(client):
+    assert client.get('/api/stocks/999999/returns').status_code == 404
+
+
+def test_returns_empty_when_no_data(client):
+    """没采过数据时应返回空统计,而不是报错。"""
+    r = client.get('/api/stocks/600519/returns')
+    assert r.status_code == 200
+    body = r.json()
+    assert body['stats']['n'] == 0
+    assert body['pairs'] == []
+
+
+def test_returns_after_sync(client, monkeypatch):
+    _seed_returns(client, monkeypatch)
+    r = client.get('/api/stocks/600519/returns')
+    assert r.status_code == 200
+    body = r.json()
+
+    assert body['news_total'] == 10
+    assert body['kline_total'] == 10
+    # 每个有情感的日子都要有样本,但最后一天没有"下一个交易日"所以少一条
+    assert body['stats']['n'] == 9
+    assert len(body['pairs']) == 9
+
+    # 情感与次日收益同向构造 -> 相关系数应为正
+    assert body['stats']['pearson'] is not None
+    assert body['stats']['pearson'] > 0.5
+
+
+def test_returns_lag_zero_is_allowed(client, monkeypatch):
+    _seed_returns(client, monkeypatch)
+    r = client.get('/api/stocks/600519/returns?lag=0')
+    assert r.status_code == 200
+    assert r.json()['stats']['lag'] == 0
+
+
+def test_returns_rejects_out_of_range_lag(client):
+    assert client.get('/api/stocks/600519/returns?lag=9').status_code == 422
+    assert client.get('/api/stocks/600519/returns?lag=-1').status_code == 422
+
+
+def test_returns_min_news_filter(client, monkeypatch):
+    """min_news 高于当天条数时,样本应被过滤掉。"""
+    _seed_returns(client, monkeypatch)
+    body = client.get('/api/stocks/600519/returns?min_news=2').json()
+    assert body['stats']['n'] == 0
+
+
+def test_sync_news_pages_parameter_passed(client, monkeypatch):
+    """news_pages 参数应真的传到采集层,否则翻页开关是假的。"""
+    from app import collector
+
+    seen = {}
+
+    def fake_pages(kw, pages=1, page_size=20, sleep=0.3):
+        seen['pages'] = pages
+        seen['page_size'] = page_size
+        return []
+
+    monkeypatch.setattr(collector, 'fetch_kline', lambda code, market='SH': [])
+    monkeypatch.setattr(collector, 'fetch_news_pages', fake_pages)
+
+    client.post('/api/stocks/600519/sync?news_pages=4&news_size=30')
+    assert seen['pages'] == 4
+    assert seen['page_size'] == 30
+
+
+def test_sync_news_pages_out_of_range_rejected(client):
+    assert client.post('/api/stocks/600519/sync?news_pages=0').status_code == 422
+    assert client.post('/api/stocks/600519/sync?news_pages=101').status_code == 422

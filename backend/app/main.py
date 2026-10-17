@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from . import config, models, sentiment, service
+from . import analysis, config, models, sentiment, service
 from .db import get_db, init_db
 
 
@@ -162,12 +162,16 @@ def get_overview(code: str, db: Session = Depends(get_db)):
 
 @app.post('/api/stocks/{code}/sync')
 def sync(code: str, news_size: int = Query(20, ge=1, le=100),
+         news_pages: int = Query(1, ge=1, le=100),
          db: Session = Depends(get_db)):
-    """触发一次采集(行情 + 新闻 + 情感分析)。"""
+    """触发一次采集(行情 + 新闻 + 情感分析)。
+
+    news_pages 控制新闻翻页数 —— 翻得越多入库样本越大,默认 1 页。
+    """
     _require_stock(db, code)
     stock = db.get(models.Stock, code)
     return service.sync_stock(db, stock.code, stock.name, stock.market,
-                              news_size=news_size)
+                              news_size=news_size, news_pages=news_pages)
 
 
 # ------------------------------------------------------------ 情感分析
@@ -256,6 +260,48 @@ def get_sentiment(code: str, limit: int = Query(500, ge=1, le=5000),
         'ratio': {k: (round(v / total, 4) if total else 0.0)
                   for k, v in counts.items()},
         'daily': [dict(date=d, **v) for d, v in sorted(by_date.items())],
+    }
+
+
+@app.get('/api/stocks/{code}/returns')
+def get_returns(code: str, lag: int = Query(1, ge=0, le=5),
+                min_news: int = Query(1, ge=1, le=100),
+                db: Session = Depends(get_db)):
+    """情感指数与未来收益的关联分析。
+
+    返回每日情感指数、对齐后的样本点,以及相关系数等统计量。
+    lag 表示用之后第几个交易日的收益 —— 默认 1,即次日。
+    """
+    _require_stock(db, code)
+
+    news = db.scalars(
+        select(models.News)
+        .where(models.News.code == code)
+        .where(models.News.sentiment != '')
+        .order_by(models.News.publish_time)
+    ).all()
+    klines = db.scalars(
+        select(models.Kline)
+        .where(models.Kline.code == code)
+        .order_by(models.Kline.trade_date)
+    ).all()
+
+    rows = [{'publish_time': n.publish_time, 'sentiment': n.sentiment,
+             'sentiment_score': n.sentiment_score} for n in news]
+    ks = [{'trade_date': k.trade_date, 'change_pct': k.change_pct}
+          for k in klines]
+
+    result = analysis.analyze(rows, ks, lag=lag)
+    pairs = [p for p in result['pairs'] if p['n'] >= min_news]
+    stats = analysis.summarize(pairs)
+    stats['lag'] = lag
+
+    return {
+        'code': code,
+        'news_total': len(rows),
+        'kline_total': len(ks),
+        'stats': stats,
+        'pairs': pairs,
     }
 
 

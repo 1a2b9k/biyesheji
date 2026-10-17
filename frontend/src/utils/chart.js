@@ -226,3 +226,88 @@ export function buildSentimentTrendOption(daily) {
     })),
   }
 }
+
+/**
+ * 构造「情感指数 vs 次日收益」散点图。
+ *
+ * 横轴是情感指数 polarity(-1 全负面 .. +1 全正面),纵轴是之后第 lag 个
+ * 交易日的涨跌幅。散点比折线更合适:折线会暗示两列数据在时间上连续,
+ * 而这里要表达的是「两个变量的联合分布」。
+ *
+ * 同时画一条最小二乘拟合线 —— 斜率就是相关性的可视化版本,
+ * 让读者一眼看出方向,而不必去读数字。
+ */
+export function buildReturnsScatterOption(pairs) {
+  const rows = Array.isArray(pairs) ? pairs : []
+  const points = rows.map((p) => [p.polarity, p.return])
+
+  // 最小二乘拟合 y = a + b*x,样本太少时不画
+  let fit = []
+  if (points.length >= 3) {
+    const n = points.length
+    const mx = points.reduce((s, p) => s + p[0], 0) / n
+    const my = points.reduce((s, p) => s + p[1], 0) / n
+    let num = 0
+    let den = 0
+    for (const [x, y] of points) {
+      num += (x - mx) * (y - my)
+      den += (x - mx) ** 2
+    }
+    if (den !== 0) {
+      const b = num / den
+      const a = my - b * mx
+      const xs = points.map((p) => p[0])
+      const minX = Math.min(...xs)
+      const maxX = Math.max(...xs)
+      fit = [
+        [minX, a + b * minX],
+        [maxX, a + b * maxX],
+      ]
+    }
+  }
+
+  return {
+    tooltip: {
+      trigger: 'item',
+      formatter: (p) => {
+        if (p.seriesName === '拟合线') return ''
+        return `情感 ${p.value[0]}<br/>次日收益 ${p.value[1]}%`
+      },
+      textStyle: { fontSize: 12 },
+    },
+    grid: { left: 52, right: 20, top: 20, bottom: 44 },
+    xAxis: {
+      type: 'value', name: '情感指数', nameTextStyle: { fontSize: 11 },
+      min: -1, max: 1,
+      axisLine: { lineStyle: { color: COLORS.line } },
+      axisTick: { show: false },
+      axisLabel: { fontSize: 11, color: COLORS.muted },
+      splitLine: { lineStyle: { color: COLORS.line, type: 'dashed' } },
+    },
+    yAxis: {
+      type: 'value', name: '次日收益 %', nameTextStyle: { fontSize: 11 },
+      axisLine: { show: false }, axisTick: { show: false },
+      axisLabel: { fontSize: 11, color: COLORS.muted },
+      splitLine: { lineStyle: { color: COLORS.line, type: 'dashed' } },
+    },
+    series: [
+      {
+        name: '样本',
+        type: 'scatter',
+        symbolSize: 7,
+        itemStyle: { color: COLORS.pos, opacity: 0.7 },
+        data: points,
+      },
+      ...(fit.length
+        ? [{
+            name: '拟合线',
+            type: 'line',
+            showSymbol: false,
+            silent: true,
+            lineStyle: { color: COLORS.ink, width: 1.5, type: 'dashed' },
+            data: fit,
+          }]
+        : []),
+    ],
+  }
+}

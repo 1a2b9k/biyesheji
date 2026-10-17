@@ -61,6 +61,28 @@ const SENTIMENT_INFO = {
   metrics: { accuracy: 0.754, macro_f1: 0.7491, n_test: 2130 },
 }
 
+const RETURNS = {
+  code: '600519',
+  news_total: 4,
+  kline_total: 2,
+  stats: {
+    n: 40,
+    pearson: 0.412,
+    spearman: 0.398,
+    p_value: 0.0084,
+    polarity_mean: 0.21,
+    return_mean: 0.15,
+    groups: { low: -1.2, mid: 0.05, high: 1.65 },
+    hit_rate: 0.625,
+    hit_n: 32,
+  },
+  pairs: [
+    { date: '2026-10-12', polarity: -1, return: -1.8, n: 2 },
+    { date: '2026-10-13', polarity: 0.5, return: 0.9, n: 1 },
+    { date: '2026-10-14', polarity: 1, return: 1.7, n: 3 },
+  ],
+}
+
 // 打桩:网络层与图表组件
 vi.mock('../src/api', () => ({
   listStocks: vi.fn(() => Promise.resolve(STOCKS)),
@@ -69,6 +91,7 @@ vi.mock('../src/api', () => ({
   getNews: vi.fn(() => Promise.resolve(NEWS)),
   getSentimentInfo: vi.fn(() => Promise.resolve(SENTIMENT_INFO)),
   getStockSentiment: vi.fn(() => Promise.resolve(SENTIMENT)),
+  getStockReturns: vi.fn(() => Promise.resolve(RETURNS)),
   syncStock: vi.fn(() => Promise.resolve({ kline_added: 5, news_added: 3, sentiment_added: 2, errors: [] })),
 }))
 
@@ -136,9 +159,9 @@ describe('App 集成', () => {
     expect(w.text()).toContain('11只白酒股下跌')
   })
 
-  it('渲染三个图表位(K线 + 情感分布 + 情感趋势)', async () => {
+  it('渲染四个图表位(K线 + 情感分布 + 情感趋势 + 关联散点)', async () => {
     const w = await mountApp()
-    expect(w.findAll('.echart-stub')).toHaveLength(3)
+    expect(w.findAll('.echart-stub')).toHaveLength(4)
   })
 
   it('K线图收到的配置含正确的日期轴', async () => {
@@ -273,5 +296,81 @@ describe('情感分析面板', () => {
     await flushPromises()
     await flushPromises()
     expect(w.text()).toContain('情感标注 2 条')
+  })
+})
+
+describe('情感与收益面板', () => {
+  it('展示相关系数与样本量', async () => {
+    const w = await mountApp()
+    const text = w.text()
+    expect(text).toContain('0.412')
+    expect(text).toContain('0.398')
+    expect(text).toContain('40 个股票-日样本')
+  })
+
+  it('p 值显著时给出具体数值', async () => {
+    const w = await mountApp()
+    expect(w.text()).toContain('0.008')
+  })
+
+  it('样本充足时不显示可靠性警告', async () => {
+    const w = await mountApp()
+    expect(w.text()).not.toContain('低于 30 个时相关系数波动很大')
+  })
+
+  it('样本不足时明确提示相关系数不可靠', async () => {
+    const api = await import('../src/api')
+    api.getStockReturns.mockResolvedValueOnce({
+      ...RETURNS,
+      stats: { ...RETURNS.stats, n: 12 },
+    })
+
+    const w = mount(App)
+    await flushPromises()
+    await flushPromises()
+    expect(w.text()).toContain('低于 30 个时相关系数波动很大')
+  })
+
+  it('散点图配置正确', async () => {
+    const w = await mountApp()
+    const scatter = optionOf(w, '样本', 'scatter')
+    expect(scatter.series[0].data).toEqual([
+      [-1, -1.8], [0.5, 0.9], [1, 1.7],
+    ])
+    expect(scatter.xAxis.min).toBe(-1)
+    expect(scatter.xAxis.max).toBe(1)
+  })
+
+  it('展示分组平均收益', async () => {
+    const w = await mountApp()
+    const text = w.text()
+    expect(text).toContain('低情感组')
+    expect(text).toContain('高情感组')
+    expect(text).toContain('-1.20%')
+    expect(text).toContain('+1.65%')
+  })
+
+  it('没有配对样本时给出说明而不是空图', async () => {
+    const api = await import('../src/api')
+    api.getStockReturns.mockResolvedValueOnce({
+      code: '600519', news_total: 0, kline_total: 0,
+      stats: { n: 0, pearson: null, spearman: null, p_value: null,
+        groups: {}, hit_rate: null, hit_n: 0 },
+      pairs: [],
+    })
+
+    const w = mount(App)
+    await flushPromises()
+    await flushPromises()
+    expect(w.text()).toContain('还没有可用的配对样本')
+  })
+
+  it('关联接口失败不影响页面其余部分', async () => {
+    const api = await import('../src/api')
+    api.getStockReturns.mockRejectedValueOnce(new Error('503'))
+
+    const w = await mountApp()
+    expect(w.text()).toContain('贵州茅台重回A股股王')
+    expect(w.text()).toContain('还没有可用的配对样本')
   })
 })
