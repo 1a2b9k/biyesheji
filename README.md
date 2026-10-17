@@ -21,7 +21,23 @@
 
 ## 快速开始
 
-需要两个终端。**先启动后端,再启动前端。**
+**一键启动**:双击桌面上的「启动财经舆情平台」快捷方式,或直接跑
+
+```bat
+scripts\start-all.cmd
+```
+
+它会依次启动后端、等它就绪、启动前端、等它就绪,然后打开浏览器。
+已经在跑的服务会被识别并跳过,所以重复双击是安全的。两个服务各占一个
+命令行窗口,关掉窗口即停止。
+
+快捷方式由 `scripts\make-shortcut.ps1` 生成(名字、目标、图标都可传参);
+图标由 `tools\make_icon.py` 生成到 `assets\app.ico`,配色与前端图表同源。
+两者都可以随时重建。
+
+---
+
+也可以照旧开两个终端手动启动。**先启动后端,再启动前端。**
 
 ```bat
 REM 首次:装依赖(必须用包装器,不要用 python -m pip)
@@ -61,7 +77,7 @@ biyesheji/
 │   │   ├── analysis.py          情感指数与收益的关联分析(纯函数)
 │   │   ├── sentiment.py         情感推理(懒加载;缺模型时自动降级)
 │   │   └── main.py              FastAPI 应用与接口
-│   ├── tests/                   509 个测试
+│   ├── tests/                   532 个测试
 │   ├── conftest.py              把 pytest 临时目录挪进工作区(沙箱需要)
 │   └── pytest.ini
 ├── frontend/                    前端 (Vue3 + Vite + ECharts)
@@ -83,13 +99,19 @@ biyesheji/
 │   ├── check_env.py             环境自检
 │   ├── fetch_model.py           预训练模型下载
 │   ├── make_figures.py          生成论文 13 张图(读 data/,输出到 论文/figures/)
-│   ├── md_to_docx.py            Markdown → Word(支持表格与插图)
+│   ├── make_icon.py             生成 assets/app.ico(快捷方式图标,7 种尺寸)
+│   ├── md_to_docx.py            Markdown → Word(支持表格、插图与目录域)
 │   └── use_mysql.py             一条命令切换数据库
 ├── data/experiments/            实验结果 JSON + REPORT.md + NEUTRAL_ANALYSIS.md + ABLATION.md(已进版本库)
 ├── 论文/                        开题报告书 / 文献综述 / 论文写作大纲 / 毕业论文初稿
 │   ├── figures/                 13 张论文插图(由 make_figures.py 生成)
 │   │                            (.md 进库,.docx 为构建产物;初稿是底稿,须学生本人改写)
 ├── scripts/                     一键启动 / 测试脚本
+│   ├── start-all.cmd            一键启动(后端+前端+开浏览器,可重复执行)
+│   ├── make-shortcut.ps1        生成桌面快捷方式(UTF-8 带 BOM)
+│   ├── start-backend.cmd        只启后端
+│   └── start-frontend.cmd       只启前端
+├── assets/app.ico               快捷方式图标(由 tools/make_icon.py 生成)
 ├── requirements.txt             依赖清单(手写,按真实 import 核对)
 ├── .env.example                 配置模板(复制为 .env)
 └── 文档/                        学校通知原件
@@ -191,7 +213,7 @@ REM 情感指数 vs 次日收益:逐股票 + 全样本汇总,可写 JSON
 scripts\test-all.cmd
 ```
 
-当前:**724 个测试全部通过**(后端 509 + 前端 82 + 技能安装 133)。
+当前:**747 个测试全部通过**(后端 532 + 前端 82 + 技能安装 133)。
 
 测试原则:
 - 采集解析用**离线样本**测(不发网络请求,快且稳定)
