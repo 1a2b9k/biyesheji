@@ -5,6 +5,11 @@
  * 这样验证的是"页面组合起来能不能正确渲染",而不只是单个函数。
  * ECharts 依赖 canvas,在 jsdom 下无法初始化,故整体打桩 ——
  * 图表配置的正确性由 chart.test.js 覆盖。
+ *
+ * 页面按功能分成四个页签后,不在当前页签的内容不会被渲染(v-if),
+ * 所以每个用例都先声明自己在看哪一页(见 mountTab)。
+ * 这顺带成了一条额外断言:若某个组件漏了 v-if 而一直留在 DOM 里,
+ * "不在该页时不应出现"的用例会立刻抓到。
  */
 
 import { flushPromises, mount } from '@vue/test-utils'
@@ -110,10 +115,25 @@ async function mountApp() {
 }
 
 /**
+ * 挂载并切到指定页签。
+ *
+ * 默认页签是「行情概览」,所以 overview 可以直接 mountApp;
+ * 其余三页都要先点一下页签。
+ */
+async function mountTab(tab) {
+  const w = await mountApp()
+  if (tab !== 'overview') {
+    await w.find(`[data-tab="${tab}"]`).trigger('click')
+    await flushPromises()
+  }
+  return w
+}
+
+/**
  * 按 series 名找图表配置。
  *
- * 不用下标:页面改布局(例如把来源分布挪到右栏)会让图表顺序变化,
- * 下标断言会因此误报,而"哪个图拿到哪份数据"才是真正要测的。
+ * 不用下标:页面改布局会让图表顺序变化,下标断言会因此误报,
+ * 而"哪个图拿到哪份数据"才是真正要测的。
  * 同名 series 出现在多张图里时用 type 再筛一层。
  */
 function optionOf(w, seriesName, seriesType) {
@@ -131,6 +151,76 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
+describe('功能导航', () => {
+  it('渲染四个页签', async () => {
+    const w = await mountApp()
+    const tabs = w.findAll('[role="tab"]')
+    expect(tabs).toHaveLength(4)
+    expect(tabs.map((t) => t.find('.label').text())).toEqual([
+      '行情概览', '情感分析', '情感与收益', '新闻列表',
+    ])
+  })
+
+  it('默认停在行情概览', async () => {
+    const w = await mountApp()
+    const on = w.find('[role="tab"][aria-selected="true"]')
+    expect(on.attributes('data-tab')).toBe('overview')
+  })
+
+  it('页签上带各页条数', async () => {
+    const w = await mountApp()
+    // K 线 2 条、情感 4 条、关联 40 个样本、新闻 2 条
+    expect(w.find('[data-tab="overview"] .badge').text()).toBe('2')
+    expect(w.find('[data-tab="sentiment"] .badge').text()).toBe('4')
+    expect(w.find('[data-tab="returns"] .badge').text()).toBe('40')
+    expect(w.find('[data-tab="news"] .badge').text()).toBe('2')
+  })
+
+  it('点击页签切换当前视图', async () => {
+    const w = await mountApp()
+    await w.find('[data-tab="news"]').trigger('click')
+    await flushPromises()
+    expect(w.find('[role="tab"][aria-selected="true"]').attributes('data-tab')).toBe('news')
+    expect(w.text()).toContain('贵州茅台重回A股股王')
+  })
+
+  it('同一时刻只渲染一页的内容', async () => {
+    const w = await mountTab('news')
+    // 新闻页:有新闻,没有概览读数与 K 线
+    expect(w.text()).toContain('贵州茅台重回A股股王')
+    expect(w.text()).not.toContain('最新收盘')
+    expect(w.findAll('.echart-stub')).toHaveLength(0)
+  })
+
+  it('四个页签的内容互不重叠', async () => {
+    const overview = await mountTab('overview')
+    expect(overview.text()).toContain('最新收盘')
+    expect(overview.text()).not.toContain('相关新闻')
+
+    const sentiment = await mountTab('sentiment')
+    expect(sentiment.text()).toContain('情感分析')
+    expect(sentiment.text()).not.toContain('最新收盘')
+
+    const returns = await mountTab('returns')
+    expect(returns.text()).toContain('情感与收益')
+    expect(returns.text()).not.toContain('最新收盘')
+  })
+
+  it('切换页签后数据不丢,切回不用重新请求', async () => {
+    const api = await import('../src/api')
+    const w = await mountApp()
+    const before = api.getKlines.mock.calls.length
+
+    await w.find('[data-tab="news"]').trigger('click')
+    await flushPromises()
+    await w.find('[data-tab="overview"]').trigger('click')
+    await flushPromises()
+
+    expect(w.text()).toContain('最新收盘')
+    expect(api.getKlines.mock.calls.length).toBe(before)
+  })
+})
+
 describe('App 集成', () => {
   it('加载后渲染股票选择器', async () => {
     const w = await mountApp()
@@ -141,7 +231,7 @@ describe('App 集成', () => {
   })
 
   it('渲染概览读数与最新价', async () => {
-    const w = await mountApp()
+    const w = await mountTab('overview')
     const text = w.text()
     expect(text).toContain('最新收盘')
     expect(text).toContain('2026-10-13')
@@ -149,23 +239,27 @@ describe('App 集成', () => {
   })
 
   it('涨跌幅带符号显示', async () => {
-    const w = await mountApp()
+    const w = await mountTab('overview')
     expect(w.text()).toContain('-1.02%')
   })
 
   it('渲染新闻列表', async () => {
-    const w = await mountApp()
+    const w = await mountTab('news')
     expect(w.text()).toContain('贵州茅台重回A股股王')
     expect(w.text()).toContain('11只白酒股下跌')
   })
 
-  it('渲染四个图表位(K线 + 情感分布 + 情感趋势 + 关联散点)', async () => {
-    const w = await mountApp()
-    expect(w.findAll('.echart-stub')).toHaveLength(4)
+  it('四个图表分属三个页签,各页只画自己的图', async () => {
+    // 分页前这条断言是"整页共 4 个图";分页后每个页签各自持有自己的图,
+    // 数量不能相加 —— 加在一起就说明 v-if 没起作用。
+    expect((await mountTab('overview')).findAll('.echart-stub')).toHaveLength(1)
+    expect((await mountTab('sentiment')).findAll('.echart-stub')).toHaveLength(2)
+    expect((await mountTab('returns')).findAll('.echart-stub')).toHaveLength(1)
+    expect((await mountTab('news')).findAll('.echart-stub')).toHaveLength(0)
   })
 
   it('K线图收到的配置含正确的日期轴', async () => {
-    const w = await mountApp()
+    const w = await mountTab('overview')
     const kline = optionOf(w, 'K线')
     expect(kline.xAxis[0].data).toEqual([
       '2026-10-12', '2026-10-13',
@@ -173,7 +267,7 @@ describe('App 集成', () => {
   })
 
   it('来源分布不再是彩色饼图,而是条状列表', async () => {
-    const w = await mountApp()
+    const w = await mountTab('sentiment')
     // 页面里不应再有任何 series 名为「新闻来源」的图表
     const opts = w.findAllComponents({ name: 'EChart' })
       .map((c) => c.props('option'))
@@ -206,6 +300,18 @@ describe('App 集成', () => {
     expect(w.text()).toContain('新增日线 5 条')
   })
 
+  it('采集提示在切换页签后仍然可见', async () => {
+    // 提示挂在页签之外(StockBar 下面),属于全局状态,不该随页签消失
+    const w = await mountApp()
+    await w.find('button.btn').trigger('click')
+    await flushPromises()
+    await flushPromises()
+    await flushPromises()
+    await w.find('[data-tab="news"]').trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('采集完成')
+  })
+
   it('后端不可用时给出提示而不是崩溃', async () => {
     const api = await import('../src/api')
     api.listStocks.mockRejectedValueOnce(new Error('connect ECONNREFUSED'))
@@ -219,7 +325,7 @@ describe('App 集成', () => {
 
 describe('情感分析面板', () => {
   it('展示模型名与测试集指标', async () => {
-    const w = await mountApp()
+    const w = await mountTab('sentiment')
     const text = w.text()
     expect(text).toContain('BERT')
     expect(text).toContain('75.40%')
@@ -228,7 +334,7 @@ describe('情感分析面板', () => {
   })
 
   it('展示情感条数与占比', async () => {
-    const w = await mountApp()
+    const w = await mountTab('sentiment')
     const text = w.text()
     expect(text).toContain('共 4 条已标注新闻')
     expect(text).toContain('75.00%')
@@ -236,12 +342,12 @@ describe('情感分析面板', () => {
   })
 
   it('总结占比最高的一类', async () => {
-    const w = await mountApp()
+    const w = await mountTab('sentiment')
     expect(w.text()).toContain('「利好」占比最高')
   })
 
   it('情感图表配置正确', async () => {
-    const w = await mountApp()
+    const w = await mountTab('sentiment')
     const pie = optionOf(w, '情感分布')
     expect(pie.series[0].data).toEqual([
       { name: '利好', value: 3, itemStyle: { color: COLORS.pos } },
@@ -262,6 +368,8 @@ describe('情感分析面板', () => {
     const w = mount(App)
     await flushPromises()
     await flushPromises()
+    await w.find('[data-tab="sentiment"]').trigger('click')
+    await flushPromises()
     expect(w.text()).toContain('尚未训练情感模型')
   })
 
@@ -276,6 +384,8 @@ describe('情感分析面板', () => {
     const w = mount(App)
     await flushPromises()
     await flushPromises()
+    await w.find('[data-tab="sentiment"]').trigger('click')
+    await flushPromises()
     expect(w.text()).toContain('还没有情感标注')
   })
 
@@ -284,9 +394,12 @@ describe('情感分析面板', () => {
     api.getStockSentiment.mockRejectedValueOnce(new Error('503'))
 
     const w = await mountApp()
-    // 新闻与概览照常渲染
-    expect(w.text()).toContain('贵州茅台重回A股股王')
+    // 概览页照常渲染
     expect(w.text()).toContain('1274.89')
+    // 新闻页照常渲染
+    await w.find('[data-tab="news"]').trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('贵州茅台重回A股股王')
   })
 
   it('采集结果包含情感标注条数', async () => {
@@ -301,7 +414,7 @@ describe('情感分析面板', () => {
 
 describe('情感与收益面板', () => {
   it('展示相关系数与样本量', async () => {
-    const w = await mountApp()
+    const w = await mountTab('returns')
     const text = w.text()
     expect(text).toContain('0.412')
     expect(text).toContain('0.398')
@@ -309,12 +422,12 @@ describe('情感与收益面板', () => {
   })
 
   it('p 值显著时给出具体数值', async () => {
-    const w = await mountApp()
+    const w = await mountTab('returns')
     expect(w.text()).toContain('0.008')
   })
 
   it('样本充足时不显示可靠性警告', async () => {
-    const w = await mountApp()
+    const w = await mountTab('returns')
     expect(w.text()).not.toContain('低于 30 个时相关系数波动很大')
   })
 
@@ -328,11 +441,13 @@ describe('情感与收益面板', () => {
     const w = mount(App)
     await flushPromises()
     await flushPromises()
+    await w.find('[data-tab="returns"]').trigger('click')
+    await flushPromises()
     expect(w.text()).toContain('低于 30 个时相关系数波动很大')
   })
 
   it('散点图配置正确', async () => {
-    const w = await mountApp()
+    const w = await mountTab('returns')
     const scatter = optionOf(w, '样本', 'scatter')
     expect(scatter.series[0].data).toEqual([
       [-1, -1.8], [0.5, 0.9], [1, 1.7],
@@ -342,7 +457,7 @@ describe('情感与收益面板', () => {
   })
 
   it('展示分组平均收益', async () => {
-    const w = await mountApp()
+    const w = await mountTab('returns')
     const text = w.text()
     expect(text).toContain('低情感组')
     expect(text).toContain('高情感组')
@@ -362,6 +477,8 @@ describe('情感与收益面板', () => {
     const w = mount(App)
     await flushPromises()
     await flushPromises()
+    await w.find('[data-tab="returns"]').trigger('click')
+    await flushPromises()
     expect(w.text()).toContain('还没有可用的配对样本')
   })
 
@@ -370,7 +487,12 @@ describe('情感与收益面板', () => {
     api.getStockReturns.mockRejectedValueOnce(new Error('503'))
 
     const w = await mountApp()
+    await w.find('[data-tab="news"]').trigger('click')
+    await flushPromises()
     expect(w.text()).toContain('贵州茅台重回A股股王')
+
+    await w.find('[data-tab="returns"]').trigger('click')
+    await flushPromises()
     expect(w.text()).toContain('还没有可用的配对样本')
   })
 })

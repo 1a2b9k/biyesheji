@@ -1,16 +1,30 @@
 <script setup>
 /**
- * 主页面:股票选择 → 概览读数 + K 线 + 新闻 + 情感分析。
+ * 主页面:股票选择 + 四个功能视图(行情概览 / 情感分析 / 情感与收益 / 新闻列表)。
  *
- * 数据流:选股 → 并行拉 overview / klines / news / sentiment → 交给子组件渲染。
+ * 数据流:选股 → 并行拉 overview / klines / news / sentiment / returns
+ * → 交给当前页签的组件渲染。
  *
- * 布局:两栏。左栏是"行情"(读数 + K 线),右栏是"舆情"(来源分布 + 情感)。
- * 这样同一时刻的价与情可以对照着看,比上下堆叠更符合分析场景。
+ * 为什么改成页签而不是继续堆在一页:
+ *   原先五块内容纵向排开,一屏放不下,用户要滚很久才看到新闻;
+ *   而看盘时"先看价、再看情绪、再看新闻"本来就是分阶段的动作,
+ *   同一时刻只关心其中一块。分页后每页都短,页签上带条数,
+ *   不用点进去就知道哪页有数据。
+ *
+ * 为什么切页用 v-if 而不是 v-show:
+ *   ECharts 在 display:none 的容器里初始化会拿到 0 宽度,图表画不出来;
+ *   v-if 让图表在页签真正可见时才挂载,量到的尺寸是对的。
+ *   代价是每次切回都要重建图表,但一次重建几十毫秒,无感。
+ *
+ * 为什么五份数据一次性拉完而不是进哪页拉哪页:
+ *   五个请求本来就并行、总量只有几百 KB,一次拉完切页是瞬时的;
+ *   按页懒加载反而会让每次切页都闪一次加载态。
  */
 import { computed, onMounted, ref } from 'vue'
 
 import { getKlines, getNews, getOverview, getSentimentInfo, getStockReturns, getStockSentiment, listStocks, syncStock } from './api'
 import EChart from './components/EChart.vue'
+import NavTabs from './components/NavTabs.vue'
 import NewsList from './components/NewsList.vue'
 import OverviewCards from './components/OverviewCards.vue'
 import ReturnsPanel from './components/ReturnsPanel.vue'
@@ -30,11 +44,23 @@ const returns = ref(null)
 const loading = ref(false)
 const syncing = ref(false)
 const message = ref('')
+const activeTab = ref('overview')
 
 const klineOption = computed(() => buildKlineOption(klines.value))
 
 const currentName = computed(() =>
   stocks.value.find((s) => s.code === current.value)?.name ?? '')
+
+/**
+ * 页签定义。badge 是"这一页有多少条",为 0 时照样显示 ——
+ * 0 本身是有用信息(该股没有这类数据),藏起来反而让人以为还没加载。
+ */
+const tabs = computed(() => [
+  { key: 'overview', label: '行情概览', hint: '读数 · K 线', badge: klines.value.length },
+  { key: 'sentiment', label: '情感分析', hint: '分布 · 来源', badge: sentiment.value?.total ?? 0 },
+  { key: 'returns', label: '情感与收益', hint: '相关性 · 散点', badge: returns.value?.stats?.n ?? 0 },
+  { key: 'news', label: '新闻列表', hint: '逐条标注', badge: news.value.length },
+])
 
 async function loadAll(code) {
   if (!code) return
@@ -124,25 +150,26 @@ onMounted(async () => {
       <p v-if="message" class="msg">{{ message }}</p>
       <p v-if="loading" class="msg loading">正在加载…</p>
 
-      <OverviewCards :overview="overview" />
+      <NavTabs v-model="activeTab" :tabs="tabs" />
 
-      <!--
-        版面按"宽度需求"分行,而不是硬凑两栏等高:
-        K 线和新闻需要横向空间,给整行;情感与来源都是卡片式内容,并排即可。
-        这样每行左右高度天然接近,不会出现某栏底下空一大块的情况。
-      -->
-      <section class="panel">
-        <header class="head">
-          <h2>K 线走势</h2>
-          <span class="meta num">
-            {{ currentName }} · 最近 {{ klines.length }} 个交易日
-          </span>
-        </header>
-        <EChart v-if="klines.length" :option="klineOption" height="440px" />
-        <p v-else class="empty">暂无行情数据</p>
-      </section>
+      <template v-if="activeTab === 'overview'">
+        <OverviewCards :overview="overview" />
 
-      <div class="cols">
+        <!-- K 线需要横向空间,单独占整行 -->
+        <section class="panel">
+          <header class="head">
+            <h2>K 线走势</h2>
+            <span class="meta num">
+              {{ currentName }} · 最近 {{ klines.length }} 个交易日
+            </span>
+          </header>
+          <EChart v-if="klines.length" :option="klineOption" height="460px" />
+          <p v-else class="empty">暂无行情数据</p>
+        </section>
+      </template>
+
+      <div v-else-if="activeTab === 'sentiment'" class="cols">
+        <!-- 情感与来源并排:两者都是卡片式内容,宽度需求相近 -->
         <div class="col">
           <SentimentPanel :data="sentiment" :info="sentimentInfo" />
         </div>
@@ -151,9 +178,9 @@ onMounted(async () => {
         </div>
       </div>
 
-      <ReturnsPanel :data="returns" />
+      <ReturnsPanel v-else-if="activeTab === 'returns'" :data="returns" />
 
-      <NewsList :news="news" />
+      <NewsList v-else-if="activeTab === 'news'" :news="news" />
     </main>
   </div>
 </template>
@@ -208,9 +235,6 @@ onMounted(async () => {
   border-radius: var(--r);
   padding: 18px 22px;
   margin-bottom: 16px;
-}
-.col .panel:last-child {
-  margin-bottom: 0;
 }
 
 .head {
