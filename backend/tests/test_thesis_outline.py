@@ -467,11 +467,11 @@ def test_multitask_did_not_beat_baseline():
     assert _load_json('mtl.json')['accuracy'] < base
 
 
-# ---------------------------------------------------------------- 表 6-6 超参
+# ---------------------------------------------------------------- 表 6-7 超参
 
-def test_table_6_6_sweep_matches():
+def test_table_6_7_sweep_matches():
     text = _outline_text()
-    rows = _table_rows(text, '### 表 6-6')
+    rows = _table_rows(text, '### 表 6-7')
     sweep = _load_json('sweep.json')
 
     # 大纲里的数值按 4 位小数展示,源 JSON 是全精度浮点,比较时按 4 位四舍五入。

@@ -1144,3 +1144,82 @@ def test_search_statement_admits_the_two_limitations():
     section = _section(body, '## 第 1 章', '## 第 2 章')
     assert '会员墙' in section, '检索声明未承认万方/维普的会员墙限制'
     assert '引文追溯' in section, '检索声明未承认未做引文追溯'
+
+
+# ---------------------------------------------------------------- 章节结构
+
+def _h3_titles(text, chapter_start, chapter_end):
+    """取一章里所有三级标题的文字。"""
+    section = _section(text, chapter_start, chapter_end)
+    return re.findall(r'^### (.+)$', section, re.M)
+
+
+def test_chapter_5_splits_evidence_into_primary_and_supplementary():
+    """第 5 章四条证据必须标出主次。
+
+    四条证据的论证分量并不相同:前两条直接支撑「中性是复合标签」,
+    后两条是检验推论、并且其中一条给出了否证。平铺成「证据一/二/三/四」
+    会让读者以为四者等权,而实际上补充证据二恰恰限定了主张的边界。
+    """
+    body, _ = _body_and_refs()
+    titles = _h3_titles(body, '## 第 5 章', '## 第 6 章')
+
+    primary = [t for t in titles if t.startswith('5.2') or t.startswith('5.3')]
+    supplementary = [t for t in titles if t.startswith('5.4') or t.startswith('5.5')]
+    assert len(primary) == 2 and len(supplementary) == 2, \
+        '第 5 章应有两条主证据与两条补充证据,实得 %r' % (titles,)
+    for t in primary:
+        assert '主证据' in t, '5.2/5.3 应标为主证据: %r' % t
+    for t in supplementary:
+        assert '补充证据' in t, '5.4/5.5 应标为补充证据: %r' % t
+
+    # 旧的「证据一/二/三/四」标题不能再出现,否则两套编号会打架。
+    # 注意不能直接搜子串:「主证据一：」本身就包含「证据一：」。
+    for t in titles:
+        assert not re.match(r'^5\.\d 证据[一二三四]', t), \
+            '仍有小节标题用旧编号: %r' % t
+
+
+def test_chapter_6_merges_nine_sections_into_six():
+    """第 6 章必须保持六节。
+
+    九个小节平铺会让答辩时要说清的论断数翻倍,而合并只减少标题、
+    不删内容:每个被并入的实验都降为粗体小标题,仍占完整篇幅。
+    这条测试防的是「以后又拆回九节」。
+    """
+    body, _ = _body_and_refs()
+    titles = _h3_titles(body, '## 第 6 章', '## 第 7 章')
+
+    assert len(titles) == 6, '第 6 章应为六节,实得 %d 节: %r' % (len(titles), titles)
+    numbers = [t.split()[0] for t in titles]
+    assert numbers == ['6.1', '6.2', '6.3', '6.4', '6.5', '6.6'], \
+        '第 6 章节号应连续为 6.1~6.6,实得 %r' % (numbers,)
+
+    # 被并入的四个实验必须仍以粗体小标题的形式存在,证明内容没被删掉。
+    section = _section(body, '## 第 6 章', '## 第 7 章')
+    for kept in ('**级联与分层路由。**', '**多任务学习与四分类重构。**',
+                 '**概率堆叠。**', '**决策阈值校准。**',
+                 '**超参扫描。**', '**多种子集成。**'):
+        assert kept in section, '第 6 章缺少被并入的小标题「%s」' % kept
+
+
+def test_chapter_6_table_numbers_are_increasing():
+    """第 6 章的表号必须严格递增。
+
+    合并小节时把「超参扫描」移到了「阈值校准」之后,若不互换表号,
+    正文会先出现表 6-7 再出现表 6-6,评委翻到那里就会看出顺序错乱。
+    """
+    body, _ = _body_and_refs()
+    section = _section(body, '## 第 6 章', '## 第 7 章')
+    defined = re.findall(r'^\*\*表 (6-\d+)', section, re.M)
+
+    assert defined, '第 6 章没有找到任何表定义'
+    numbers = [int(x.split('-')[1]) for x in defined]
+    assert numbers == sorted(numbers), '第 6 章表号不是递增的: %r' % (defined,)
+    assert numbers == list(range(1, len(numbers) + 1)), \
+        '第 6 章表号应从 6-1 起连续,实得 %r' % (defined,)
+
+    # 超参扫描现在是表 6-7,阈值校准是表 6-6 —— 互换后要钉住这一对。
+    assert '**表 6-6 决策阈值校准**' in section
+    assert '**表 6-7 超参扫描**' in section
+
