@@ -237,6 +237,32 @@ def test_check_env_covers_0700_directory_bug():
 
 
 @pytest.mark.skipif(not os.path.exists(_PY), reason='workspace interpreter missing')
+def test_check_env_leaves_no_temp_dirs_behind():
+    """自检不能留垃圾目录。
+
+    这个脚本每次跑全量测试都会被 subprocess 调用(本文件就有 4 处),
+    探测目录若不删,每跑一次留一个。曾经积到 339 个 check-env-* 目录,
+    每个还带一个 probe.txt —— 单次几 KB 不起眼,累积起来是几百 MB。
+    """
+    base = os.environ.get('DSH_PY_TMP') or os.path.join(_REPO_ROOT, '.tmp')
+    if not os.path.isdir(base):
+        pytest.skip('临时目录基址不存在')
+
+    def _count():
+        return len([n for n in os.listdir(base) if n.startswith('check-env-')])
+
+    before = _count()
+    r = subprocess.run([_PY, os.path.join(_TOOLS, 'check_env.py')],
+                       cwd=_REPO_ROOT, capture_output=True, text=True,
+                       encoding='utf-8', errors='replace', timeout=300)
+    assert r.returncode == 0, r.stdout + r.stderr
+    after = _count()
+    assert after <= before, (
+        'check_env.py 留了 %d 个 check-env-* 目录(跑之前 %d 个)。'
+        '探测目录必须 rmtree。' % (after - before, before))
+
+
+@pytest.mark.skipif(not os.path.exists(_PY), reason='workspace interpreter missing')
 def test_sandbox_patch_makes_0700_writable():
     """补丁的核心承诺:0o700 目录建出来能写。
 

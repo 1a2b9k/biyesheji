@@ -63,6 +63,7 @@ report(v >= (3, 10), 'Python version >= 3.10', '%d.%d.%d' % (v.major, v.minor, v
 # 3) 沙箱兼容补丁:临时目录必须可写
 try:
     import sitecustomize  # noqa: F401
+    import shutil
     import tempfile
     patched = tempfile.mkdtemp.__module__ == 'sitecustomize'
     d = tempfile.mkdtemp(prefix='check-env-')
@@ -72,6 +73,9 @@ try:
         writable = True
     except OSError:
         writable = False
+    # 探测目录用完必须删。这个脚本每次跑全量测试都会被调用,
+    # 不删的话每次留一个空目录 —— 曾经积到 339 个。
+    shutil.rmtree(d, ignore_errors=True)
     report(patched and writable, 'sandbox temp-dir patch active & writable',
            shorten(d) if patched else 'patch NOT applied')
 except Exception as exc:  # pragma: no cover

@@ -394,15 +394,15 @@ def test_card_system_scale_matches_draft():
     card = _card_text()
     draft = _draft_text()
 
-    for token in ('72235', '6420', '726', '608', '118'):
+    for token in ('72235', '6420', '727', '609', '118'):
         assert token in card, '口径卡未写系统数据 %s' % token
         assert token in draft, '论文正文未写 %s,口径卡不该先出现' % token
 
-    # 726 是后端 608 + 前端 118,三个数都要能对上,
+    # 727 是后端 609 + 前端 118,三个数都要能对上,
     # 免得改了一边忘了另一边
-    assert '608 + 前端 118' in card, \
-        '口径卡未说明 726 由后端 608 + 前端 118 组成'
-    assert '后端 608' in draft, '论文正文未说明后端测试数 608'
+    assert '609 + 前端 118' in card, \
+        '口径卡未说明 727 由后端 609 + 前端 118 组成'
+    assert '后端 609' in draft, '论文正文未说明后端测试数 609'
 
     for share in ('32.12', '6.64', '61.25'):
         assert share in card, '口径卡未写系统情感分布 %s' % share
