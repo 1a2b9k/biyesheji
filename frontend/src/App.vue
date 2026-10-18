@@ -41,12 +41,23 @@ const news = ref([])
 const sentiment = ref(null)
 const sentimentInfo = ref(null)
 const returns = ref(null)
+/** 情感接口本身是否失败(区别于"接口成功但没有数据")。 */
+const sentimentFailed = ref(false)
 const loading = ref(false)
 const syncing = ref(false)
 const message = ref('')
 const activeTab = ref('overview')
 
-const klineOption = computed(() => buildKlineOption(klines.value))
+/**
+ * K 线初始显示多少根。
+ *
+ * 拉 250 根是为了让用户能往左拖出更长的历史;但一上来全铺满会把
+ * 每根蜡烛压成一条线。默认框出最近 120 根 K 线(约半年),剩下靠拖动看。
+ */
+const VISIBLE_BARS = 120
+
+const klineOption = computed(() =>
+  buildKlineOption(klines.value, { visibleBars: VISIBLE_BARS }))
 
 const currentName = computed(() =>
   stocks.value.find((s) => s.code === current.value)?.name ?? '')
@@ -62,10 +73,20 @@ const tabs = computed(() => [
   { key: 'news', label: '新闻列表', hint: '逐条标注', badge: news.value.length },
 ])
 
+/**
+ * 请求序号。快速切股时先后两次 loadAll 会并发,
+ * 先发的那次可能后返回 —— 若不加序号,页面会显示上一只股票的
+ * 行情却配着新股票的名字。只有最后一次请求有权写状态。
+ */
+let loadSeq = 0
+
 async function loadAll(code) {
   if (!code) return
+  const seq = ++loadSeq
   loading.value = true
   message.value = ''
+  // 用局部变量记录,避免迟到的响应把当前股票的标记改掉
+  let failed = false
   try {
     const [o, k, n, s, r] = await Promise.all([
       getOverview(code),
@@ -73,22 +94,32 @@ async function loadAll(code) {
       getNews(code, 50),
       // 情感数据失败不该让整页打不开:模型可能压根没训练,
       // 这时后端返回空统计,单独 catch 更稳妥。
-      getStockSentiment(code).catch(() => null),
+      // 但要记下"是失败"而不是"没数据" —— 两者文案完全不同,
+      // 把 503 说成"还没有标注"会让人以为该去采集。
+      getStockSentiment(code).catch(() => {
+        failed = true
+        return null
+      }),
       // 关联分析同理:样本不足是常态,不该阻断主页面。
       getStockReturns(code).catch(() => null),
     ])
+    // 迟到的响应直接丢掉,不动界面
+    if (seq !== loadSeq) return
     overview.value = o
     klines.value = k
     news.value = n
     sentiment.value = s
     returns.value = r
+    sentimentFailed.value = failed
     if (!k.length && !n.length) {
       message.value = '该股票还没有数据,请点击「采集最新数据」。'
     }
   } catch (err) {
+    if (seq !== loadSeq) return
     message.value = '加载失败:' + (err?.message || err)
   } finally {
-    loading.value = false
+    // 只有最后一次请求才关加载态,否则前一次的 finally 会提前关掉
+    if (seq === loadSeq) loading.value = false
   }
 }
 
@@ -160,10 +191,18 @@ onMounted(async () => {
           <header class="head">
             <h2>K 线走势</h2>
             <span class="meta num">
-              {{ currentName }} · 最近 {{ klines.length }} 个交易日
+              {{ currentName }} · 共 {{ klines.length }} 个交易日
+              <template v-if="klines.length > VISIBLE_BARS">
+                （默认显示最近 {{ VISIBLE_BARS }} 个，可拖动查看更早）
+              </template>
             </span>
           </header>
-          <EChart v-if="klines.length" :option="klineOption" height="460px" />
+          <EChart
+            v-if="klines.length"
+            :option="klineOption"
+            height="460px"
+            :desc="`${currentName}最近 ${klines.length} 个交易日的 K 线与成交量`"
+          />
           <p v-else class="empty">暂无行情数据</p>
         </section>
       </template>
@@ -171,10 +210,18 @@ onMounted(async () => {
       <div v-else-if="activeTab === 'sentiment'" class="cols">
         <!-- 情感与来源并排:两者都是卡片式内容,宽度需求相近 -->
         <div class="col">
-          <SentimentPanel :data="sentiment" :info="sentimentInfo" />
+          <SentimentPanel
+            :data="sentiment"
+            :info="sentimentInfo"
+            :failed="sentimentFailed"
+          />
         </div>
         <div class="col">
-          <SourceBreakdown :sources="overview?.news_sources ?? []" />
+          <SourceBreakdown
+            :sources="overview?.news_sources ?? []"
+            :total="overview?.news_count ?? 0"
+            :source-count="overview?.news_source_count ?? 0"
+          />
         </div>
       </div>
 

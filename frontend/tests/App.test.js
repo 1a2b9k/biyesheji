@@ -402,6 +402,56 @@ describe('情感分析面板', () => {
     expect(w.text()).toContain('贵州茅台重回A股股王')
   })
 
+  it('情感接口失败时不谎称「还没有标注」', async () => {
+    // 503 与"确实没有数据"要分开讲:说成"还没有标注"会把用户指向
+    // 一个无效动作(去点采集),采回来照样取不到。
+    const api = await import('../src/api')
+    api.getStockSentiment.mockRejectedValueOnce(new Error('503'))
+
+    const w = await mountApp()
+    await w.find('[data-tab="sentiment"]').trigger('click')
+    await flushPromises()
+
+    const text = w.text()
+    expect(text).toContain('情感数据加载失败')
+    expect(text).not.toContain('该股票还没有情感标注')
+  })
+
+  it('快速切股时迟到的响应不覆盖当前股票', async () => {
+    // 先后两次 loadAll 并发,先发的可能后返回;没有请求序号时
+    // 页面会显示上一只股票的行情配新股票的名字。
+    const api = await import('../src/api')
+    let resolveSlow
+    const slow = new Promise((r) => { resolveSlow = r })
+
+    // 第一次(600519)的 overview 卡住,第二次(300750)立刻返回
+    api.getOverview
+      .mockImplementationOnce(() => slow)
+      .mockImplementationOnce(() => Promise.resolve({
+        ...OVERVIEW,
+        code: '300750',
+        name: '宁德时代',
+        latest: { ...OVERVIEW.latest, close: 11.11 },
+      }))
+
+    const w = mount(App)
+    await flushPromises()
+    await flushPromises()
+
+    // 切到第二只股票
+    await w.find('select.picker').setValue('300750')
+    await flushPromises()
+    expect(w.text()).toContain('11.11')
+
+    // 第一只的 overview 此时才回来:不该把画面改回 1274.89
+    resolveSlow({ ...OVERVIEW, latest: { ...OVERVIEW.latest, close: 1274.89 } })
+    await flushPromises()
+    await flushPromises()
+
+    expect(w.text()).toContain('11.11')
+    expect(w.text()).not.toContain('1274.89')
+  })
+
   it('采集结果包含情感标注条数', async () => {
     const w = await mountApp()
     await w.find('button.btn').trigger('click')
@@ -480,6 +530,56 @@ describe('情感与收益面板', () => {
     await w.find('[data-tab="returns"]').trigger('click')
     await flushPromises()
     expect(w.text()).toContain('还没有可用的配对样本')
+  })
+
+  it('有样本但算不出相关系数时不显示成 0 且显著', async () => {
+    // 后端在样本过少或某一侧方差为零时返回 pearson/p_value = null。
+    // Number(null) === 0,直接喂给 toFixed 会显示 r=0.000、p<0.001 并标绿,
+    // 把「无法估计」讲成「等于零且显著」——这是必须挡住的一条。
+    const api = await import('../src/api')
+    api.getStockReturns.mockResolvedValueOnce({
+      ...RETURNS,
+      stats: { ...RETURNS.stats, n: 3, pearson: null, spearman: null,
+        p_value: null, hit_rate: null, hit_n: 0 },
+    })
+
+    const w = mount(App)
+    await flushPromises()
+    await flushPromises()
+    await w.find('[data-tab="returns"]').trigger('click')
+    await flushPromises()
+
+    const text = w.text()
+    expect(text).toContain('无法估计')
+    expect(text).toContain('这一组样本算不出相关系数')
+    // 不能出现伪造的读数
+    expect(text).not.toContain('0.000')
+    expect(text).not.toContain('< 0.001')
+    // 显著性标记:sig 类名不该落到 p 值上
+    const sigCount = w.findAll('.v.sig').length
+    expect(sigCount).toBe(0)
+  })
+
+  it('分组收益缺值时不标成上涨', async () => {
+    const api = await import('../src/api')
+    api.getStockReturns.mockResolvedValueOnce({
+      ...RETURNS,
+      stats: { ...RETURNS.stats, groups: { low: null, mid: 0.0012, high: -0.0088 } },
+    })
+
+    const w = mount(App)
+    await flushPromises()
+    await flushPromises()
+    await w.find('[data-tab="returns"]').trigger('click')
+    await flushPromises()
+
+    const rows = w.findAll('.groups li')
+    expect(rows.length).toBe(3)
+    // 第一组缺值:数值显示 '-'，且不该带 up/down 任一着色
+    const first = rows[0]
+    expect(first.text()).toContain('-')
+    expect(first.find('.gval').classes()).not.toContain('up')
+    expect(first.find('.gval').classes()).not.toContain('down')
   })
 
   it('关联接口失败不影响页面其余部分', async () => {

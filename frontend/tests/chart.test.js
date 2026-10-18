@@ -79,6 +79,14 @@ describe('buildKlineOption', () => {
     { trade_date: '2026-10-13', open: 1287, close: 1274.89, low: 1268.11, high: 1288.48, volume: 26573 },
   ]
 
+  /** 造 n 根长度无关紧要的日线,只用来验可视区间换算。 */
+  function manyRows(n) {
+    return Array.from({ length: n }, (_, i) => ({
+      trade_date: `2025-${String((i % 12) + 1).padStart(2, '0')}-01`,
+      open: 10, close: 10, low: 10, high: 10, volume: 1,
+    }))
+  }
+
   it('x 轴为日期', () => {
     const o = buildKlineOption(rows)
     expect(o.xAxis[0].data).toEqual(['2026-10-12', '2026-10-13'])
@@ -115,6 +123,32 @@ describe('buildKlineOption', () => {
     const o = buildKlineOption([])
     expect(o.xAxis[0].data).toEqual([])
     expect(o.series[0].data).toEqual([])
+  })
+
+  it('初始可视区间由 visibleBars 换算,不写死百分比', () => {
+    // 250 根默认只显示最近 120 根 -> start = round((1 - 120/250) * 100) = 52
+    const o = buildKlineOption(manyRows(250), { visibleBars: 120 })
+    for (const z of o.dataZoom) {
+      expect(z.start).toBe(52)
+      expect(z.end).toBe(100)
+    }
+  })
+
+  it('数据量少于可视根数时从 0 开始,全量显示', () => {
+    const o = buildKlineOption(rows, { visibleBars: 120 })
+    for (const z of o.dataZoom) {
+      expect(z.start).toBe(0)
+      expect(z.end).toBe(100)
+    }
+  })
+
+  it('默认只显示最近 120 根', () => {
+    // 写死 60 时 250 根只露约 100 根,而标题写着「共 250 个交易日」——
+    // 这条断言就是防止再退回写死百分比。
+    const o = buildKlineOption(manyRows(250))
+    const shown = Math.round(((o.dataZoom[0].end - o.dataZoom[0].start) / 100) * 250)
+    expect(shown).toBeGreaterThanOrEqual(118)
+    expect(shown).toBeLessThanOrEqual(122)
   })
 })
 

@@ -85,4 +85,34 @@ describe('NewsList', () => {
     expect(w.find('.when .d').text()).toBe('-')
     expect(w.find('.when .t').text()).toBe('')
   })
+
+  it('非 http(s) 地址不渲染成链接', () => {
+    // 后端入库时已用 collector._safe_http_url 挡过一次,但库里可能
+    // 还留着加校验之前抓的旧数据。javascript: 落进 <a href> 就是 XSS。
+    const w = mount(NewsList, {
+      props: {
+        news: [
+          { ...NEWS[0], id: 1, url: 'javascript:alert(1)' },
+          { ...NEWS[1], id: 2, url: 'data:text/html,<b>x</b>' },
+        ],
+      },
+    })
+    expect(w.findAll('a')).toHaveLength(0)
+    expect(w.findAll('.title.plain')).toHaveLength(2)
+    // 标题本身仍要显示出来
+    expect(w.text()).toContain('贵州茅台重回A股股王')
+  })
+
+  it('空 url 时退化成纯文本', () => {
+    const w = mount(NewsList, {
+      props: { news: [{ ...NEWS[0], url: '' }] },
+    })
+    expect(w.findAll('a')).toHaveLength(0)
+    expect(w.find('.title').text()).toBe('贵州茅台重回A股股王')
+  })
+
+  it('外部链接带 noreferrer', () => {
+    const w = mount(NewsList, { props: { news: NEWS } })
+    expect(w.find('a').attributes('rel')).toContain('noreferrer')
+  })
 })

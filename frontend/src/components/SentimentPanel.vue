@@ -20,6 +20,13 @@ import {
 const props = defineProps({
   data: { type: Object, default: null },
   info: { type: Object, default: null },
+  /**
+   * 情感接口是否请求失败。
+   *
+   * 失败与「没有数据」必须分开讲:接口 503 时说「该股票还没有情感标注,
+   * 点击采集」是把用户指向一个无效动作 —— 采集回来照样取不到。
+   */
+  failed: { type: Boolean, default: false },
 })
 
 const pieOption = computed(() =>
@@ -80,8 +87,13 @@ const dominant = computed(() => {
       </span>
     </header>
 
-    <!-- 三种状态:没模型 / 有模型没数据 / 有数据 -->
-    <p v-if="!modelReady" class="empty">
+    <!-- 四种状态:请求失败 / 没模型 / 有模型没数据 / 有数据 -->
+    <p v-if="failed" class="empty">
+      情感数据加载失败,请确认后端服务正常后刷新页面。这不是「没有标注」,
+      所以先不要重复点击采集。
+    </p>
+
+    <p v-else-if="!modelReady" class="empty">
       尚未训练情感模型。运行
       <code>python tools/train_sentiment.py --model both</code> 后重启后端。
     </p>

@@ -51,8 +51,16 @@ export function formatChangePct(value) {
 /**
  * 构造 K 线图配置。
  * 上区为蜡烛图,下区为成交量柱。
+ *
+ * 初始可视区间按「默认露多少根」算百分比,而不是写死 60~100:
+ * 写死百分比会让可视根数随数据量漂移 —— 请求 250 根时只露出约 100 根,
+ * 而标题写着「最近 250 个交易日」,用户拖动一下才发现少了一大截。
+ *
+ * @param {Array} rows 日线,按日期升序
+ * @param {Object} [opts]
+ * @param {number} [opts.visibleBars] 初始显示多少根,默认 120
  */
-export function buildKlineOption(rows) {
+export function buildKlineOption(rows, opts = {}) {
   const dates = rows.map((r) => r.trade_date)
   // ECharts 蜡烛图数据顺序:[开, 收, 低, 高]
   const candles = rows.map((r) => [r.open, r.close, r.low, r.high])
@@ -67,6 +75,13 @@ export function buildKlineOption(rows) {
   const axisLine = { lineStyle: { color: COLORS.line } }
   const axisLabel = { fontSize: 11, color: COLORS.muted }
   const splitLine = { lineStyle: { color: COLORS.line, type: 'dashed' } }
+
+  const total = dates.length
+  const wantBars = Math.max(1, Number(opts.visibleBars) || 120)
+  // 少于要显示的量就全显(从 0 开始),否则只留最后 wantBars 根
+  const startPct = total <= wantBars
+    ? 0
+    : Math.max(0, Math.round((1 - wantBars / total) * 100))
 
   return {
     tooltip: {
@@ -95,9 +110,9 @@ export function buildKlineOption(rows) {
         axisLabel: { show: false }, splitLine: { show: false } },
     ],
     dataZoom: [
-      { type: 'inside', xAxisIndex: [0, 1], start: 60, end: 100 },
+      { type: 'inside', xAxisIndex: [0, 1], start: startPct, end: 100 },
       { type: 'slider', xAxisIndex: [0, 1], top: '93%', height: 18,
-        start: 60, end: 100,
+        start: startPct, end: 100,
         borderColor: COLORS.line, fillerColor: 'rgba(25,23,19,0.06)',
         handleStyle: { color: COLORS.ink },
         textStyle: { fontSize: 10, color: COLORS.muted } },

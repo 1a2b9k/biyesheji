@@ -83,6 +83,33 @@ describe('SourceBreakdown', () => {
     expect(w.text()).toContain('2 家')
   })
 
+  it('用后端给的总数,不把只列出的前 10 家当全部', () => {
+    // 真实数据:600519 有 52 家来源共 493 条新闻,而后端只给前 10 家的明细。
+    // 把明细的 count 相加会得到 328 —— 少报 165 条,页面写「共 328 条」就是错的。
+    const top10 = Array.from({ length: 10 }, (_, i) => ({
+      source: `媒体${i + 1}`, count: 40 - i,
+    }))
+    const w = mount(SourceBreakdown, {
+      props: { sources: top10, total: 493, sourceCount: 52 },
+    })
+    const text = w.text()
+    expect(text).toContain('共 493 条')
+    expect(text).toContain('52 家')
+    // 明确告知下列只是前 10 家
+    expect(text).toContain('下列仅前 10 家')
+  })
+
+  it('总数与已列出条数一致时不显示截断说明', () => {
+    const w = mount(SourceBreakdown, {
+      props: {
+        sources: [{ source: 'A', count: 3 }, { source: 'B', count: 2 }],
+        total: 5,
+        sourceCount: 2,
+      },
+    })
+    expect(w.text()).not.toContain('下列仅前')
+  })
+
   it('空数据给出提示且不渲染条', () => {
     const w = mount(SourceBreakdown, { props: { sources: [] } })
     expect(w.text()).toContain('暂无新闻数据')

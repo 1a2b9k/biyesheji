@@ -30,6 +30,21 @@ function splitTime(s) {
   if (i < 0) return { date: t || '-', time: '' }
   return { date: t.slice(0, i), time: t.slice(i + 1, i + 6) }
 }
+
+/**
+ * 只有 http(s) 地址才做成链接。
+ *
+ * 后端已经在入库时挡过一遍(`collector._safe_http_url`),但库里可能
+ * 还留着加校验之前抓的旧数据;这里再挡一次,免得 `javascript:` 之类
+ * 的地址进 `<a :href>`。
+ *
+ * @param {string} url
+ * @returns {boolean}
+ */
+function isLink(url) {
+  const s = String(url || '').trim().toLowerCase()
+  return s.startsWith('http://') || s.startsWith('https://')
+}
 </script>
 
 <template>
@@ -55,9 +70,16 @@ function splitTime(s) {
         </div>
 
         <div class="what">
-          <a :href="n.url" target="_blank" rel="noopener" class="title">
+          <a
+            v-if="isLink(n.url)"
+            :href="n.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="title"
+          >
             {{ n.title }}
           </a>
+          <span v-else class="title plain">{{ n.title }}</span>
           <div class="meta">
             <span v-if="label(n.sentiment)" class="tag">
               {{ label(n.sentiment).text }}
@@ -159,10 +181,24 @@ h2 {
   transition: color 0.12s ease;
   text-wrap: pretty;
 }
-.title:hover {
-  color: var(--pos);
+
+/* 可点的标题给出下划线线索:纯色文字看不出能点,用户不会去悬停。
+   下划线颜色取浅色,不抢正文注意力。 */
+a.title {
   text-decoration: underline;
+  text-decoration-color: var(--line-2);
+  text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+  cursor: pointer;
+}
+a.title:hover {
+  color: var(--pos);
+  text-decoration-color: currentColor;
+}
+
+/* 没有有效链接的标题:正常文字,不给可点的暗示 */
+.title.plain {
+  color: var(--ink-2);
 }
 
 .meta {

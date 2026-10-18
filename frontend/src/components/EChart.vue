@@ -11,6 +11,8 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 const props = defineProps({
   option: { type: Object, required: true },
   height: { type: String, default: '420px' },
+  /** 图表的文字替代描述,给屏幕阅读器与图片搜索用。 */
+  desc: { type: String, default: '' },
 })
 
 const el = ref(null)
@@ -44,5 +46,14 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="el" :style="{ width: '100%', height }" />
+  <!--
+    role="img" + aria-label:canvas 对辅助技术是完全不可见的,
+    整张图会被读成空白。至少给出「这里是一张什么图」。
+  -->
+  <div
+    ref="el"
+    role="img"
+    :aria-label="desc || '数据图表'"
+    :style="{ width: '100%', height }"
+  />
 </template>

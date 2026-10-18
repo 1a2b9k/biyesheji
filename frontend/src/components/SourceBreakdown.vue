@@ -14,6 +14,16 @@ import { computed } from 'vue'
 
 const props = defineProps({
   sources: { type: Array, default: () => [] },
+  /**
+   * 该股票的新闻总条数。
+   *
+   * 后端 sources 只返回占比最高的 10 家(其余在长尾里),所以不能把
+   * sources 的 count 相加当总数 —— 那样「共 N 条」永远偏小
+   * (600519 有 52 家来源 493 条,前 10 家只合到 328 条)。
+   */
+  total: { type: Number, default: 0 },
+  /** 来源总家数(后端只给前 10 家的明细,家数要单独传)。 */
+  sourceCount: { type: Number, default: 0 },
 })
 
 /** 按条数降序,最多显示 8 家,其余合并。 */
@@ -39,15 +49,30 @@ const rows = computed(() => {
   return { items, max, rest }
 })
 
-const total = computed(() =>
+/** 已列出的 10 家合计;没有 total 时退化为这个值。 */
+const listedTotal = computed(() =>
   (props.sources ?? []).reduce((a, s) => a + (s?.count ?? 0), 0))
+
+/** 新闻总条数:优先用后端给的准确值,缺省才退回已列出的合计。 */
+const total = computed(() => (props.total > 0 ? props.total : listedTotal.value))
+
+/** 未列出的长尾条数(总数 - 已列出),为 0 时不显示说明。 */
+const unlisted = computed(() =>
+  props.total > 0 ? Math.max(0, props.total - listedTotal.value) : 0)
+
+/** 来源总家数:优先用后端给的准确值,缺省才退回已列出的家数。 */
+const sourceCount = computed(() =>
+  props.sourceCount > 0 ? props.sourceCount : (props.sources ?? []).length)
 </script>
 
 <template>
   <section class="panel">
     <header class="head">
       <h2>新闻来源分布</h2>
-      <span class="meta num">共 {{ total }} 条 · {{ sources.length }} 家</span>
+      <span class="meta num">
+        共 {{ total }} 条 · {{ sourceCount }} 家
+        <template v-if="unlisted">（下列仅前 {{ sources.length }} 家）</template>
+      </span>
     </header>
 
     <p v-if="!rows.items.length" class="empty">暂无新闻数据</p>

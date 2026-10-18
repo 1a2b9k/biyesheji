@@ -31,28 +31,45 @@ const n = computed(() => stats.value?.n ?? 0)
 const reliable = computed(() => n.value >= MIN_RELIABLE)
 const hasData = computed(() => n.value > 0)
 
-function num(v, digits = 3) {
+/**
+ * 取出一个数值,缺失时返回 null。
+ *
+ * 不能直接 `Number(v)`:相关系数在样本不足或某一侧方差为 0 时后端会返回
+ * null,而 `Number(null) === 0` 且 `Number.isFinite(0)` 为真 —— 界面上就会
+ * 显示成 `r=0.000`、`p<0.001` 并标绿「显著」,把「算不出来」讲成了
+ * 「算出来是 0 且显著」。
+ */
+function toNum(v) {
+  if (v === null || v === undefined || v === '') return null
   const x = Number(v)
-  return Number.isFinite(x) ? x.toFixed(digits) : '-'
+  return Number.isFinite(x) ? x : null
+}
+
+function num(v, digits = 3) {
+  const x = toNum(v)
+  return x === null ? '-' : x.toFixed(digits)
 }
 
 function pct(v) {
-  const x = Number(v)
-  return Number.isFinite(x) ? (x >= 0 ? '+' : '') + x.toFixed(2) + '%' : '-'
+  const x = toNum(v)
+  return x === null ? '-' : (x >= 0 ? '+' : '') + x.toFixed(2) + '%'
 }
 
-/** p 值小于 0.001 时直接写「<0.001」,避免一长串 0。 */
+/** p 值小于 0.001 时直接写「<0.001」,避免一长串 0。缺值写「-」。 */
 const pText = computed(() => {
-  const p = stats.value?.p_value
-  if (!Number.isFinite(Number(p))) return '-'
-  return Number(p) < 0.001 ? '< 0.001' : Number(p).toFixed(3)
+  const p = toNum(stats.value?.p_value)
+  if (p === null) return '-'
+  return p < 0.001 ? '< 0.001' : p.toFixed(3)
 })
 
-/** 相关性是否在 0.05 水平上显著。 */
+/** 相关性是否在 0.05 水平上显著。缺值时不算显著。 */
 const significant = computed(() => {
-  const p = Number(stats.value?.p_value)
-  return Number.isFinite(p) && p < 0.05
+  const p = toNum(stats.value?.p_value)
+  return p !== null && p < 0.05
 })
+
+/** 相关系数是否存在(null 表示样本不足或方差为 0)。 */
+const hasCorrelation = computed(() => toNum(stats.value?.pearson) !== null)
 
 /** 分组收益:低/中/高情感组各自的平均次日收益。 */
 const groups = computed(() => {
@@ -66,13 +83,27 @@ const groups = computed(() => {
 
 /** 横条以最大绝对值为基准缩放,让三组可比。 */
 const groupMax = computed(() => {
-  const vals = groups.value.map((x) => Math.abs(Number(x.value) || 0))
+  const vals = groups.value.map((x) => Math.abs(toNum(x.value) ?? 0))
   return Math.max(...vals, 0.01)
 })
 
 function barWidth(v) {
-  const x = Math.abs(Number(v) || 0)
+  const x = Math.abs(toNum(v) ?? 0)
   return (x / groupMax.value) * 100
+}
+
+/** 分组收益的方向;缺值返回 0(按 0 处理,不标红绿)。 */
+function groupSign(v) {
+  const x = toNum(v)
+  if (x === null) return 0
+  return x >= 0 ? 1 : -1
+}
+
+/** 着色类:只在有值时给 up/down,缺值一律不上色。 */
+function groupClass(v) {
+  const sign = groupSign(v)
+  if (sign === 0) return {}
+  return sign > 0 ? { up: true } : { down: true }
 }
 </script>
 
@@ -119,6 +150,11 @@ function barWidth(v) {
         下面的数值只作参考,不宜作为结论。
       </p>
 
+      <p v-if="!hasCorrelation" class="warn">
+        这一组样本算不出相关系数(样本过少,或某一侧取值全相同导致方差为零),
+        所以 r 与 p 值显示为「-」。这不是「相关性为零」,而是「无法估计」。
+      </p>
+
       <!-- 分组收益:横条长度即平均收益 -->
       <h3>分组平均次日收益</h3>
       <ul class="groups">
@@ -127,11 +163,11 @@ function barWidth(v) {
           <div class="track">
             <div
               class="fill"
-              :class="{ up: Number(g.value) >= 0, down: Number(g.value) < 0 }"
+              :class="groupClass(g.value)"
               :style="{ width: barWidth(g.value) + '%' }"
             />
           </div>
-          <span class="gval num" :class="{ up: Number(g.value) >= 0, down: Number(g.value) < 0 }">
+          <span class="gval num" :class="groupClass(g.value)">
             {{ pct(g.value) }}
           </span>
         </li>
