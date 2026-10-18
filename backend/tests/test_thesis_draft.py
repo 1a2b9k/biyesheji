@@ -95,6 +95,19 @@ def _section(text, start_marker, end_marker):
     return text[start:end]
 
 
+_MINUS_MAP = str.maketrans({'\u2212': '-', '\u2013': '-', '\u2014': '-'})
+
+
+def _plain(text):
+    """比对数字前先剥掉两层排版皮。
+
+    论文正文里的负数用的是排版减号 U+2212(不是 ASCII 的 '-'),公式里的变量
+    又包在 `$...$` 里。直接拿 `-0.0452` 去 `in` 正文会找不到,误报"数字缺失"。
+    这里统一减号、去掉 `$` 定界符,只比较数值本身。
+    """
+    return text.translate(_MINUS_MAP).replace('$', '')
+
+
 def _fmt(value, digits=4):
     """把数值格式化成正文里的写法,去掉末尾多余的 0(0.7540 -> 0.754)。"""
     s = ('%.*f' % (digits, value)).rstrip('0')
@@ -107,8 +120,9 @@ def _has(text, value, digits=4):
     """正文里是否出现过某个数值。
 
     同时接受全精度写法(0.7540)与去尾写法(0.754),因为正文与实验文件的
-    小数位习惯不完全一致。
+    小数位习惯不完全一致。也容忍 U+2212 减号与 LaTeX 的 `$` 定界符。
     """
+    text = _plain(text)
     full = '%.*f' % (digits, value)
     return full in text or _fmt(value, digits) in text
 
@@ -787,12 +801,12 @@ def test_draft_interface_list_matches_source():
 def test_draft_sentiment_return_result_is_bounded():
     """纪律:结论必须限定在"本数据、本窗口、线性相关"。"""
     body, _ = _body_and_refs()
-    assert '744' in body, '正文未写样本数 744'
-    assert '0.0019' in body, '正文未写 Pearson -0.0019'
-    assert '0.9579' in body, '正文未写 p=0.9579'
-    assert '0.4778' in body, '正文未写方向命中率 0.4778'
+    assert '575' in body, '正文未写合并后的样本数 575'
+    assert '0.0452' in body, '正文未写 Pearson -0.0452'
+    assert '0.2795' in body, '正文未写 p=0.2795'
+    assert '0.4660' in body, '正文未写方向命中率 0.4660'
 
-    # 限定语在表后那段正文里,而 0.0019 首次出现在表格行中,所以不能只取
+    # 限定语在表后那段正文里,而 0.0452 首次出现在表格行中,所以不能只取
     # 首次出现的窗口,要切出 7.6 整节再查。
     start = body.find('### 7.6')
     end = body.find('### 7.7')
@@ -800,6 +814,61 @@ def test_draft_sentiment_return_result_is_bounded():
     section = body[start:end]
     assert ('限定' in section or '本数据' in section), \
         '相关系数结论未加限定语'
+
+
+def test_draft_mentions_pseudo_replication_handling():
+    """纪律:非交易日会让多个新闻日共享同一收益,必须交代去重口径。
+
+    这不是写法偏好 —— 不合并就是伪重复,样本量虚高、p 值偏小。初版论文
+    正是踩了这个坑(744 条对齐记录里只有 575 个唯一收益日),所以正文必须
+    把这件事写出来,而不是悄悄改个数字。
+    """
+    body, _ = _body_and_refs()
+    start = body.find('### 7.6')
+    end = body.find('### 7.7')
+    section = body[start:end]
+    assert '伪重复' in section, '7.6 节未提伪重复'
+    assert '575' in section and '744' in section, \
+        '7.6 节未同时给出合并前/后的样本数'
+    # 两个样本数必须能对上:744 - 169 = 575
+    assert '169' in section, '7.6 节未写重复条数 169'
+
+
+def test_draft_discloses_p_value_uses_exact_t_distribution():
+    """纪律:p 值口径必须披露,否则评委用 t 分布复算会得到不同的显著性。"""
+    body, _ = _body_and_refs()
+    start = body.find('### 7.6')
+    end = body.find('### 7.7')
+    section = _plain(body[start:end])
+    assert 't 分布' in section or 't分布' in section, '7.6 节未说明 p 值用 t 分布'
+    assert '0.0514' in section, '未写出正态近似与精确解的具体差异(0.0514)'
+
+
+def test_draft_returns_stats_match_json():
+    """表 7-6 的每个数字都必须能由 returns.json 复算出来。"""
+    body, _ = _body_and_refs()
+    body = _plain(body)
+    data = _load_json('returns.json')
+
+    overall = data['overall']
+    for token in (_fmt(overall['n'], 0), _fmt(overall['pearson']),
+                  _fmt(overall['p_value']), _fmt(overall['spearman']),
+                  _fmt(overall['hit_rate'])):
+        assert token in body, '正文缺少全样本统计量 %s' % token
+
+    by_code = {s['code']: s for s in data['per_stock']}
+    for code in ('600519', '600276', '601899'):
+        stats = by_code[code]['stats']
+        assert _fmt(stats['n'], 0) in body, '%s 的样本数未出现' % code
+        assert _fmt(stats['pearson']) in body, '%s 的 Pearson 未出现' % code
+        assert _fmt(stats['p_value']) in body, '%s 的 p 值未出现' % code
+
+    # 合并口径必须记在结果文件里,否则复现时不知道该不该去重
+    assert data.get('merged') is True, 'returns.json 未标记已按收益日合并'
+    # 对齐条数应等于各股 aligned_n 之和
+    aligned = sum(s['stats']['aligned_n'] for s in data['per_stock'])
+    assert aligned == 744, '对齐记录数应为 744,实为 %d' % aligned
+    assert overall['n'] == 575, '合并后样本数应为 575,实为 %d' % overall['n']
 
 
 def test_draft_test_counts_match_outline():

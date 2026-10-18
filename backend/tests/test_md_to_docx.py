@@ -565,3 +565,73 @@ def test_no_unverified_reference_markers_remain():
     """
     text = _proposal_text()
     assert '待核' not in text, '参考文献里还有未核实的字段标记「待核」'
+
+
+# ------------------------------------------------------------ 论文材料同步
+
+# 交付给老师和教务系统的 .docx 是从 .md 生成的。两边不同步是这类流水线
+# 最典型的故障:改了 md 忘了重新生成,交上去的 Word 里还是上一版的数字,
+# 而 md 看起来完全正确 —— 打开 Word 之前谁也发现不了。
+#
+# 这里不用 mtime 判断(拷贝/解压都会打乱时间戳),而是**重新生成一遍**,
+# 再逐段比较文本。慢一点(每次几秒),但只有它能真的证明内容一致。
+
+_PAPER_DIR = os.path.join(_REPO_ROOT, '论文')
+
+# (md 文件名, docx 文件名)。只列真正要交付的正式材料;
+# 参考文献收集.md 是工作笔记,不生成 docx。
+_PAPER_DOCS = [
+    ('毕业论文初稿.md', '毕业论文初稿.docx'),
+    ('论文写作大纲.md', '论文写作大纲.docx'),
+    ('开题报告书.md', '开题报告书.docx'),
+    ('文献综述.md', '文献综述.docx'),
+    ('答辩口径卡.md', '答辩口径卡.docx'),
+]
+
+
+def _paper_pairs():
+    """只返回两边都存在的 (md, docx) 对。"""
+    out = []
+    for md_name, docx_name in _PAPER_DOCS:
+        md_path = os.path.join(_PAPER_DIR, md_name)
+        docx_path = os.path.join(_PAPER_DIR, docx_name)
+        if os.path.isfile(md_path) and os.path.isfile(docx_path):
+            out.append((md_path, docx_path, md_name))
+    return out
+
+
+def test_at_least_one_paper_docx_is_checked():
+    """这条测试自己也要有牙:一对都找不到说明路径写错了。"""
+    assert _paper_pairs(), '论文目录下没找到任何 md/docx 配对'
+
+
+@pytest.mark.parametrize('md_path,docx_path,md_name', _paper_pairs(),
+                         ids=[p[2] for p in _paper_pairs()])
+def test_paper_docx_is_in_sync_with_markdown(tmp_path, md_path, docx_path,
+                                             md_name):
+    """重新生成一遍,逐段比对 —— 不一致说明 .docx 是旧版。"""
+    with open(md_path, encoding='utf-8') as fh:
+        md_text = fh.read()
+    fresh = str(tmp_path / 'fresh.docx')
+    md_to_docx.convert(md_text, fresh,
+                       base_dir=os.path.dirname(os.path.abspath(md_path)))
+
+    fresh_paras = _paragraph_texts(fresh)
+    disk_paras = _paragraph_texts(docx_path)
+    if fresh_paras == disk_paras:
+        return
+
+    # 给出第一处差异的位置,别只报「不一致」
+    limit = min(len(fresh_paras), len(disk_paras))
+    for i in range(limit):
+        if fresh_paras[i] != disk_paras[i]:
+            raise AssertionError(
+                '%s 与 %s 不同步(第 %d 段):\n  .md 生成的是: %r\n'
+                '  磁盘上是: %r\n请重新运行 tools/md_to_docx.py %s'
+                % (md_name, os.path.basename(docx_path), i,
+                   fresh_paras[i][:80], disk_paras[i][:80], md_name))
+    raise AssertionError(
+        '%s 的段落数不一致: .md 生成 %d 段,磁盘上 %d 段。'
+        '请重新运行 tools/md_to_docx.py %s'
+        % (os.path.basename(docx_path), len(fresh_paras), len(disk_paras),
+           md_name))

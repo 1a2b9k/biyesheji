@@ -581,9 +581,9 @@ def test_no_question_is_noise_claim():
 
 
 def test_sentiment_return_conclusion_is_bounded():
-    """744 样本 Pearson −0.0019 不显著,不得写成"情感分析能预测股价"。"""
+    """575 个收益日样本 Pearson −0.0452 不显著,不得写成"情感分析能预测股价"。"""
     text = _outline_text()
-    assert '−0.0019' in text or '-0.0019' in text
+    assert '−0.0452' in text or '-0.0452' in text
 
     # 只看 7.6 这一节,避免窗口跨到相邻章节
     start = text.find('#### 7.6')
@@ -591,10 +591,13 @@ def test_sentiment_return_conclusion_is_bounded():
     end = text.find('#### 7.7', start)
     section = text[start:end if end > 0 else len(text)]
 
-    assert '0.0019' in section, '7.6 节应给出 Pearson −0.0019'
+    assert '0.0452' in section, '7.6 节应给出 Pearson −0.0452'
     assert ('未检出' in section or '不能检出' in section
             or '没有可检出' in section), \
         '7.6 节必须把结论限定为"未检出线性关系"'
+    # 伪重复去重口径必须写进大纲,否则正文很容易忘
+    assert '575' in section and '744' in section, \
+        '7.6 节应同时给出合并前(744)/后(575)的样本数'
 
 
 # ---------------------------------------------------------------- 结构与完整性

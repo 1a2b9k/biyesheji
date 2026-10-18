@@ -66,7 +66,7 @@ _LOCAL_MODULES = {
     'experiment_report', 'fetch_dataset', 'fetch_model', 'fetch_wheel',
     'md_to_docx', 'make_vision_test', 'train_multitask', 'train_sentiment',
     'use_mysql', 'check_env', 'check_datasource', 'setup_python',
-    'sitecustomize', 'make_figures', 'make_icon',
+    'sitecustomize', 'make_figures', 'make_icon', 'collect_corpus',
 }
 
 _IMPORT_RE = re.compile(
