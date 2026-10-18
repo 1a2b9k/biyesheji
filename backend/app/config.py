@@ -58,8 +58,23 @@ DATABASE_URL = (
     or DEFAULT_SQLITE
 )
 
+def _backend_of(url):
+    """从 DATABASE_URL 判断后端类型。
+
+    只看 scheme 部分(`mysql+pymysql://` 取到 `mysql`),不用 startswith
+    硬比 —— 写成 `MySQL://` 或带驱动后缀时 startswith 会误判成 sqlite。
+    """
+    scheme = url.split(':', 1)[0].strip().lower()
+    scheme = scheme.split('+', 1)[0]
+    if scheme in ('mysql', 'mariadb'):
+        return 'mysql'
+    if scheme in ('sqlite', ''):
+        return 'sqlite'
+    return scheme
+
+
 # 供自检与文档使用:让调用方知道当前用的是哪种库
-DB_BACKEND = 'mysql' if DATABASE_URL.startswith('mysql') else 'sqlite'
+DB_BACKEND = _backend_of(DATABASE_URL)
 
 # 采集参数
 REQUEST_TIMEOUT = int(os.environ.get('FIN_REQUEST_TIMEOUT', '20'))

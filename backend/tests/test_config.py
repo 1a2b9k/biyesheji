@@ -72,12 +72,20 @@ def test_db_backend_detects_mysql():
 
 
 def test_db_backend_logic():
-    """按连接串前缀判断后端类型。"""
+    """按连接串 scheme 判断后端类型。
+
+    早先实现是 `url.startswith('mysql')`,写成 `MySQL://` 或
+    `mariadb://` 就会被误判成 sqlite,而 DB_BACKEND 会被自检和
+    文档引用,判错会让人以为在用 SQLite。
+    """
     for url, expected in [
         ('sqlite:///x.db', 'sqlite'),
         ('mysql+pymysql://u:p@h/db', 'mysql'),
+        ('MySQL+pymysql://u:p@h/db', 'mysql'),
+        ('mariadb://u:p@h/db', 'mysql'),
+        ('mysql://u:p@h/db', 'mysql'),
     ]:
-        assert ('mysql' if url.startswith('mysql') else 'sqlite') == expected
+        assert config._backend_of(url) == expected, url
 
 
 def test_default_stocks_shape():

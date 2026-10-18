@@ -59,6 +59,12 @@ def client(monkeypatch):
     with TestClient(app) as c:
         yield c
 
+    # mkdtemp 建的目录不在 pytest 的 tmp_path 体系里,不主动删就会
+    # 一直堆在工作区 .tmp/ 下(每次跑留一个 36 KB 的 test.db)。
+    engine.dispose()
+    import shutil
+    shutil.rmtree(tmpdir, ignore_errors=True)
+
 
 # ---------------------------------------------------------------- 基础
 
@@ -66,6 +72,21 @@ def test_health(client):
     r = client.get('/api/health')
     assert r.status_code == 200
     assert r.json()['status'] == 'ok'
+
+
+def test_health_version_matches_readme(client):
+    """`app.version` 与 README 头部标的版本必须同一条线。
+
+    这两处各写一遍,很容易只改一处:本次复查前 README 已到 v0.5,
+    `main.py` 还停在 0.2.0,而 `/api/health` 直接把后者吐给调用方。
+    """
+    from app.main import app
+
+    readme = os.path.join(os.path.dirname(os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__)))), 'README.md')
+    assert 'v0.5' in ''.join(open(readme, encoding='utf-8').readlines()[:5])
+    assert app.version.startswith('0.5'), app.version
+    assert client.get('/api/health').json()['version'] == app.version
 
 
 def test_default_stocks_seeded(client):
@@ -81,6 +102,46 @@ def test_stock_counts_start_at_zero(client):
     for s in stocks:
         assert s['kline_count'] == 0
         assert s['news_count'] == 0
+
+
+def test_stock_counts_reflect_written_rows(client, monkeypatch):
+    """计数必须反映真实入库量,不能一律是 0。"""
+    _seed(client, monkeypatch)
+    by_code = {s['code']: s for s in client.get('/api/stocks').json()}
+    assert by_code['600519']['kline_count'] == 2
+    assert by_code['600519']['news_count'] == 2
+    # 没采集过的股票仍是 0,不能张冠李戴
+    assert by_code['300750']['news_count'] == 0
+
+
+def test_list_stocks_does_not_scale_queries_with_stock_count(client):
+    """`/api/stocks` 的查询次数不能随股票数增长。
+
+    早先每只股票各发两次 count(2N 次往返),13 只就是 26 次。
+    改成两条 group by 后应该是固定 3 条 SELECT(股票表 + 两张计数)。
+    这里用 SQLAlchemy 的 before_cursor_execute 数真实发出去的语句。
+    """
+    from sqlalchemy import event
+
+    from app import db as db_module
+
+    seen = []
+
+    def _count(conn, cursor, statement, params, context, executemany):
+        seen.append(statement)
+
+    event.listen(db_module.engine, 'before_cursor_execute', _count)
+    try:
+        r = client.get('/api/stocks')
+    finally:
+        event.remove(db_module.engine, 'before_cursor_execute', _count)
+
+    selects = [s for s in seen if s.strip().upper().startswith('SELECT')]
+    assert r.status_code == 200
+    assert len(r.json()) >= 2, '至少要有两只股票,否则这条测试没意义'
+    # 股票表 1 条 + 行情分组 1 条 + 新闻分组 1 条 = 3,与股票数无关
+    assert len(selects) <= 3, '查询数 %d 条,疑似仍有 N+1:\n%s' % (
+        len(selects), '\n'.join(selects))
 
 
 # ---------------------------------------------------------------- 404
@@ -187,6 +248,40 @@ def test_overview_after_sync(client, monkeypatch):
     assert o['latest']['close'] == 3.0
     sources = {s['source'] for s in o['news_sources']}
     assert sources == {'来源A', '来源B'}
+    assert o['news_source_count'] == 2
+
+
+def test_overview_source_count_is_not_capped_at_ten(client, monkeypatch):
+    """来源家数必须单独数。
+
+    `news_sources` 只返回前 10 家,若前端拿 len(news_sources) 当家数,
+    600519 的 52 家会被说成 10 家;同理把明细的 count 相加会少报条数。
+    """
+    _seed(client, monkeypatch)
+
+    from datetime import datetime
+
+    from app import db as db_module
+    from app import models
+
+    with db_module.SessionLocal() as s:
+        for i in range(12):
+            s.add(models.News(
+                code='600519', title=f'补的第{i}条', url=f'https://t/{i}',
+                source=f'媒体{i}', publish_time=datetime(2026, 10, 12, 9, 0, 0),
+                sentiment='', sentiment_score=None,
+                fetched_at=datetime(2026, 10, 12, 10, 0, 0),
+            ))
+        s.commit()
+
+    o = client.get('/api/stocks/600519/overview').json()
+    # 明细仍只有 10 条(2 家已有 + 12 家新增 = 14 家,取前 10)
+    assert len(o['news_sources']) == 10
+    # 但家数与条数是全的
+    assert o['news_source_count'] == 14
+    assert o['news_count'] == 14
+    listed = sum(s['count'] for s in o['news_sources'])
+    assert listed < o['news_count']
 
 
 def test_overview_latest_change_pct(client, monkeypatch):
@@ -226,12 +321,33 @@ def test_sentiment_info(client):
 
 
 def test_sentiment_analyze_requires_texts(client):
-    """texts 缺失或为空应返回 400,而不是 500。"""
-    assert client.post('/api/sentiment/analyze', json={}).status_code == 400
-    assert client.post('/api/sentiment/analyze',
-                       json={'texts': []}).status_code == 400
-    assert client.post('/api/sentiment/analyze',
-                       json={'texts': 'not-a-list'}).status_code == 400
+    """texts 缺失 / 为空 / 类型不对都要被拒,而不是 500。
+
+    改成 Pydantic 模型后由 FastAPI 统一校验,状态码是 422
+    (原来是手写 if 抛的 400)。两种都接受:关键是不能 500,
+    也不能带着空列表往下跑。
+    """
+    for body in ({}, {'texts': []}, {'texts': 'not-a-list'}):
+        code = client.post('/api/sentiment/analyze', json=body).status_code
+        assert code in (400, 422), body
+
+
+def test_sentiment_analyze_rejects_too_many_texts(client):
+    """超过 200 条要明确报错,不能静默截断。
+
+    早先 `texts[:200]` 会悄悄丢掉多余的部分,调用方拿到 200 条结果
+    还以为全都分析过了。
+    """
+    from app.main import MAX_ANALYZE_TEXTS
+
+    ok = client.post('/api/sentiment/analyze',
+                     json={'texts': ['测试'] * MAX_ANALYZE_TEXTS})
+    assert ok.status_code != 422, '正好 200 条不该被拒'
+
+    too_many = client.post('/api/sentiment/analyze',
+                           json={'texts': ['测试'] * (MAX_ANALYZE_TEXTS + 1)})
+    assert too_many.status_code == 422
+    assert str(MAX_ANALYZE_TEXTS) in too_many.text
 
 
 def test_sentiment_analyze_unknown_model(client):
@@ -364,6 +480,36 @@ def test_sync_sentiment_failure_isolated(client, monkeypatch):
     body = _seed(client, monkeypatch).json()
     assert body['news_added'] == 2
     assert any('sentiment' in e for e in body['errors'])
+
+
+def test_sync_commit_failure_does_not_report_writes(client, monkeypatch):
+    """commit 失败时不能报"新增 N 条" —— 回滚了就是一条都没写。
+
+    早先 sync_stock 无条件 commit:commit 抛异常会直接冒到接口变成 500,
+    调用方看不到 errors;若换个写法只 catch 不归零,就会报出根本没落库
+    的条数。这里把 commit 打成必然失败,断言接口仍 200、errors 里记了
+    commit,且三个 added 全为 0。
+    """
+    from sqlalchemy.orm import Session
+
+    calls = {'commit': 0}
+    real_commit = Session.commit
+
+    def broken_commit(self):
+        calls['commit'] += 1
+        raise RuntimeError('database is locked')
+
+    monkeypatch.setattr(Session, 'commit', broken_commit)
+
+    body = _seed(client, monkeypatch).json()
+    assert calls['commit'] >= 1
+    assert any(e.startswith('commit:') for e in body['errors']), body
+    assert body['kline_added'] == 0
+    assert body['news_added'] == 0
+    assert body['sentiment_added'] == 0
+
+    # 恢复后清理:后面还有用例要用同一个 engine
+    monkeypatch.setattr(Session, 'commit', real_commit)
 
 
 # --------------------------------------------------- 情感—股价关联分析接口

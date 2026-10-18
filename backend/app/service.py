@@ -87,15 +87,19 @@ def annotate_sentiment(db: Session, code, limit=None):
       2. 模型缺失时不影响采集,只是标注数为 0
 
     批量推理而不是逐条: BERT 单条推理要几十毫秒,批量能摊薄固定开销。
+
+    limit 下推到 SQL,不先取全表再切片 —— 一只股票攒到几万条新闻时,
+    全量载入 ORM 对象再丢掉大半是纯粹的内存浪费。
     """
-    rows = db.scalars(
+    stmt = (
         select(models.News)
         .where(models.News.code == code)
         .where(models.News.sentiment == '')
         .order_by(models.News.id)
-    ).all()
+    )
     if limit:
-        rows = rows[:limit]
+        stmt = stmt.limit(limit)
+    rows = db.scalars(stmt).all()
     if not rows:
         return 0, sentiment.default_kind()
 
@@ -122,6 +126,12 @@ def sync_stock(db: Session, code, name, market='SH', news_size=20, news_pages=1)
 
     news_pages > 1 时会翻多页新闻 —— 这是把样本量做大的主要手段。
     每页 news_size 条,实际入库量受去重影响。
+
+    三个步骤各自兜异常,互不牵连:行情挂了仍然写新闻,情感模型缺失
+    仍然存原始新闻。但"成功的那部分要落库、失败的那部分要报出来"是
+    有前提的 —— commit 本身也可能失败(比如库文件被锁)。所以 commit
+    单独兜一层:失败就 rollback 并把原因并进 errors,不能让调用方以为
+    写成功了。
     """
     upsert_stock(db, code, name, market)
 
@@ -149,7 +159,16 @@ def sync_stock(db: Session, code, name, market='SH', news_size=20, news_pages=1)
     except Exception as exc:  # noqa: BLE001
         errors.append('sentiment: %s: %s' % (type(exc).__name__, exc))
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception as exc:  # noqa: BLE001
+        db.rollback()
+        errors.append('commit: %s: %s' % (type(exc).__name__, exc))
+        # 回滚了就等于一条都没写进去,统计数字必须跟着归零,
+        # 否则接口会报"新增 640 条"而库里其实还是旧数据。
+        kline_added = news_added = sentiment_added = 0
+        sentiment_model = None
+
     return {
         'code': code,
         'name': name,

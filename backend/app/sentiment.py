@@ -112,12 +112,13 @@ def _load_bert(d):
     from transformers import (AutoModelForSequenceClassification,
                               AutoTokenizer)
 
-    # 模型在本机,不需要联网
-    os.environ.setdefault('HF_HUB_OFFLINE', '1')
-    os.environ.setdefault('TRANSFORMERS_OFFLINE', '1')
-
-    tok = AutoTokenizer.from_pretrained(d)
-    model = AutoModelForSequenceClassification.from_pretrained(d)
+    # 模型在本机,不需要联网。用 local_files_only 而不是设
+    # os.environ['HF_HUB_OFFLINE'] —— 后者是进程级副作用,会连带影响
+    # 同进程里别的下载逻辑(比如 tools/fetch_model.py),而且设置之后
+    # 不会自动恢复。
+    tok = AutoTokenizer.from_pretrained(d, local_files_only=True)
+    model = AutoModelForSequenceClassification.from_pretrained(
+        d, local_files_only=True)
 
     label_file = os.path.join(d, 'label_names.json')
     if os.path.isfile(label_file):

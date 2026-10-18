@@ -1,14 +1,28 @@
 """FastAPI 应用入口与接口定义。"""
 
 from contextlib import asynccontextmanager
+from typing import List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from . import analysis, config, models, sentiment, service
 from .db import get_db, init_db
+
+# 前端开发服务器的来源。只列具体来源,不用 '*':
+# Starlette 在 allow_credentials=True 时会回显请求方 Origin,
+# 配 '*' 等于任何站点都能带凭据调用本服务。
+# 前端正常走 vite 的 /api 代理,同源,不触发 CORS;这里只服务直连调试。
+DEV_ORIGINS = [
+    'http://127.0.0.1:5173',
+    'http://localhost:5173',
+    'http://127.0.0.1:4173',
+    'http://localhost:4173',
+]
+
 
 
 @asynccontextmanager
@@ -32,17 +46,18 @@ def _seed_defaults():
 
 app = FastAPI(
     title='财经舆情分析平台 API',
-    version='0.2.0',
+    version='0.5.0',
     description='行情与新闻采集展示 + 情感分析',
     lifespan=lifespan,
 )
 
-# 开发期允许前端跨域
+# 开发期允许前端跨域。不给 credentials:本服务不靠 Cookie 认证,
+# 开了它反而要求 Origin 精确匹配,而 '*' 与它组合会被浏览器拒绝。
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
-    allow_credentials=True,
-    allow_methods=['*'],
+    allow_origins=DEV_ORIGINS,
+    allow_credentials=False,
+    allow_methods=['GET', 'POST'],
     allow_headers=['*'],
 )
 
@@ -55,24 +70,29 @@ def health():
 
 @app.get('/api/stocks')
 def list_stocks(db: Session = Depends(get_db)):
-    """股票列表,附带已入库的数据量。"""
+    """股票列表,附带已入库的数据量。
+
+    数据量用两条 group by 一次算完。早先的写法是每只股票各发两次
+    count 查询(2N 次往返),13 只股票就是 26 次,股票一多就明显变慢。
+    """
     stocks = db.scalars(select(models.Stock).order_by(models.Stock.code)).all()
-    out = []
-    for s in stocks:
-        kline_count = db.scalar(
-            select(func.count()).select_from(models.Kline)
-            .where(models.Kline.code == s.code)) or 0
-        news_count = db.scalar(
-            select(func.count()).select_from(models.News)
-            .where(models.News.code == s.code)) or 0
-        out.append({
-            'code': s.code,
-            'name': s.name,
-            'market': s.market,
-            'kline_count': kline_count,
-            'news_count': news_count,
-        })
-    return out
+
+    kline_counts = dict(db.execute(
+        select(models.Kline.code, func.count())
+        .group_by(models.Kline.code)
+    ).all())
+    news_counts = dict(db.execute(
+        select(models.News.code, func.count())
+        .group_by(models.News.code)
+    ).all())
+
+    return [{
+        'code': s.code,
+        'name': s.name,
+        'market': s.market,
+        'kline_count': kline_counts.get(s.code, 0),
+        'news_count': news_counts.get(s.code, 0),
+    } for s in stocks]
 
 
 @app.get('/api/stocks/{code}/klines')
@@ -147,12 +167,19 @@ def get_overview(code: str, db: Session = Depends(get_db)):
         .limit(10)
     ).all()
 
+    # 来源的"家数"必须单独数:上面只取了前 10 家,
+    # 用 len(sources) 当总数会把长尾来源全部抹掉(600519 实际有 52 家)。
+    source_count = db.scalar(
+        select(func.count(func.distinct(models.News.source)))
+        .where(models.News.code == code)) or 0
+
     return {
         'code': stock.code,
         'name': stock.name,
         'market': stock.market,
         'kline_count': kline_count,
         'news_count': news_count,
+        'news_source_count': source_count,
         'latest': None if latest is None else {
             'trade_date': latest.trade_date,
             'close': latest.close,
@@ -160,6 +187,8 @@ def get_overview(code: str, db: Session = Depends(get_db)):
             'volume': latest.volume,
             'amount': latest.amount,
         },
+        # 只返回前 10 家(按条数降序)。前端若需要"共多少条",
+        # 要用 news_count 而不是把这里的 count 相加。
         'news_sources': [{'source': s or '(未知)', 'count': c} for s, c in sources],
     }
 
@@ -186,19 +215,34 @@ def sentiment_info():
     return sentiment.info()
 
 
+# 单次文本分析上限。前端没有接这个接口,它只服务调试与演示。
+MAX_ANALYZE_TEXTS = 200
+
+
+class AnalyzeRequest(BaseModel):
+    """POST /api/sentiment/analyze 的请求体。
+
+    早先收的是裸 dict:坏请求只能靠手写 if 兜,而且 /docs 里看不到字段说明。
+    """
+
+    texts: List[str] = Field(..., min_length=1, max_length=MAX_ANALYZE_TEXTS,
+                             description='待分析文本,最多 %d 条'
+                                         % MAX_ANALYZE_TEXTS)
+    model: Optional[str] = Field(None, description='模型名,省略则用默认模型')
+
+
 @app.post('/api/sentiment/analyze')
-def sentiment_analyze(payload: dict):
+def sentiment_analyze(payload: AnalyzeRequest):
     """对任意文本做情感分析(演示 / 调试用)。
 
     请求体: {'texts': ['...', '...'], 'model': 'bert'}   model 可省略
     返回  : {'model': 'bert', 'results': [{'text','label','score','scores'}]}
     """
-    texts = (payload or {}).get('texts')
-    if not isinstance(texts, list) or not texts:
-        raise HTTPException(status_code=400, detail='texts 必须是非空数组')
-    texts = [str(t) for t in texts][:200]
+    # 显式报错而不是静默截断:发 300 条只回 200 条,调用方会误以为
+    # 后 100 条"判不出来"。超长由 AnalyzeRequest 的 max_length 拦下(422)。
+    texts = [str(t) for t in payload.texts]
 
-    kind = (payload or {}).get('model') or None
+    kind = payload.model
     if kind and kind not in sentiment.available():
         raise HTTPException(status_code=400, detail='模型不可用: %s' % kind)
 
@@ -220,6 +264,9 @@ def get_sentiment(code: str, limit: int = Query(500, ge=1, le=5000),
 
     只统计已标注情感的行。若一条都没有,返回 zero=True,前端据此提示
     先点「采集最新数据」。
+
+    计数与按日趋势都只取 limit 条之内。早先 counts 按 limit 取、daily 却是
+    全表 group by —— 两张图的口径对不上,而且每天全表扫一次。
     """
     _require_stock(db, code)
 
@@ -232,28 +279,18 @@ def get_sentiment(code: str, limit: int = Query(500, ge=1, le=5000),
     ).all()
 
     counts = {'positive': 0, 'neutral': 0, 'negative': 0}
-    for r in rows:
-        if r.sentiment in counts:
-            counts[r.sentiment] += 1
-    total = sum(counts.values())
-
-    daily = db.execute(
-        select(models.News.publish_time, models.News.sentiment,
-               func.count())
-        .where(models.News.code == code)
-        .where(models.News.sentiment != '')
-        .group_by(models.News.publish_time, models.News.sentiment)
-        .order_by(models.News.publish_time)
-    ).all()
-
     by_date = {}
-    for date, label, n in daily:
-        day = (date or '')[:10]
+    for r in rows:
+        label = r.sentiment
+        if label not in counts:
+            continue
+        counts[label] += 1
+        day = (r.publish_time or '')[:10]
         if not day:
             continue
         by_date.setdefault(day, {'positive': 0, 'neutral': 0, 'negative': 0})
-        if label in by_date[day]:
-            by_date[day][label] += n
+        by_date[day][label] += 1
+    total = sum(counts.values())
 
     return {
         'code': code,
@@ -296,9 +333,14 @@ def get_returns(code: str, lag: int = Query(1, ge=0, le=5),
           for k in klines]
 
     result = analysis.analyze(rows, ks, lag=lag)
+    # analyze 已经把落在同一收益日的样本合并了(非交易日/长假会让多个新闻日
+    # 共享同一个收益值,不合并就是伪重复)。这里的 min_news 作用于合并后的
+    # 条数,即"这一天合计有多少条新闻"。
     pairs = [p for p in result['pairs'] if p['n'] >= min_news]
     stats = analysis.summarize(pairs)
     stats['lag'] = lag
+    stats['days_with_news'] = result['stats']['days_with_news']
+    stats['aligned_n'] = result['stats']['aligned_n']
 
     return {
         'code': code,

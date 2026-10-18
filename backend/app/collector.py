@@ -16,6 +16,7 @@
 import json
 import re
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -70,6 +71,10 @@ def parse_kline(raw_json_text):
     """解析东财 K 线返回,产出 dict 列表。纯函数,可离线测试。
 
     每行格式:日期,开,收,高,低,成交量,成交额,振幅
+
+    单行数值坏掉就跳过该行,不让一行脏数据带走整批。腾讯源的解析
+    一直是这样做的,东财源原先直接 float() —— 一旦接口改了字段顺序,
+    抛的是 ValueError 而不是"少了几行",调用方很难定位。
     """
     data = json.loads(raw_json_text)
     payload = data.get('data') or {}
@@ -80,16 +85,19 @@ def parse_kline(raw_json_text):
         parts = str(row).split(',')
         if len(parts) < 8:
             continue
-        out.append({
-            'trade_date': parts[0],
-            'open': float(parts[1]),
-            'close': float(parts[2]),
-            'high': float(parts[3]),
-            'low': float(parts[4]),
-            'volume': float(parts[5]),
-            'amount': float(parts[6]),
-            'amplitude': float(parts[7]),
-        })
+        try:
+            out.append({
+                'trade_date': str(parts[0]),
+                'open': float(parts[1]),
+                'close': float(parts[2]),
+                'high': float(parts[3]),
+                'low': float(parts[4]),
+                'volume': float(parts[5]),
+                'amount': float(parts[6]),
+                'amplitude': float(parts[7]),
+            })
+        except (TypeError, ValueError):
+            continue
     return out
 
 
@@ -98,11 +106,16 @@ def fetch_kline(code, market='SH'):
 
     先走东财;东财不通时回退腾讯。两个源都是前复权,同一天的
     开/收/高/低/量实测逐位一致,所以回退不会让库里出现两套口径。
+
+    只捕获"网络不通"和"返回体解析不了"这两类 —— 前者是已知的
+    东财整域拒绝(2026-10-17 起),后者是接口改格式。其它异常
+    (比如自己代码里的 NameError)应当照常抛出,否则真 bug 会被
+    悄悄降级成"回退成功"。
     """
     try:
         return parse_kline(_http_get(_KLINE_URL.format(
             secid=to_secid(code, market))))
-    except Exception:  # noqa: BLE001
+    except (urllib.error.URLError, OSError, ValueError):
         return parse_tencent_kline(
             _http_get(_tencent_url(code, market)), code, market)
 
@@ -195,7 +208,7 @@ def parse_news(raw_text):
     out = []
     for it in items:
         title = _strip_tags(str(it.get('title', ''))).strip()
-        url = str(it.get('url', '')).strip()
+        url = _safe_http_url(it.get('url', ''))
         if not title or not url:
             continue
         out.append({
@@ -205,6 +218,22 @@ def parse_news(raw_text):
             'publish_time': str(it.get('date', '')).strip(),
         })
     return out
+
+
+def _safe_http_url(raw):
+    """只接受 http/https 的绝对地址,其余返回空串。
+
+    这些 url 会原样进前端 `<a :href>`,不校验 scheme 就等于把
+    `javascript:` 交给浏览器。当前 6421 条实测全是 http,但仍要挡 —
+    数据源是第三方接口,不能假设它永远干净。
+    """
+    url = str(raw or '').strip()
+    if not url:
+        return ''
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme not in ('http', 'https') or not parsed.netloc:
+        return ''
+    return url
 
 
 def _strip_tags(text):
@@ -264,7 +293,7 @@ def fetch_news_pages(keyword, pages=1, page_size=20, sleep=0.3):
             rows = parse_news(
                 _http_get(_news_url(keyword, page, page_size),
                           referer=_NEWS_REFERER))
-        except Exception:  # noqa: BLE001
+        except (urllib.error.URLError, OSError, ValueError):
             break
         if not rows:
             break  # 没数据了,再翻也是空
