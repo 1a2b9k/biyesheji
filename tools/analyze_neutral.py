@@ -51,7 +51,9 @@ MODELS_DIR = os.path.join(_WS, 'models')
 BASE_MODEL = os.path.join(_WS, 'models', 'bert-base-chinese')
 
 LABELS = ['negative', 'positive', 'neutral']
-LABELS_4 = ['negative', 'positive', 'neutral_stmt', 'neutral_q']
+# 四分类的标签顺序只有一个来源:tools/train_multitask.py 的 FOUR_LABELS
+# (['negative', 'positive', 'neutral_question', 'neutral_statement'])。
+# 这里原来另存一份 LABELS_4,顺序还与它不同,是死常量且会误导读者 —— 删掉。
 
 # 拆问句后重训用的超参数,必须与 train_sentiment.py 一致,否则对比不公平
 SEED = 42
@@ -420,19 +422,24 @@ def render(q_tr, q_te, flow, split=None, noq=None, base=None):
     L.append('')
     qn = q_tr['question_label_dist'].get('neutral', 0)
     qt = q_tr['question'] or 1
+    # per_class 由 question_stats 生成,它会跳过数据里不存在的类 ——
+    # 直接下标在本数据集上不会出错,但换数据(某一类一条都没有)就会 KeyError。
+    cls = q_tr['per_class']
+    neu = cls.get('neutral') or {}
+    neg = cls.get('negative') or {}
+    pos = cls.get('positive') or {}
     L.append('**两个关键数字:**')
     L.append('')
     L.append('- 中性类样本中有 **%s** 是问句(%d / %d);'
-             % (pct(q_tr['per_class']['neutral']['question_ratio']),
-                qn, q_tr['per_class']['neutral']['n']))
+             % (pct(neu['question_ratio']), qn, neu.get('n', 0)))
     L.append('- 反过来,全部问句中有 **%s** 被标成中性(%d / %d)。'
              % (pct(qn / qt), qn, qt))
     L.append('')
     L.append('> 对比:负面类问句占比 %s,正面类只有 %s。'
              '问号与"中性"标签的关联明显强于其他两类 —— '
              '这正是"复合标签"的统计指纹。'
-             % (pct(q_tr['per_class']['negative']['question_ratio']),
-                pct(q_tr['per_class']['positive']['question_ratio'])))
+             % (pct(neg.get('question_ratio', 0.0)),
+                pct(pos.get('question_ratio', 0.0))))
     L.append('')
 
     # ---- 证据二
@@ -585,19 +592,30 @@ def render(q_tr, q_te, flow, split=None, noq=None, base=None):
                 flow['boundary_errors'] / flow['polarity_errors']
                 if flow and flow['polarity_errors'] else 0))
     L.append('')
+    # 这里的两个召回率要从 split 里取,不能写死:换个模型/换份数据,
+    # 写死的数字就会和第三节的表格自相矛盾。
+    _q_pos = (((split or {}).get('question') or {}).get('per_class')
+              or {}).get('positive') or {}
+    _s_pos = (((split or {}).get('statement') or {}).get('per_class')
+              or {}).get('positive') or {}
+    if _q_pos.get('recall') is not None and _s_pos.get('recall') is not None:
+        _gap = ('问句组的正面类召回率只有 %s(陈述句组 %s)'
+                % (_q_pos['recall'], _s_pos['recall']))
+    else:
+        _gap = '问句组的正面类召回率显著低于陈述句组'
     L.append('**证据的边界(必须一并说明):** 第四节显示,把问句从训练集里'
              '整批删掉并不会提升指标,反而略降。这说明问句样本**并非纯粹噪声**,'
              '它们仍提供了语料多样性。因此本节的主张限于以下范围 —— '
              '**"中性"这个标签的语义是复合的,模型在它的边界上系统性犯错**;'
-             '这不等于"问句应当被删除"。第三节里问句组的正面类召回率只有 '
-             '0.2885(陈述句组 0.7756),这个差距是标注口径造成的,'
-             '而不是模型参数不够。')
+             '这不等于"问句应当被删除"。第三节里%s,这个差距是标注口径造成的,'
+             '而不是模型参数不够。' % _gap)
     L.append('')
     L.append('**改进方向(可作为后续工作):**')
     L.append('')
     L.append('1. **拆分标签**:把"中性"拆成 `中性陈述` 与 `中性提问` 两类,'
-             '重新标注后训练。本仓库的 `LABELS_4` 常量'
-             '(`negative`/`positive`/`neutral_stmt`/`neutral_q`)即为此预留。')
+             '重新标注后训练。`tools/train_multitask.py` 的 `FOUR_LABELS`'
+             '(`negative`/`positive`/`neutral_question`/`neutral_statement`)'
+             '即为此预留。')
     L.append('2. **问句单独处理**:对问句先做意图识别(求助 / 质疑 / 反问),'
              '再判断情感极性。反问句("这也能叫利好?")实际表达负面,'
              '按字面判中性是错的。')
@@ -633,7 +651,11 @@ def _read_prev_noq():
     try:
         with open(path, encoding='utf-8') as fh:
             return json.load(fh)
-    except (OSError, ValueError):
+    except (OSError, ValueError) as exc:
+        # 静默返回 None 会让报告少掉第四节,而读者看不出是文件坏了还是
+        # 本来没跑过重训。这里明确说一句。
+        print('  [warn] %s 读不出来(%s),第四节将标记为未重训'
+              % (os.path.relpath(path, _WS), exc))
         return None
 
 

@@ -332,9 +332,16 @@ def test_read_prev_noq_survives_corrupt_file(tmp_path, monkeypatch):
 # ---------------------------------------------------------------- 常量
 
 def test_labels_are_pinned():
-    """标签顺序锁死 —— 混淆矩阵的行列顺序依赖它。"""
+    """标签顺序锁死 —— 混淆矩阵的行列顺序依赖它。
+
+    四分类的标签顺序只有一个权威来源:train_multitask.FOUR_LABELS。
+    analyze_neutral 原来自己留了一份顺序不同的副本(neutral_stmt 在前),
+    已被删除;这里改成断言它不再另立一份,防止有人又抄回去。
+    """
     assert an.LABELS == ['negative', 'positive', 'neutral']
-    assert an.LABELS_4 == ['negative', 'positive', 'neutral_stmt', 'neutral_q']
+    assert not hasattr(an, 'LABELS_4'), (
+        'analyze_neutral 不应再自带四分类标签副本,'
+        '统一用 train_multitask.FOUR_LABELS')
 
 
 def test_hyperparams_match_trainer():

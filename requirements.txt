@@ -17,6 +17,11 @@ fastapi==0.143.0
 uvicorn==0.54.0
 SQLAlchemy==2.1.4
 
+# backend/app/main.py 用 BaseModel + Field 做请求体校验
+# (POST /api/sentiment/analyze 的 texts 上限就靠它)。fastapi 会带上它,
+# 但代码直接 import 了,所以显式登记
+pydantic==2.13.4
+
 # 可选:用 MySQL 才需要(默认走 SQLite,不需要这一行)
 # backend/app/db.py 按 DATABASE_URL 决定,不 import 这个包
 PyMySQL==1.2.3
@@ -62,6 +67,10 @@ matplotlib==3.11.2
 # tools/fetch_model.py:从 hf-mirror.com 拉预训练权重
 huggingface_hub==2.2.0
 
+# tools/fetch_wheel.py 用它判断当前解释器的 wheel 标签(cp312 / win_amd64)。
+# 缺了会退回 sys.platform 猜,能用但不精确
+packaging==26.2
+
 # ---------------------------------------------------------------- 测试
-# backend/tests/ 全量 493 项
+# backend/tests/ 全量 605 项
 pytest==9.1.1

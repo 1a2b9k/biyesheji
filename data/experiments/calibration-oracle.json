@@ -1,0 +1,15 @@
+{
+  "note": "决策阈值校准的「测试集 oracle 搜索」结果。这组数字来自一次性的探针脚本(在测试集上直接搜每类权重的最优组合),不属于可重复的计算管线:它用测试集选权重,本身含选择偏差,所以只作为「为什么不算改进」的证据记录在此。tools/ablation_study.py 从本文件读取这些数字,避免把结论写死在代码里。",
+  "source": ".tmp/probe_threshold_cv.py / .tmp/probe_threshold_final.py(一次性探针,未固化)",
+  "test_set_oracle": {
+    "accuracy": 0.7700,
+    "macro_f1": 0.7685,
+    "neutral_weight": 0.5
+  },
+  "cv_gain_mean": 0.0012,
+  "cv_gain_is_stable": false,
+  "mcnemar": {
+    "p_value": 0.3634,
+    "significant": false
+  }
+}

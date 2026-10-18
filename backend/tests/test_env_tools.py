@@ -140,7 +140,8 @@ class _FakeResponse:
 
 
 def test_list_wheels_filters_platform_and_python(monkeypatch):
-    """只保留 cp312 + win_amd64,并且能剥掉 #sha256= 片段。"""
+    """只保留当前解释器对应的轮子,并且能剥掉 #sha256= 片段。"""
+    monkeypatch.setattr(fetch_wheel, '_wheel_tags', lambda pkg='': ('cp312', 'win_amd64'))
     monkeypatch.setattr(fetch_wheel, '_open',
                         lambda url, headers=None, timeout=60: _FakeResponse(_FAKE_INDEX))
     got = fetch_wheel.list_wheels('torch')
@@ -152,10 +153,29 @@ def test_list_wheels_filters_platform_and_python(monkeypatch):
 
 
 def test_list_wheels_drops_linux_and_macos(monkeypatch):
+    monkeypatch.setattr(fetch_wheel, '_wheel_tags', lambda pkg='': ('cp312', 'win_amd64'))
     monkeypatch.setattr(fetch_wheel, '_open',
                         lambda url, headers=None, timeout=60: _FakeResponse(_FAKE_INDEX))
     names = [n for n, _ in fetch_wheel.list_wheels('torch')]
     assert not any('linux' in n or 'macosx' in n for n in names)
+
+
+def test_wheel_tags_follow_current_interpreter():
+    """标签必须从当前解释器推,不能写死 cp312 / win_amd64。"""
+    cp, plat = fetch_wheel._wheel_tags('torch')
+    assert cp == 'cp%d%d' % (sys.version_info.major, sys.version_info.minor)
+    assert plat, '平台标签不能为空'
+    if sys.platform == 'win32':
+        assert 'win' in plat
+
+
+def test_list_wheels_follows_current_interpreter(monkeypatch):
+    """换成别的解释器标签后,筛选结果要跟着变 —— 证明没有写死。"""
+    monkeypatch.setattr(fetch_wheel, '_wheel_tags', lambda pkg='': ('cp313', 'win_amd64'))
+    monkeypatch.setattr(fetch_wheel, '_open',
+                        lambda url, headers=None, timeout=60: _FakeResponse(_FAKE_INDEX))
+    names = [n for n, _ in fetch_wheel.list_wheels('torch')]
+    assert len(names) == 1 and 'cp313' in names[0]
 
 
 # ------------------------------------------------------------ 环境闸门

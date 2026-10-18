@@ -52,6 +52,40 @@ COLORS = [C_NEG, C_POS, C_NEU]
 
 plt = None  # 延迟导入,见 _setup()
 
+# 中文字体的候选文件名。真正的查找路径见 _cjk_font_candidates()。
+CJK_FONT_FILES = ('msyh.ttc', 'simhei.ttf', 'simsun.ttc', 'NotoSansCJK-Regular.ttc')
+
+
+def _cjk_font_candidates():
+    """按优先级列出可能的中文字体路径。
+
+    出图脚本不该假定自己在哪台机器上跑:把字体目录写死成 C:/Windows/Fonts
+    会让别人的机器（评委复现、CI）直接出方框。查找顺序:
+      1. 环境变量 BIYESHEJI_FONTS（可以是字体文件,也可以是放字体的目录）
+      2. 工作区 fonts/ 目录
+      3. 各平台常见的系统字体目录
+    """
+    roots = []
+    env = os.environ.get('BIYESHEJI_FONTS', '').strip()
+    if env:
+        if os.path.isdir(env):
+            roots.append(env)
+        elif os.path.isfile(env):
+            yield env
+            return
+    roots.append(os.path.join(_WS, 'fonts'))
+    roots.extend([
+        'C:/Windows/Fonts',
+        '/System/Library/Fonts',
+        '/Library/Fonts',
+        '/usr/share/fonts/truetype',
+        '/usr/share/fonts/opentype/noto',
+        os.path.expanduser('~/.fonts'),
+    ])
+    for root in roots:
+        for fname in CJK_FONT_FILES:
+            yield os.path.join(root, fname)
+
 
 # ------------------------------------------------------------------ 基础设施
 
@@ -71,10 +105,21 @@ def _setup():
     from matplotlib import font_manager, pyplot
 
     # 中文字体必须显式注册,否则标签全是方框。
-    for fname in ('msyh.ttc', 'simhei.ttf', 'simsun.ttc'):
-        path = 'C:/Windows/Fonts/' + fname
-        if os.path.isfile(path):
-            font_manager.fontManager.addfont(path)
+    # 路径不写死成 C:/Windows/Fonts:出图脚本可能在别的机器上跑(评委复现、
+    # CI)。查找顺序是 环境变量 BIYESHEJI_FONTS → 工作区 fonts/ → 系统字体目录。
+    found = []
+    for fpath in _cjk_font_candidates():
+        if os.path.isfile(fpath):
+            try:
+                font_manager.fontManager.addfont(fpath)
+                found.append(fpath)
+            except (OSError, RuntimeError):
+                continue
+    if not found:
+        raise SystemExit(
+            '找不到可用的中文字体。请把 msyh.ttc / simhei.ttf 之一放到\n'
+            '  %s\n或用环境变量 BIYESHEJI_FONTS 指向一个字体文件/目录。'
+            % os.path.join(_WS, 'fonts'))
 
     pyplot.rcParams['font.family'] = ['Microsoft YaHei', 'SimHei', 'sans-serif']
     pyplot.rcParams['axes.unicode_minus'] = False   # 负号显示成 −,不是方框
@@ -97,6 +142,42 @@ def _read_csv(name):
     path = os.path.join(_RAW, name)
     with open(path, encoding='utf-8') as fh:
         return list(csv.DictReader(fh))
+
+
+def _label_dist(name):
+    """按标签数出各类条数,顺序固定为 negative/positive/neutral。
+
+    图的坐标必须和 LABELS 的顺序一致,所以这里不依赖 Counter 的
+    出现顺序,而是显式按 0/1/2 数。
+    """
+    rows = _read_csv(name)
+    out = [0, 0, 0]
+    for row in rows:
+        idx = int(row['label'])
+        out[idx] += 1
+    return out
+
+
+def _task_metrics():
+    """从实验 JSON 读三任务 × 两条路线的指标。
+
+    论文表 4-1 与图 4-1 必须是同一批数:图里写死一份、表里再写一份,
+    改了实验一定会有一边忘改。所以图直接读 JSON。
+    """
+    pairs = [('3class', 'A 三分类'), ('polarity', 'B 二分类极性'),
+             ('neutral', 'C 中性 vs 有情感')]
+    out = {'tasks': [], 'tfidf_acc': [], 'bert_acc': [], 'major': [],
+           'tfidf_f1': [], 'bert_f1': []}
+    for key, title in pairs:
+        b = _load_json('bert-%s.json' % key)
+        t = _load_json('tfidf-%s.json' % key)
+        out['tasks'].append(title)
+        out['bert_acc'].append(b['accuracy'])
+        out['bert_f1'].append(b['macro_f1'])
+        out['tfidf_acc'].append(t['accuracy'])
+        out['tfidf_f1'].append(t['macro_f1'])
+        out['major'].append(b['majority_baseline']['accuracy'])
+    return out
 
 
 def _token_lengths():
@@ -186,8 +267,21 @@ def fig_1_1(dpi):
     for i in range(3):
         _arrow(ax, xs[i] + w, y + h / 2, xs[i + 1], y + h / 2)
 
-    # 底部一行说明每段产出什么,让读者一眼看出递进关系
-    outs = ['8516 / 2130 条', '0.7540 vs 0.6296', '385 / 524 = 73.47%', '六类改进全负']
+    # 底部一行说明每段产出什么,让读者一眼看出递进关系。
+    # 这些数字全部从实验文件算出来:写死在图里,改了实验就必然有一边忘改。
+    n_tr = sum(_label_dist('eastmoney_train.csv'))
+    n_te = sum(_label_dist('eastmoney_test.csv'))
+    m4 = _task_metrics()
+    flow = _load_json('neutral-split.json')['error_flow']
+    b_acc = m4['bert_acc'][0]
+    t_acc = m4['tfidf_acc'][0]
+    outs = [
+        '%d / %d 条' % (n_tr, n_te),
+        '%.4f vs %.4f' % (b_acc, t_acc),
+        '%d / %d = %.2f%%' % (flow['boundary_errors'], flow['total_errors'],
+                              100 * flow['boundary_share']),
+        '六类改进全负',
+    ]
     for text, x in zip(outs, xs):
         ax.text(x + w / 2, 0.16, text, ha='center', va='center',
                 fontsize=9, color=C_ACCENT)
@@ -198,16 +292,24 @@ def fig_1_1(dpi):
 
 def fig_2_1(dpi):
     """BERT 微调四段式流程。"""
+    tr = _load_json('bert-3class.json')
+    hp = tr.get('hyperparams') or {}
+    n_tr = sum(_label_dist('eastmoney_train.csv'))
+    n_te = sum(_label_dist('eastmoney_test.csv'))
+    lengths = _token_lengths()
+
     fig, ax = plt.subplots(figsize=(9.2, 2.9))
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis('off')
 
     steps = [
-        ('预训练\nBERT 中文版', '110M 参数'),
+        ('预训练\nBERT 中文版', '768 维 / %d 层'
+         % (16 if 'large' in str(hp.get('base_model', '')) else 12)),
         ('加三分类头', '768 维 → 3 类'),
-        ('微调', '8516 条 / 3 轮 / lr 2e-5'),
-        ('推理', '测试集 2130 条'),
+        ('微调', '%d 条 / %s 轮 / lr %g'
+         % (n_tr, hp.get('epochs', '?'), hp.get('learning_rate', 0))),
+        ('推理', '测试集 %d 条' % n_te),
     ]
     w, h, y = 0.20, 0.28, 0.47
     xs = [0.025, 0.27, 0.515, 0.76]
@@ -218,7 +320,11 @@ def fig_2_1(dpi):
     for i in range(3):
         _arrow(ax, xs[i] + w, y + h / 2, xs[i + 1], y + h / 2)
 
-    ax.text(0.5, 0.14, '最长 64 词元,超出截断;全量 10646 条中仅 2 条超长(0.02%)',
+    all_len = lengths['train'] + lengths['test']
+    over = sum(1 for n in all_len if n > 64)
+    ax.text(0.5, 0.14,
+            '最长 64 词元,超出截断;全量 %d 条中仅 %d 条超长(%.2f%%)'
+            % (len(all_len), over, 100.0 * over / len(all_len)),
             ha='center', va='center', fontsize=9.5, color=C_ACCENT)
     return _save(fig, '2-1', dpi)
 
@@ -227,30 +333,32 @@ def fig_2_1(dpi):
 
 def fig_3_1(dpi):
     """训练集/测试集标签分布,柱上标数值。"""
-    tr = [2529, 2406, 3581]
-    te = [641, 618, 871]
+    tr = _label_dist('eastmoney_train.csv')
+    te = _label_dist('eastmoney_test.csv')
+    n_tr = sum(tr)
+    n_te = sum(te)
 
     fig, ax = plt.subplots(figsize=(7.4, 4.0))
     xs = range(3)
     width = 0.36
     b1 = ax.bar([x - width / 2 for x in xs], tr, width,
-                label='训练集(8516)', color=C_ACCENT, alpha=0.85)
+                label='训练集(%d)' % n_tr, color=C_ACCENT, alpha=0.85)
     b2 = ax.bar([x + width / 2 for x in xs], te, width,
-                label='测试集(2130)', color=C_NEU, alpha=0.75)
+                label='测试集(%d)' % n_te, color=C_NEU, alpha=0.75)
     for bars in (b1, b2):
         for rect in bars:
             ax.text(rect.get_x() + rect.get_width() / 2,
                     rect.get_height() + 45, '%d' % rect.get_height(),
                     ha='center', va='bottom', fontsize=10)
-    for i, (n, total) in enumerate(zip(tr, [8516] * 3)):
-        ax.text(i - width / 2, n * 0.5, '%.2f%%' % (100 * n / total),
+    for i, n in enumerate(tr):
+        ax.text(i - width / 2, n * 0.5, '%.2f%%' % (100 * n / n_tr),
                 ha='center', va='center', fontsize=10, color='white',
                 weight='bold')
 
     ax.set_xticks(list(xs))
     ax.set_xticklabels(LABELS)
     ax.set_ylabel('标题条数')
-    ax.set_ylim(0, 4100)
+    ax.set_ylim(0, max(tr + te) * 1.18)
     ax.legend(frameon=False, loc='upper left')
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -284,12 +392,13 @@ def fig_3_2(dpi):
 
 def fig_4_1(dpi):
     """三任务指标对比:准确率与宏 F1 两个子图。"""
-    tasks = ['A 三分类', 'B 二分类极性', 'C 中性 vs 有情感']
-    tfidf_acc = [0.6296, 0.7546, 0.7352]
-    bert_acc = [0.7540, 0.8435, 0.8099]
-    major = [0.4089, 0.5091, 0.5911]
-    tfidf_f1 = [0.6204, 0.7540, 0.7093]
-    bert_f1 = [0.7491, 0.8435, 0.7962]
+    m = _task_metrics()
+    tasks = m['tasks']
+    tfidf_acc = m['tfidf_acc']
+    bert_acc = m['bert_acc']
+    major = m['major']
+    tfidf_f1 = m['tfidf_f1']
+    bert_f1 = m['bert_f1']
 
     fig, axes = plt.subplots(1, 2, figsize=(10.4, 4.2))
     xs = range(3)
@@ -334,23 +443,29 @@ def fig_4_1(dpi):
 
 def fig_4_2(dpi):
     """BERT 混淆矩阵热力图,行归一化并标百分比。"""
-    matrix = [[439, 81, 121], [58, 454, 106], [113, 45, 713]]
+    m = _load_json('bert-3class.json')
+    matrix = m['confusion_matrix']
+    n = len(matrix)
+    labels = m.get('label_names') or LABEL_KEYS
+    zh = [LABELS[LABEL_KEYS.index(x)] if x in LABEL_KEYS else x
+          for x in labels]
 
     fig, ax = plt.subplots(figsize=(5.6, 4.8))
-    norm = [[v / sum(row) for v in row] for row in matrix]
+    norm = [[v / sum(row) if sum(row) else 0.0 for v in row] for row in matrix]
     im = ax.imshow(norm, cmap='Blues', vmin=0, vmax=1)
-    for i in range(3):
-        for j in range(3):
+    for i in range(n):
+        for j in range(n):
             ax.text(j, i, '%d\n%.2f%%' % (matrix[i][j], 100 * norm[i][j]),
                     ha='center', va='center', fontsize=11,
                     color='white' if norm[i][j] > 0.5 else C_INK)
-    ax.set_xticks(range(3))
-    ax.set_yticks(range(3))
-    ax.set_xticklabels(LABELS)
-    ax.set_yticklabels(LABELS)
+    ax.set_xticks(range(n))
+    ax.set_yticks(range(n))
+    ax.set_xticklabels(zh)
+    ax.set_yticklabels(zh)
     ax.set_xlabel('预测类别')
     ax.set_ylabel('真实类别')
-    ax.set_title('BERT 三分类混淆矩阵(按行归一化,准确率 0.7540)', fontsize=11.5)
+    ax.set_title('BERT 三分类混淆矩阵(按行归一化,准确率 %.4f)'
+                 % m['accuracy'], fontsize=11.5)
     fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
     return _save(fig, '4-2', dpi)
 
@@ -358,9 +473,10 @@ def fig_4_2(dpi):
 # ------------------------------------------------------------------ 第 5 章
 
 def fig_5_1(dpi):
-    """三类问句占比,突出中性类的 48.28%。"""
-    narrow = [22.78, 9.27, 48.28]
-    loose = [35.98, 19.04, 65.48]
+    """三类问句占比,突出中性类。"""
+    q = _load_json('neutral-split.json')['train_questions']['per_class']
+    narrow = [100 * q[k]['question_ratio'] for k in LABEL_KEYS]
+    loose = [100 * q[k]['question_loose_ratio'] for k in LABEL_KEYS]
 
     fig, ax = plt.subplots(figsize=(7.6, 4.2))
     xs = range(3)
@@ -386,7 +502,7 @@ def fig_5_1(dpi):
     ax.legend(frameon=False, loc='upper left', fontsize=9.5)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    # 不用箭头:中性组两根柱子已经把 48.28% / 65.48% 标出来了,
+    # 不用箭头:中性组两根柱子已经把两个口径的占比标出来了,
     # 再加箭头会压住数字,反而看不清。
     ax.text(2, 76, '中性类接近一半是问句', ha='center', va='center',
             fontsize=10, color=C_ACCENT)
@@ -450,8 +566,8 @@ def fig_5_2(dpi):
     ax.set_ylim(-0.5, 1.75)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.set_title('524 个错误的流向:牵涉中性边界的是极性互错的 %.2f 倍'
-                 % (boundary / polarity), fontsize=12)
+    ax.set_title('%d 个错误的流向:牵涉中性边界的是极性互错的 %.2f 倍'
+                 % (flow['total_errors'], boundary / polarity), fontsize=12)
     return _save(fig, '5-2', dpi)
 
 
@@ -480,7 +596,7 @@ def fig_5_3(dpi):
     ax.legend(frameon=False, loc='upper left', ncol=2, fontsize=9.5)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.annotate('准确率更高\n宏 F1 更低', xy=(2 - width / 2, 0.7882),
+    ax.annotate('准确率更高\n宏 F1 更低', xy=(2 - width / 2, acc[2]),
                 xytext=(1.05, 0.55), fontsize=10, color=C_NEG,
                 arrowprops=dict(arrowstyle='->', color=C_NEG, lw=1.2))
     ax.set_title('问句组与陈述句组的指标方向相反', fontsize=12)
@@ -515,7 +631,9 @@ def fig_6_1(dpi):
     ax.legend(frameon=False, loc='lower left')
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.annotate('3 轮即最优', xy=(3, 0.7540), xytext=(4.1, 0.768),
+    best = max(pts, key=lambda p: p[1])
+    ax.annotate('%d 轮即最优' % best[0], xy=(best[0], best[1]),
+                xytext=(best[0] + 1.1, best[1] + 0.014),
                 fontsize=10, color=C_NEG,
                 arrowprops=dict(arrowstyle='->', color=C_NEG, lw=1.2))
     ax.set_title('超参数扫描:训练轮数的影响', fontsize=12)

@@ -50,12 +50,44 @@ def _open(url: str, headers: dict | None = None, timeout: int = 60):
     return urllib.request.urlopen(urllib.request.Request(url, headers=h), timeout=timeout)
 
 
+def _wheel_tags(package: str = "") -> tuple[str, str]:
+    """当前解释器对应的 wheel 标签 (python tag, platform tag)。
+
+    原来的写法把 'cp312' / 'win_amd64' 写死在筛选条件里,于是在 3.11 或
+    Linux 上跑这个脚本会「找不到 wheel」而不是给出可用的结果。这里从
+    sys 推断,推断不出平台时退回各平台最常见的写法。
+    """
+    ver = sys.version_info
+    cp = "cp%d%d" % (ver.major, ver.minor)
+    plat = None
+    try:
+        from packaging.tags import sys_tags
+        for t in sys_tags():
+            if t.interpreter != cp:
+                continue
+            # 只认当前平台的轮子:manylinux / win / macosx 之一
+            if any(k in t.platform for k in ("manylinux", "win", "macosx")):
+                plat = t.platform
+                break
+    except Exception:  # noqa: BLE001 - 没有 packaging 就退回平台判断
+        plat = None
+    if not plat:
+        if sys.platform == "win32":
+            plat = "win_amd64" if sys.maxsize > 2 ** 32 else "win32"
+        elif sys.platform == "darwin":
+            plat = "macosx_11_0_arm64"
+        else:
+            plat = "manylinux2014_x86_64"
+    return cp, plat
+
+
 def list_wheels(package: str) -> list[tuple[str, str]]:
-    """返回 [(文件名, 下载 URL)],只保留本机能装的 cp312 / win_amd64。
+    """返回 [(文件名, 下载 URL)],只保留当前解释器能装的轮子。
 
     索引页里同一个 wheel 可能出现多次(实测页面确实有重复 href),
     这里按文件名去重并保持首次出现的顺序。
     """
+    cp, plat = _wheel_tags(package)
     url = f"{INDEX_URL}/{package}/"
     html = _open(url).read().decode("utf-8", "replace")
     hrefs = re.findall(r'href="([^"]+\.whl)(?:#[^"]*)?"', html)
@@ -63,7 +95,7 @@ def list_wheels(package: str) -> list[tuple[str, str]]:
     out = []
     for h in hrefs:
         name = urllib.parse.unquote(h.rsplit("/", 1)[-1])
-        if "cp312" not in name or "win_amd64" not in name:
+        if cp not in name or plat not in name:
             continue
         if name in seen:
             continue

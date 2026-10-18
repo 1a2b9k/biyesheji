@@ -232,18 +232,26 @@ def train_bert(tr_texts, tr_labels, te_texts, te_labels, label_names, out_dir):
 # ------------------------------------------------------------------ 评估
 
 def evaluate(y_true, y_pred, label_names, probs=None):
-    """算指标。返回可直接写进报告的字典。"""
+    """算指标。返回可直接写进报告的字典。
+
+    宏平均一律显式传 `labels`,让 F1 / 精确率 / 召回率三者口径一致:
+    不传时 sklearn 只对「真实值或预测值里出现过的类」求平均,
+    而下面 per_class 的宏平均是对全部 label_names 求平均。某个类一条
+    都没被判出时,两种口径会给出不同的数,报告里就会自相矛盾。
+    """
     from sklearn.metrics import (accuracy_score, classification_report,
                                  confusion_matrix, f1_score)
 
+    label_ids = list(range(len(label_names)))
     acc = float(accuracy_score(y_true, y_pred))
-    macro_f1 = float(f1_score(y_true, y_pred, average='macro'))
-    weighted_f1 = float(f1_score(y_true, y_pred, average='weighted'))
+    macro_f1 = float(f1_score(y_true, y_pred, average='macro',
+                              labels=label_ids, zero_division=0))
+    weighted_f1 = float(f1_score(y_true, y_pred, average='weighted',
+                                 labels=label_ids, zero_division=0))
 
-    cm = confusion_matrix(y_true, y_pred,
-                          labels=list(range(len(label_names)))).tolist()
+    cm = confusion_matrix(y_true, y_pred, labels=label_ids).tolist()
     report = classification_report(
-        y_true, y_pred, labels=list(range(len(label_names))),
+        y_true, y_pred, labels=label_ids,
         target_names=label_names, digits=4, zero_division=0)
 
     out = {

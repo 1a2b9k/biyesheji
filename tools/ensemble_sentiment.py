@@ -49,18 +49,109 @@ def seed_dir(seed):
     return os.path.join(MODELS_DIR, 'sentiment-bert-3class-seed%d' % seed)
 
 
+def data_fingerprint(texts, labels):
+    """训练数据的指纹。用来判断旧模型是不是在这份数据上训的。
+
+    只用长度、文本哈希与标签分布:不依赖任何第三方库,也不受行序影响。
+    """
+    import hashlib
+
+    h = hashlib.sha256()
+    for t, y in zip(texts, labels):
+        h.update(('%d\t%s\n' % (y, t)).encode('utf-8'))
+    return {
+        'n': len(texts),
+        'sha256': h.hexdigest()[:16],
+        'label_dist': {str(k): labels.count(k) for k in sorted(set(labels))},
+    }
+
+
 def train_one_seed(seed, tr_texts, tr_labels, te_texts, te_labels, label_names):
-    """训练一个种子。已存在则复用,避免重复训练。"""
+    """训练一个种子。已存在则复用,避免重复训练。
+
+    复用的前提是这个目录真的训过同一份数据:只看到 config.json 就跳过,
+    会在换了训练集或超参之后悄悄拿旧模型来集成。这里能核对的一律核对,
+    对不上就直接报错,让人显式删掉旧目录。
+    """
     out_dir = seed_dir(seed)
-    if os.path.isfile(os.path.join(out_dir, 'config.json')):
-        print('  seed %-3d 复用 %s' % (seed, os.path.relpath(out_dir, os.path.dirname(_HERE))))
+    cfg_path = os.path.join(out_dir, 'config.json')
+    if os.path.isfile(cfg_path):
+        mismatch = _reuse_mismatch(out_dir, label_names, tr_texts, tr_labels,
+                                   te_texts)
+        if mismatch:
+            raise SystemExit(
+                'seed %d 的旧模型与本次实验不一致(%s):%s\n'
+                '如需重训,请先删除该目录或换一个 --seeds 值。'
+                % (seed, os.path.relpath(out_dir, os.path.dirname(_HERE)),
+                   mismatch))
+        print('  seed %-3d 复用 %s'
+              % (seed, os.path.relpath(out_dir,
+                                       os.path.dirname(_HERE))))
         return None
     print('  seed %-3d 训练中 -> %s'
           % (seed, os.path.relpath(out_dir, os.path.dirname(_HERE))))
     set_seed(seed)
     preds, probs = train_bert(tr_texts, tr_labels, te_texts, te_labels,
                               label_names, out_dir)
+    # 记下训练数据指纹与超参,下次复用时才有据可查。
+    meta = {
+        'seed': seed,
+        'label_names': list(label_names),
+        'epochs': EPOCHS,
+        'learning_rate': LR,
+        'max_len': MAX_LEN,
+        'n_train': len(tr_texts),
+        'n_test': len(te_texts),
+        'fingerprint': data_fingerprint(tr_texts, tr_labels),
+    }
+    with open(os.path.join(out_dir, 'train_meta.json'), 'w',
+              encoding='utf-8') as fh:
+        json.dump(meta, fh, ensure_ascii=False, indent=2)
     return preds, probs
+
+
+def _reuse_mismatch(out_dir, label_names, tr_texts, tr_labels, te_texts):
+    """比对旧模型目录里的记录与本次实验。一致返回空串。"""
+    diffs = []
+
+    # 1) 类别名:train_bert 一定会写 label_names.json
+    ln_path = os.path.join(out_dir, 'label_names.json')
+    try:
+        with open(ln_path, encoding='utf-8') as fh:
+            old_labels = json.load(fh)
+        if old_labels != list(label_names):
+            diffs.append('label_names: 旧 %r / 现 %r'
+                         % (old_labels, list(label_names)))
+    except (OSError, ValueError) as exc:
+        diffs.append('label_names.json 读不出来(%s)' % exc)
+
+    # 2) train_meta.json 是本脚本训练时写的侧车文件。更早训练的目录没有它,
+    #    那种情况无法核对数据指纹,只能提示一句,不能当成不一致而拒绝复用。
+    meta_path = os.path.join(out_dir, 'train_meta.json')
+    if not os.path.isfile(meta_path):
+        print('    [note] %s 缺 train_meta.json,无法核对训练数据指纹'
+              '(旧模型)'
+              % os.path.relpath(out_dir, os.path.dirname(_HERE)))
+        return '; '.join(diffs)
+    try:
+        with open(meta_path, encoding='utf-8') as fh:
+            meta = json.load(fh)
+    except (OSError, ValueError) as exc:
+        diffs.append('train_meta.json 读不出来(%s)' % exc)
+        return '; '.join(diffs)
+
+    want = {
+        'label_names': list(label_names),
+        'epochs': EPOCHS,
+        'learning_rate': LR,
+        'max_len': MAX_LEN,
+        'n_train': len(tr_texts),
+        'n_test': len(te_texts),
+        'fingerprint': data_fingerprint(tr_texts, tr_labels),
+    }
+    diffs.extend('%s: 旧 %r / 现 %r' % (k, meta.get(k), v)
+                 for k, v in want.items() if meta.get(k) != v)
+    return '; '.join(diffs)
 
 
 def infer(model_dir, texts, label_names=None):

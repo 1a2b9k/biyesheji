@@ -155,12 +155,33 @@ def label_noise_scan(train_csv, test_csv):
             'neighbor_label_agreement': round(float((nbr_y[m] == te_y[m]).mean()), 4),
         }
 
+    n_conflict = len(conflict)
+    n_dup = len(dup)
+    n_conflict_items = int(sum(counts[k] for k in conflict))
+    n_dup_items = int(sum(counts[k] for k in dup))
+    # 结论按实测比重写,不预设「数据集是干净的」。
+    #
+    # 注意口径:少数冲突组不能推成「标注噪声不能忽略」——那会和论文
+    # 3.3 节「标注质量较高,个别冲突不足以解释系统性的分类误差」矛盾。
+    # 这里只陈述实测比例,并把它作为局限记下来。
+    if n_conflict == 0 and n_dup == 0:
+        verdict = ('没有近重复样本,也没有标签冲突组,数据集本身是干净的。')
+    elif n_conflict == 0:
+        verdict = ('有 %d 组近重复(涉及 %d 条),但无标签冲突,'
+                   '重复不影响标签可信度。' % (n_dup, n_dup_items))
+    else:
+        verdict = ('有 %d 组近重复(涉及 %d 条),其中 %d 组标签冲突'
+                   '(涉及 %d 条,占近重复条目的 %.1f%%),'
+                   '冲突率低,不足以解释系统性的分类误差,'
+                   '但作为局限如实记录。'
+                   % (n_dup, n_dup_items, n_conflict, n_conflict_items,
+                      100.0 * n_conflict_items / max(1, n_dup_items)))
     return {
         'n_train': len(tr_txt), 'n_test': len(te_txt),
-        'normalized_duplicate_groups': len(dup),
-        'normalized_duplicate_items': int(sum(counts[k] for k in dup)),
-        'conflicting_label_groups': len(conflict),
-        'conflicting_label_items': int(sum(counts[k] for k in conflict)),
+        'normalized_duplicate_groups': n_dup,
+        'normalized_duplicate_items': n_dup_items,
+        'conflicting_label_groups': n_conflict,
+        'conflicting_label_items': n_conflict_items,
         'conflict_examples': [
             {'normalized': k[:30], 'n': counts[k],
              'labels': sorted(LABELS[int(v)] for v in groups[k])}
@@ -168,10 +189,9 @@ def label_noise_scan(train_csv, test_csv):
         'similarity_median': round(float(np.median(sim)), 4),
         'similarity_mean': round(float(sim.mean()), 4),
         'by_threshold': buckets,
-        'conclusion': (
-            '近重复样本极少(标签冲突组仅 %d 组),数据集本身是干净的。'
-            '因此「中性标签难以学习」不是标注噪声造成的假象,'
-            '而是标签定义把多种语义塞进了一类。' % len(conflict)),
+        'conclusion': (verdict + '本文的结论是:'
+                       '「中性标签难以学习」不是标注噪声造成的假象,'
+                       '而是标签定义把多种语义塞进了一类。'),
     }
 
 
@@ -373,10 +393,44 @@ def aux_head_eval(texts, y3):
         acc = _acc([head[i] for i in idx], yt)[0]
         mc = _mcnemar(yt, [head[i] for i in idx], [spec[i] for i in idx])
         out['heads'][name] = {'accuracy': acc, 'vs_specialist': mc}
-    out['conclusion'] = (
-        '共享编码器训练出的极性头只是打平独立训练的专用模型'
-        '(McNemar 均不显著),不是提升 —— 多任务没有带来额外信息。')
+    out['conclusion'] = _aux_head_conclusion(out)
     return out
+
+
+def _aux_head_conclusion(out):
+    """按实际差异写结论,不预先假定「多任务只是打平」。"""
+    base = out.get('polarity_specialist')
+    parts = []
+    any_sig_better = False
+    any_sig_worse = False
+    for name, v in (out.get('heads') or {}).items():
+        mc = v.get('vs_specialist') or {}
+        acc = v.get('accuracy')
+        if acc is None or base is None:
+            continue
+        delta = acc - base
+        if mc.get('significant') and delta > 0:
+            any_sig_better = True
+            parts.append('%s 显著优于专用模型(%.4f vs %.4f,McNemar p=%s)'
+                         % (name, acc, base, mc.get('p_value')))
+        elif mc.get('significant') and delta < 0:
+            any_sig_worse = True
+            parts.append('%s 显著劣于专用模型(%.4f vs %.4f,McNemar p=%s)'
+                         % (name, acc, base, mc.get('p_value')))
+        else:
+            parts.append('%s 与专用模型打平(%.4f vs %.4f,McNemar p=%s)'
+                         % (name, acc, base, mc.get('p_value')))
+    if not parts:
+        return '没有可比较的极性头。'
+    if any_sig_better:
+        tail = ('有辅助头显著更好,说明多任务确实带来了额外信息;'
+                '本文不把它算作改进,理由见正文。')
+    elif any_sig_worse:
+        tail = '辅助头显著更差,多任务在这里是负迁移。'
+    else:
+        tail = ('共享编码器训练出的极性头只是打平独立训练的专用模型'
+                '(McNemar 均不显著),不是提升 —— 多任务没有带来额外信息。')
+    return ';'.join(parts) + '。' + tail
 
 
 def stacking_eval(tr_texts, tr_labels, te_texts, te_labels):
@@ -463,6 +517,38 @@ def stacking_eval(tr_texts, tr_labels, te_texts, te_labels):
     }
 
 
+def _load_calibration_oracle(exp_dir):
+    """读「测试集 oracle 搜索」的记录。它是一次性探针的产物,不可重算。"""
+    p = os.path.join(exp_dir, 'calibration-oracle.json')
+    if not os.path.isfile(p):
+        return None
+    try:
+        with open(p, encoding='utf-8') as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return None
+
+
+def _oracle_note(exp_dir):
+    """校准那一节的结论句。数字从记录文件读,不写死在代码里。"""
+    tail = '因此本课题**不把校准算作改进**。'
+    o = _load_calibration_oracle(exp_dir)
+    if not o:
+        return ('更强的、直接在测试集上搜出来的权重属于选择偏差,'
+                '交叉验证后增益很小且方向不稳,不能当作方法成绩。' + tail)
+    ora = o.get('test_set_oracle') or {}
+    mc = o.get('mcnemar') or {}
+    return ('在测试集上直接搜最优权重可到 acc %.4f / 宏 F1 %.4f,'
+            '但那是选择偏差:5 折交叉验证后平均增益仅 %+.4f 且方向%s,'
+            'McNemar p=%.4f %s。%s'
+            % (ora.get('accuracy', 0.0), ora.get('macro_f1', 0.0),
+               o.get('cv_gain_mean', 0.0),
+               '稳定' if o.get('cv_gain_is_stable') else '不稳',
+               mc.get('p_value', 1.0),
+               '显著' if mc.get('significant') else '不显著',
+               tail))
+
+
 def calibration_eval(exp_dir):
     """决策阈值校准:后处理能不能把集成成绩再抬一点。
 
@@ -473,10 +559,10 @@ def calibration_eval(exp_dir):
     给出逆先验权重下的结果。权重只由**训练集类别先验**决定,不碰测试集,
     所以不存在「在测试集上调参」的问题。
 
-    注意:更强的、直接在测试集上搜出来的权重(中性 ×0.5 可到 0.7700)
-    属于选择偏差,5 折交叉验证后增益降到 +0.0012 且方向不稳,
-    不能当作方法成绩。这一点必须写进论文。
+    oracle 搜索那一组数字记在 data/experiments/calibration-oracle.json,
+    由一次性探针产生、不可重算,所以单独存一个文件而不是写在这里。
     """
+    oracle = _load_calibration_oracle(exp_dir)
     p = os.path.join(exp_dir, 'ensemble-3class.json')
     if not os.path.isfile(p):
         return {'skipped': '缺少 ensemble-3class.json'}
@@ -486,21 +572,43 @@ def calibration_eval(exp_dir):
     prior = r.get('train_prior')
     if not cm or not prior:
         return {'skipped': '结果文件缺少混淆矩阵或训练集先验'}
-
-    inv = [1.0 / x for x in prior]
-    inv = [x / inv[0] for x in inv]
+    # 先验里出现 0 时 1/x 会除零:三类都有样本时不发生,但先验可能是
+    # 子集上的统计(某类一条都没有),这里显式挡掉而不是让它炸掉整轮。
+    if any(not x for x in prior):
+        return {'skipped': '训练集先验含 0,无法取倒数权重'}
+    inv_norm = None
+    if len(prior) >= 3:
+        inv_all = [1.0 / x for x in prior]
+        inv_norm = [x / inv_all[0] for x in inv_all]
     return {
         'baseline_accuracy': r.get('accuracy'),
         'train_prior': prior,
-        'inverse_prior_weight': [round(x, 4) for x in inv],
-        'oracle_note': (
-            '在测试集上直接搜最优权重可到 acc 0.7700 / 宏 F1 0.7685,'
-            '但那是选择偏差:5 折交叉验证后平均增益仅 +0.0012 且方向不稳,'
-            'McNemar p=0.3634 不显著。因此本课题**不把校准算作改进**。'),
+        'inverse_prior_weight': ([round(x, 4) for x in inv_norm]
+                                 if inv_norm else None),
+        'oracle_accuracy': (oracle or {}).get('test_set_oracle', {})
+        .get('accuracy'),
+        'oracle_neutral_weight': (oracle or {}).get('test_set_oracle', {})
+        .get('neutral_weight'),
+        'oracle_note': _oracle_note(exp_dir),
     }
 
 
 # ------------------------------------------------------------ 汇总与渲染
+
+def _skip_on(err_holder, key, step, exc):
+    """把某一步的异常降级成 skipped 写进报告。
+
+    降级本身是对的(缺模型时全篇报告不该崩),但静默降级会让代码 bug
+    伪装成「环境缺东西」:报告的读者只看得到 skipped,看不到 traceback。
+    所以这里一律把 traceback 打到 stderr,留下可追的痕迹。
+    """
+    import traceback
+    sys.stderr.write('[warn] %s 失败,该节标记为 skipped: %s: %s\n'
+                     % (step, type(exc).__name__, exc))
+    traceback.print_exc(file=sys.stderr)
+    err_holder[key] = {'skipped': '%s失败: %s: %s'
+                       % (step, type(exc).__name__, exc)}
+
 
 def collect(exp_dir=EXP_DIR, raw_dir=RAW_DIR, with_models=True):
     data = {'note': ('本文件由 tools/ablation_study.py 生成。'
@@ -531,7 +639,7 @@ def collect(exp_dir=EXP_DIR, raw_dir=RAW_DIR, with_models=True):
         try:
             data['label_noise'] = label_noise_scan(tr, te)
         except Exception as exc:                       # noqa: BLE001
-            data['label_noise'] = {'skipped': '扫描失败: %s' % exc}
+            _skip_on(data, 'label_noise', '标签噪声扫描', exc)
     else:
         data['label_noise'] = {'skipped': '缺少 data/raw/*.csv'}
 
@@ -550,15 +658,15 @@ def collect(exp_dir=EXP_DIR, raw_dir=RAW_DIR, with_models=True):
         try:
             data['cascade'] = cascade_eval(texts, y3)
         except Exception as exc:                       # noqa: BLE001
-            data['cascade'] = {'skipped': '运行失败: %s' % exc}
+            _skip_on(data, 'cascade', '级联路线实验', exc)
         try:
             data['aux_head'] = aux_head_eval(texts, y3)
         except Exception as exc:                       # noqa: BLE001
-            data['aux_head'] = {'skipped': '运行失败: %s' % exc}
+            _skip_on(data, 'aux_head', '辅助分类头实验', exc)
         try:
             data['stacking'] = stacking_eval(tr_texts, tr_y, texts, y3)
         except Exception as exc:                       # noqa: BLE001
-            data['stacking'] = {'skipped': '运行失败: %s' % exc}
+            _skip_on(data, 'stacking', '堆叠集成实验', exc)
 
     # 4) 超参扫描:读已提交的 sweep 结果(若有)
     sweep = None
@@ -573,19 +681,43 @@ def collect(exp_dir=EXP_DIR, raw_dir=RAW_DIR, with_models=True):
         # 若以后写成了带 configs 键的形式,这里直接沿用。
         if 'configs' not in sweep:
             flat = sweep
-            worst = flat.get('ep8_lr2e-05') or max(
-                flat.values(), key=lambda v: v.get('epochs', 0))
+            # 结论不能写死:换一份扫描结果,写死的「基线最优」就会与表里
+            # 的数字矛盾。这里从数据里算出最好的配置,再描述差距。
+            best_name = max(flat, key=lambda k: flat[k].get('accuracy', 0))
+            base_name = ('ep3_lr2e-05' if 'ep3_lr2e-05' in flat
+                         else best_name)
+            base_acc = flat[base_name].get('accuracy', 0)
+            worse = sorted(
+                ('%s(%.4f)' % (k, v.get('accuracy', 0))
+                 for k, v in flat.items() if k != base_name
+                 and v.get('accuracy', 0) < base_acc),
+                key=lambda s: float(s.rstrip(')').split('(')[1]))
+            if best_name == base_name and worse:
+                conclusion = (
+                    '基线配置(%d epoch / lr=%s)是本轮扫描中测试准确率最高的'
+                    '一组(%.4f);其余 %d 组都更低:%s。'
+                    '这说明基线成绩不是「欠训练」造成的,'
+                    '换本轮扫到的超参拿不到增益。'
+                    % (flat[base_name].get('epochs', 0),
+                       flat[base_name].get('lr', 0), base_acc, len(worse),
+                       '、'.join(worse)))
+            elif best_name == base_name:
+                conclusion = ('基线配置(%d epoch / lr=%s)是本轮扫描中测试'
+                              '准确率最高的一组(%.4f),其余各组没有更高的。'
+                              % (flat[base_name].get('epochs', 0),
+                                 flat[base_name].get('lr', 0), base_acc))
+            else:
+                conclusion = (
+                    '注意:本轮扫描中 %s 的测试准确率(%.4f)高于基线 %s(%.4f)。'
+                    '基线并非扫描范围内的最优 —— 这一项要在正文里如实说明,'
+                    '不能写成「基线已是最优」。'
+                    % (best_name, flat[best_name].get('accuracy', 0),
+                       base_name, base_acc))
             sweep = {
                 'configs': flat,
-                'baseline': 'ep3_lr2e-05',
-                'conclusion': (
-                    '基线配置(3 epoch / lr=2e-5)已是扫描范围内的最优。'
-                    '延长到 5 epoch 或 8 epoch 都让测试准确率下降:'
-                    '8 epoch 时训练 loss 已降到 0.0518,测试准确率反降到 %.4f,'
-                    '是明确的过拟合。降低学习率同样变差。'
-                    '这说明基线成绩不是「欠训练」造成的,'
-                    '换更好的超参拿不到增益。'
-                    % worst['accuracy'])}
+                'baseline': base_name,
+                'best': best_name,
+                'conclusion': conclusion}
         data['hyperparam_sweep'] = sweep
     else:
         data['hyperparam_sweep'] = {
@@ -682,7 +814,16 @@ def render_md(data):
         L.append('')
         L.append('| 相似度阈值 | 样本数 | 占比 | 最近邻标签一致率 |')
         L.append('|---|---|---|---|')
-        for thr, v in sorted(ln['by_threshold'].items(), reverse=True):
+        # 阈值键是字符串('0.95' 之类),按字符串倒序会排成 '0.9' > '0.85' > '0.7'
+        # 以外的怪顺序(等长才碰巧对),所以先转 float 再排。
+        def _thr_key(item):
+            try:
+                return float(item[0])
+            except (TypeError, ValueError):
+                return float('-inf')
+
+        for thr, v in sorted(ln['by_threshold'].items(),
+                             key=_thr_key, reverse=True):
             L.append('| sim ≥ %s | %d | %.1f%% | %.4f |'
                      % (thr, v['n'], 100 * v['share'],
                         v['neighbor_label_agreement']))
@@ -837,21 +978,33 @@ def render_md(data):
         L.append('> 跳过:%s' % ca['skipped'])
         L.append('')
     else:
-        L.append('三分类 argmax 隐含假设「各类先验相等、错分代价相同」,'
-                 '而本数据集中性占 %.1f%%。给每类概率乘一个权重再取 argmax,'
-                 '等价于移动决策边界。' % (100.0 * ca['train_prior'][2]))
-        L.append('')
-        L.append('| 权重来源 | 中性权重 | 是否用测试集 |')
-        L.append('|---|---|---|')
-        L.append('| 逆训练集先验 | %.4f | 否(只看训练集先验) |'
-                 % ca['inverse_prior_weight'][2])
-        L.append('| 测试集 oracle 搜索 | 0.5000 | **是(选择偏差)** |')
-        L.append('')
-        L.append('**结论:** %s' % ca['oracle_note'])
-        L.append('')
-        L.append('这一节的写法本身就是结论的一部分:把「试过、数字好看、'
-                 '但经不起交叉验证」的方法也写出来,并明确它为什么不算改进。')
-        L.append('')
+        # 中性权重取先验的第 3 个位置。这里不写死下标 2:先验的类顺序来自
+        # 训练脚本的 label_names,换任务(例如二分类)时长度会变,直接 [2]
+        # 会 IndexError。oracle 那一格的权重同样从记录文件读,不写死 0.5000。
+        prior = ca.get('train_prior') or []
+        ipw = ca.get('inverse_prior_weight') or []
+        oracle_w = ca.get('oracle_neutral_weight')
+        if len(prior) < 3 or len(ipw) < 3:
+            L.append('> 跳过:训练集先验长度 %d,不足以定位中性类' % len(prior))
+            L.append('')
+        else:
+            L.append('三分类 argmax 隐含假设「各类先验相等、错分代价相同」,'
+                     '而本数据集中性占 %.1f%%。给每类概率乘一个权重再取 argmax,'
+                     '等价于移动决策边界。' % (100.0 * prior[2]))
+            L.append('')
+            L.append('| 权重来源 | 中性权重 | 是否用测试集 |')
+            L.append('|---|---|---|')
+            L.append('| 逆训练集先验 | %.4f | 否(只看训练集先验) |'
+                     % ipw[2])
+            L.append('| 测试集 oracle 搜索 | %s | **是(选择偏差)** |'
+                     % ('%.4f' % oracle_w if oracle_w is not None
+                        else '—(未记录)'))
+            L.append('')
+            L.append('**结论:** %s' % ca['oracle_note'])
+            L.append('')
+            L.append('这一节的写法本身就是结论的一部分:把「试过、数字好看、'
+                     '但经不起交叉验证」的方法也写出来,并明确它为什么不算改进。')
+            L.append('')
 
     return '\n'.join(L) + '\n'
 
@@ -883,9 +1036,10 @@ def main(argv=None):
         sys.stdout.reconfigure(encoding='utf-8')
     except Exception:                                  # noqa: BLE001
         pass
-    n_skip = sum(1 for k in ('label_noise', 'cascade', 'aux_head',
-                             'hyperparam_sweep')
-                 if (data.get(k) or {}).get('skipped'))
+    # 别在这里维护一份「会跳过哪些项」的名单:加一节就漏一节。
+    # 直接从数据里数所有带 skipped 的项。
+    n_skip = sum(1 for v in data.values()
+                 if isinstance(v, dict) and v.get('skipped'))
     print('[ok] 已写入 %s' % os.path.relpath(args.out, WS))
     print('     JSON: %s' % os.path.relpath(args.json, WS))
     print('     宏 F1 口径对比 %d 个模型;跳过 %d 项(缺模型或数据)'

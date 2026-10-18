@@ -14,6 +14,9 @@
 
 判定标准:日线只要**两个源有一个通**就算通过,因为 collector.fetch_kline
 内部会自动回退;两个都不通才算失败。
+
+实现注意:所有网络请求都在 main() 里发生,模块被 import 时不会发请求 ——
+否则任何「扫一遍 tools/ 里的脚本」的测试或打包脚本都会顺手打三次外网。
 """
 
 import json
@@ -44,93 +47,134 @@ def get(url, referer=None):
         return r.status, r.read()
 
 
-print('=== Data source check ===')
-print()
+def _json_slice(text):
+    """从 JSONP 里切出 JSON 对象;切不出来返回 None。
 
-# ---- 1. 东方财富 K 线(主源) ----
-kline_ok = False
-try:
-    secid = '1.600519'  # 贵州茅台(沪市)
-    url = (
-        'http://push2his.eastmoney.com/api/qt/stock/kline/get'
-        '?fields1=f1,f2,f3,f4,f5,f6'
-        '&fields2=f51,f52,f53,f54,f55,f56,f57,f58'
-        '&klt=101&fqt=1&secid=%s&beg=0&end=20500101&lmt=100000' % secid
-    )
-    status, body = get(url)
-    data = json.loads(body.decode('utf-8'))
-    klines = (data.get('data') or {}).get('klines') or []
-    name = (data.get('data') or {}).get('name', '?')
-    kline_ok = status == 200 and len(klines) > 0
-    report(kline_ok, 'EastMoney K-line (primary)',
-           'HTTP %d, %s, %d 条日线' % (status, name, len(klines)),
-           fatal=False)
-    if klines:
-        print('        最新一条: %s' % klines[-1])
-except Exception as exc:
-    report(False, 'EastMoney K-line (primary)',
-           '%s: %s' % (type(exc).__name__, exc), fatal=False)
-
-# ---- 2. 腾讯 K 线(备用源) ----
-tencent_ok = False
-try:
-    url = ('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get'
-           '?param=sh600519,day,,,10,qfq')
-    status, body = get(url)
-    data = json.loads(body.decode('utf-8'))
-    node = (data.get('data') or {}).get('sh600519') or {}
-    rows = node.get('qfqday') or node.get('day') or []
-    tencent_ok = status == 200 and len(rows) > 0
-    report(tencent_ok, 'Tencent K-line (fallback)',
-           'HTTP %d, %d 条日线' % (status, len(rows)))
-    if rows:
-        print('        最新一条: %s' % rows[-1])
-except Exception as exc:
-    report(False, 'Tencent K-line (fallback)',
-           '%s: %s' % (type(exc).__name__, exc))
-
-# 日线两个源都不通才算失败 —— 单源不通有回退兜着。
-if not (kline_ok or tencent_ok):
-    failures.append('K-line (both sources down)')
-    print('  [FAIL] K-line: 主源与备用源都不通,日线无法更新')
-elif not kline_ok:
-    print('  [INFO] 主源不可用,采集将自动走腾讯备用源')
-
-# ---- 2. 东方财富新闻搜索 ----
-try:
-    param = {
-        'uid': '',
-        'keyword': '贵州茅台',
-        'type': ['cmsArticleWebOld'],
-        'client': 'web',
-        'clientType': 'web',
-        'clientVersion': 'curr',
-        'param': {'cmsArticleWebOld': {
-            'searchScope': 'default', 'sort': 'default',
-            'pageIndex': 1, 'pageSize': 10,
-            'preTag': '<em>', 'postTag': '</em>'}},
-    }
-    url = ('https://search-api-web.eastmoney.com/search/jsonp'
-           '?cb=&param=' + urllib.parse.quote(json.dumps(param, ensure_ascii=False)))
-    status, body = get(url, referer='https://so.eastmoney.com/')
-    text = body.decode('utf-8', 'replace')
+    原写法是 text.find('{') 与 text.rfind('}'),响应体里没有大括号时
+    两者都是 -1,text[-1:0] 会切出一个空串、json.loads 报一个和真实
+    问题无关的解析错误。这里显式判空并给出可读原因。
+    """
     start, end = text.find('{'), text.rfind('}')
-    data = json.loads(text[start:end + 1])
-    items = (((data.get('result') or {}).get('cmsArticleWebOld')) or [])
-    report(status == 200 and len(items) > 0,
-           'EastMoney news search',
-           'HTTP %d, %d 条结果' % (status, len(items)))
-    if items:
-        first = items[0]
-        print('        标题: %s' % str(first.get('title', ''))[:60])
-        print('        来源: %s  时间: %s' % (first.get('mediaName', '?'),
-                                              first.get('date', '?')))
-except Exception as exc:
-    report(False, 'EastMoney news search', '%s: %s' % (type(exc).__name__, exc))
+    if start < 0 or end <= start:
+        return None
+    try:
+        return json.loads(text[start:end + 1])
+    except ValueError:
+        return None
 
-print()
-if failures:
-    print('RESULT: %d source(s) FAILED -> %s' % (len(failures), ', '.join(failures)))
-    sys.exit(1)
-print('RESULT: all data sources reachable')
-sys.exit(0)
+
+def check_eastmoney_kline():
+    """东方财富日线(主源)。返回是否可用。"""
+    try:
+        secid = '1.600519'  # 贵州茅台(沪市)
+        url = (
+            'http://push2his.eastmoney.com/api/qt/stock/kline/get'
+            '?fields1=f1,f2,f3,f4,f5,f6'
+            '&fields2=f51,f52,f53,f54,f55,f56,f57,f58'
+            '&klt=101&fqt=1&secid=%s&beg=0&end=20500101&lmt=100000' % secid
+        )
+        status, body = get(url)
+        data = json.loads(body.decode('utf-8'))
+        klines = (data.get('data') or {}).get('klines') or []
+        name = (data.get('data') or {}).get('name', '?')
+        ok = status == 200 and len(klines) > 0
+        report(ok, 'EastMoney K-line (primary)',
+               'HTTP %d, %s, %d 条日线' % (status, name, len(klines)),
+               fatal=False)
+        if klines:
+            print('        最新一条: %s' % klines[-1])
+        return ok
+    except Exception as exc:  # noqa: BLE001 - 连通性探测,任何异常都算不通
+        report(False, 'EastMoney K-line (primary)',
+               '%s: %s' % (type(exc).__name__, exc), fatal=False)
+        return False
+
+
+def check_tencent_kline():
+    """腾讯日线(备用源)。返回是否可用。"""
+    try:
+        url = ('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get'
+               '?param=sh600519,day,,,10,qfq')
+        status, body = get(url)
+        data = json.loads(body.decode('utf-8'))
+        node = (data.get('data') or {}).get('sh600519') or {}
+        rows = node.get('qfqday') or node.get('day') or []
+        ok = status == 200 and len(rows) > 0
+        report(ok, 'Tencent K-line (fallback)',
+               'HTTP %d, %d 条日线' % (status, len(rows)))
+        if rows:
+            print('        最新一条: %s' % rows[-1])
+        return ok
+    except Exception as exc:  # noqa: BLE001
+        report(False, 'Tencent K-line (fallback)',
+               '%s: %s' % (type(exc).__name__, exc))
+        return False
+
+
+def check_news_search():
+    """东方财富新闻搜索。"""
+    try:
+        param = {
+            'uid': '',
+            'keyword': '贵州茅台',
+            'type': ['cmsArticleWebOld'],
+            'client': 'web',
+            'clientType': 'web',
+            'clientVersion': 'curr',
+            'param': {'cmsArticleWebOld': {
+                'searchScope': 'default', 'sort': 'default',
+                'pageIndex': 1, 'pageSize': 10,
+                'preTag': '<em>', 'postTag': '</em>'}},
+        }
+        url = ('https://search-api-web.eastmoney.com/search/jsonp'
+               '?cb=&param='
+               + urllib.parse.quote(json.dumps(param, ensure_ascii=False)))
+        status, body = get(url, referer='https://so.eastmoney.com/')
+        text = body.decode('utf-8', 'replace')
+        data = _json_slice(text)
+        if data is None:
+            report(False, 'EastMoney news search',
+                   'HTTP %d, 响应体不是可解析的 JSON(前 80 字符: %r)'
+                   % (status, text[:80]))
+            return
+        items = (((data.get('result') or {}).get('cmsArticleWebOld')) or [])
+        report(status == 200 and len(items) > 0,
+               'EastMoney news search',
+               'HTTP %d, %d 条结果' % (status, len(items)))
+        if items:
+            first = items[0]
+            print('        标题: %s' % str(first.get('title', ''))[:60])
+            print('        来源: %s  时间: %s' % (first.get('mediaName', '?'),
+                                                  first.get('date', '?')))
+    except Exception as exc:  # noqa: BLE001
+        report(False, 'EastMoney news search',
+               '%s: %s' % (type(exc).__name__, exc))
+
+
+def main():
+    print('=== Data source check ===')
+    print()
+
+    kline_ok = check_eastmoney_kline()
+    tencent_ok = check_tencent_kline()
+
+    # 日线两个源都不通才算失败 —— 单源不通有回退兜着。
+    if not (kline_ok or tencent_ok):
+        failures.append('K-line (both sources down)')
+        print('  [FAIL] K-line: 主源与备用源都不通,日线无法更新')
+    elif not kline_ok:
+        print('  [INFO] 主源不可用,采集将自动走腾讯备用源')
+
+    check_news_search()
+
+    print()
+    if failures:
+        print('RESULT: %d source(s) FAILED -> %s'
+              % (len(failures), ', '.join(failures)))
+        return 1
+    print('RESULT: all data sources reachable')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

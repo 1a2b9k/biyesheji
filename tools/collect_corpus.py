@@ -49,7 +49,13 @@ def _parse_args(argv=None):
 
 
 def _select_stocks(codes_arg):
-    """按 --codes 过滤默认池子;代码不在池子里也允许,名字临时用代码。"""
+    """按 --codes 过滤默认池子。
+
+    池子里的股票带着代码和名字;池子外的代码也允许采,但**不猜市场**:
+    沪市 60/68 开头、深市 00/30 开头是有规律的,猜错会把行情请求发到
+    另一个市场、静默返回空数据。所以池子外的代码要求显式写
+    ``代码:市场`` (例如 ``688981:SH``),否则报错而不是默认 'SH'。
+    """
     pool = config.all_stocks()
     if not codes_arg.strip():
         return pool
@@ -57,8 +63,24 @@ def _select_stocks(codes_arg):
     wanted = [c.strip() for c in codes_arg.split(',') if c.strip()]
     by_code = {code: (code, name, mkt) for code, name, mkt in pool}
     out = []
-    for code in wanted:
-        out.append(by_code.get(code, (code, code, 'SH')))
+    unknown = []
+    for item in wanted:
+        if ':' in item:
+            code, mkt = item.split(':', 1)
+            code, mkt = code.strip(), mkt.strip().upper()
+            if mkt not in ('SH', 'SZ', 'BJ'):
+                raise SystemExit('市场代码 %r 无法识别,只支持 SH / SZ / BJ' % mkt)
+            out.append((code, code, mkt))
+            continue
+        if item in by_code:
+            out.append(by_code[item])
+        else:
+            unknown.append(item)
+    if unknown:
+        raise SystemExit(
+            '这些代码不在股票池里: %s\n请写成「代码:市场」显式指定市场,'
+            '例如 688981:SH。默认猜测会猜错,所以这里不猜。'
+            % ', '.join(unknown))
     return out
 
 
@@ -140,6 +162,10 @@ def main(argv=None):
             for r in failed:
                 print('  %s %s: %s' % (r['code'], r['name'],
                                        '; '.join(r['errors'])))
+            # 退出码要反映失败:全部失败时仍返回 0,批处理脚本会以为
+            # 采集成功了、接着去跑标注。
+            print('\n采集未全部成功(%d/%d 只有错误)。' % (len(failed), len(results)))
+            return 1
         return 0
     finally:
         db.close()
