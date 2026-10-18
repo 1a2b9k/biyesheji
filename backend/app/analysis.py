@@ -134,6 +134,63 @@ def align_with_returns(daily, klines, lag=1):
     return out
 
 
+def merge_pairs_by_return_day(pairs):
+    """把落在同一个收益日上的多个新闻日合并成一个样本。
+
+    为什么必须合并:非交易日(周末、长假)的新闻会被 align_with_returns 归到
+    它之前最后一个交易日,再往后推 lag 天,于是**多个新闻日会共享同一个
+    收益值**。如果不合并,同一个收益就被重复计入若干次,样本量虚高、
+    相关系数的显著性被高估 —— 这在统计上叫伪重复(pseudo-replication)。
+
+    本课题的真实情况:13 只股票共 744 个"股票-日"样本,但只有 575 个唯一
+    的(股票, 收益日)组合,169 条是重复的;最极端的是 601899 在国庆假期后
+    的第一个交易日,七个自然日的新闻共享同一个 -1.41% 收益,被算了 7 次。
+
+    合并口径:同一收益日内,polarity 与 mean_value 按当天新闻条数 n 加权
+    平均(新闻多的那天对当天情绪的贡献本来就更大),n 相加,并记下合并了
+    几个新闻日(days)。这样每个输出样本仍然只对应一个收益观测。
+
+    pairs: align_with_returns 的返回(或已经过滤过的子集)
+    返回  : 按 ret_date 升序的新列表,元素字段与输入一致,另加 days
+    """
+    buckets = {}
+    for p in pairs:
+        key = p['ret_date']
+        b = buckets.get(key)
+        if b is None:
+            buckets[key] = {
+                'date': p['date'],
+                'ret_date': key,
+                'return': p['return'],
+                'polarity': p['polarity'] * p['n'],
+                'mean_value': p['mean_value'] * p['n'],
+                'n': p['n'],
+                'days': 1,
+            }
+            continue
+        b['polarity'] += p['polarity'] * p['n']
+        b['mean_value'] += p['mean_value'] * p['n']
+        b['n'] += p['n']
+        b['days'] += 1
+        if p['date'] < b['date']:
+            b['date'] = p['date']
+
+    out = []
+    for key in sorted(buckets):
+        b = buckets[key]
+        total = b['n'] or 1
+        out.append({
+            'date': b['date'],
+            'ret_date': key,
+            'return': b['return'],
+            'polarity': round(b['polarity'] / total, 4),
+            'mean_value': round(b['mean_value'] / total, 4),
+            'n': b['n'],
+            'days': b['days'],
+        })
+    return out
+
+
 def _pearson(xs, ys):
     n = len(xs)
     if n < 3:
@@ -171,22 +228,82 @@ def _spearman(xs, ys):
     return rho
 
 
-def _p_value_two_sided(r, n):
-    """相关系数的双侧 p 值(用 t 分布近似)。
+def _betacf(a, b, x):
+    """不完全 Beta 函数的连分式部分(Numerical Recipes 的 betacf)。
 
-    t = r * sqrt((n-2)/(1-r^2)),自由度 n-2。这里用正态近似算尾部概率,
-    样本量几十以上时与精确 t 分布差别很小;小样本下 p 值偏小,所以结论
-    里同时报 n,让人自己判断。
+    用修正 Lentz 算法迭代,收敛慢时退回一个足够小的值而不是抛异常 ——
+    这里只是算一个 p 值,不该让统计函数把整个接口带崩。
+    """
+    tiny = 1e-30
+    qab = a + b
+    qap = a + 1.0
+    qam = a - 1.0
+    c = 1.0
+    d = 1.0 - qab * x / qap
+    if abs(d) < tiny:
+        d = tiny
+    d = 1.0 / d
+    h = d
+    for m in range(1, 300):
+        m2 = 2 * m
+        aa = m * (b - m) * x / ((qam + m2) * (a + m2))
+        d = 1.0 + aa * d
+        if abs(d) < tiny:
+            d = tiny
+        c = 1.0 + aa / c
+        if abs(c) < tiny:
+            c = tiny
+        d = 1.0 / d
+        h *= d * c
+        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2))
+        d = 1.0 + aa * d
+        if abs(d) < tiny:
+            d = tiny
+        c = 1.0 + aa / c
+        if abs(c) < tiny:
+            c = tiny
+        d = 1.0 / d
+        delta = d * c
+        h *= delta
+        if abs(delta - 1.0) < 3e-16:
+            break
+    return h
+
+
+def _betai(a, b, x):
+    """正则化不完全 Beta 函数 I_x(a, b)。"""
+    if x <= 0.0:
+        return 0.0
+    if x >= 1.0:
+        return 1.0
+    log_front = (math.lgamma(a + b) - math.lgamma(a) - math.lgamma(b)
+                 + a * math.log(x) + b * math.log(1.0 - x))
+    front = math.exp(log_front)
+    if x < (a + 1.0) / (a + b + 2.0):
+        return front * _betacf(a, b, x) / a
+    return 1.0 - front * _betacf(b, a, 1.0 - x) / b
+
+
+def _p_value_two_sided(r, n):
+    """相关系数的双侧 p 值(精确 t 分布,不是正态近似)。
+
+    检验统计量 t = r * sqrt((n-2)/(1-r^2)),自由度 df = n-2,服从 t 分布。
+    双侧 p 值 = P(|T| >= |t|) = I_{df/(df+t^2)}(df/2, 1/2),其中 I 是
+    正则化不完全 Beta 函数。
+
+    早先的版本用正态近似(0.5 * erfc(z/sqrt(2)))算尾部概率,样本量小时
+    会系统性地低估 p 值 —— 在本课题的数据上,600276 的 p 值因此从 0.0514
+    被算成 0.0455,正好跨过 0.05 这条线。所以这里改成精确解,不引入
+    scipy(后端运行时依赖里没有它),用连分式自己实现不完全 Beta 函数。
     """
     if r is None or n < 3:
         return None
     if abs(r) >= 1.0:
         return 0.0
-    t = r * math.sqrt((n - 2) / (1 - r * r))
-    # 正态尾概率的近似(Abramowitz-Stegun 7.1.26 的 erf 近似)
-    z = abs(t)
-    p_one = 0.5 * math.erfc(z / math.sqrt(2))
-    return round(min(1.0, 2 * p_one), 4)
+    df = n - 2
+    t = r * math.sqrt(df / (1 - r * r))
+    p = _betai(df / 2.0, 0.5, df / (df + t * t))
+    return round(min(1.0, max(0.0, p)), 4)
 
 
 def _mean(values):
@@ -194,10 +311,13 @@ def _mean(values):
 
 
 def summarize(pairs):
-    """对 align_with_returns 的结果做统计汇总。
+    """对 align_with_returns(或合并后的)结果做统计汇总。
+
+    调用方应先经 merge_pairs_by_return_day 合并同一收益日的样本,否则
+    样本量会虚高、p 值会偏小(见该函数的说明)。
 
     返回 dict,包含:
-      * n            : 可用样本天数
+      * n            : 可用样本数(合并后即收益日数)
       * pearson / spearman / p_value : 情感指数与次日收益的相关性
       * polarity_mean / return_mean  : 各自的均值
       * groups       : 按情感指数三分的分组平均收益(低/中/高)
@@ -245,11 +365,19 @@ def summarize(pairs):
     }
 
 
-def analyze(rows, klines, lag=1):
-    """一站式:新闻行 + 行情行 -> 每日情感指数 + 相关性汇总。"""
+def analyze(rows, klines, lag=1, merge=True):
+    """一站式:新闻行 + 行情行 -> 每日情感指数 + 相关性汇总。
+
+    merge=True(默认)时把落在同一收益日的样本合并,再统计。返回的 pairs
+    也是合并后的 —— 后续画散点图、做分组收益都该用合并后的口径,否则
+    同一个收益点会在图上被画出好几个点,视觉上也会误导读者的判断。
+    传 merge=False 可拿到逐新闻日的原始对齐结果(仅用于排查对齐问题)。
+    """
     daily = daily_sentiment(rows)
-    pairs = align_with_returns(daily, klines, lag=lag)
+    aligned = align_with_returns(daily, klines, lag=lag)
+    pairs = merge_pairs_by_return_day(aligned) if merge else aligned
     stats = summarize(pairs)
     stats['lag'] = lag
     stats['days_with_news'] = len(daily)
+    stats['aligned_n'] = len(aligned)
     return {'daily': daily, 'pairs': pairs, 'stats': stats}

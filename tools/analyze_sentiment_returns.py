@@ -16,7 +16,11 @@
   * 收益用**下一个交易日**的涨跌幅,不是当天 —— 新闻多在盘后发布,
     用当天收益会引入前视偏差。
   * 非交易日的新闻归到它之前最后一个交易日,再往后推 lag 天。
-  * 相关系数用 Pearson,并同时报 Spearman(抗异常值)和 p 值。
+  * 相关系数用 Pearson,并同时报 Spearman 和 p 值。p 值按 t 分布精确算
+    (自由度 n-2),不是正态近似。
+  * **同一个收益日只算一个样本**:非交易日和长假会让多个新闻日共享同一个
+    次日收益,直接合并计数会造成伪重复、样本量虚高。这里按收益日把
+    polarity 按新闻条数加权平均,详见 analysis.merge_pairs_by_return_day。
   * 样本量小的股票单独看没有意义,所以同时给出全样本汇总。
 
 退出码 0 = 成功。
@@ -45,6 +49,9 @@ def _parse_args(argv=None):
                     help='情感对应的未来第几个交易日收益(默认 1)')
     ap.add_argument('--min-news', type=int, default=1,
                     help='当天新闻条数少于此值的样本丢弃(默认 1)')
+    ap.add_argument('--no-merge', action='store_true',
+                    help='不按收益日合并样本(仅供排查对齐问题,得到的 '
+                         'p 值偏小、不能写进论文)')
     ap.add_argument('--out', default='',
                     help='把结果写成 JSON 到这个路径')
     return ap.parse_args(argv)
@@ -105,11 +112,13 @@ def main(argv=None):
                       % (stock.code, stock.name, len(rows), len(ks)))
                 continue
 
-            out = analysis.analyze(rows, ks, lag=args.lag)
+            out = analysis.analyze(rows, ks, lag=args.lag,
+                                   merge=not args.no_merge)
             pairs = [p for p in out['pairs'] if p['n'] >= args.min_news]
             stats = analysis.summarize(pairs)
             stats['lag'] = args.lag
             stats['days_with_news'] = len(out['daily'])
+            stats['aligned_n'] = out['stats']['aligned_n']
 
             per_stock.append({
                 'code': stock.code,
@@ -119,13 +128,15 @@ def main(argv=None):
                 'stats': stats,
                 # 配对样本一并存下:图 7-4 的散点图要逐点画,
                 # 只存相关系数就画不出来,也就没法从结果文件复现图。
+                # 注意这里是**按收益日合并后**的样本,一个收益日一个点。
                 'pairs': pairs,
             })
             all_pairs.extend(pairs)
 
-            print('%s %s  新闻 %d 条 / 有情感的日子 %d 天 / 可用样本 %d 天'
+            print('%s %s  新闻 %d 条 / 有情感的日子 %d 天 / '
+                  '对齐 %d 条 -> 合并后可用样本 %d 个收益日'
                   % (stock.code, stock.name, len(rows),
-                     stats['days_with_news'], stats['n']))
+                     stats['days_with_news'], stats['aligned_n'], stats['n']))
             print('   polarity 均值 %s  次日收益均值 %s%%'
                   % (_fmt(stats['polarity_mean']),
                      _fmt(stats['return_mean'], 3)))
@@ -149,7 +160,7 @@ def main(argv=None):
         overall['lag'] = args.lag
 
         print('=' * 62)
-        print('全样本汇总(合并 %d 只股票、%d 个股票-日样本)'
+        print('全样本汇总(合并 %d 只股票、%d 个收益日样本)'
               % (len(per_stock), overall['n']))
         print('  Pearson  %s   p=%s' % (_fmt(overall['pearson']),
                                         _fmt(overall['p_value'])))
@@ -165,6 +176,7 @@ def main(argv=None):
         result = {
             'lag': args.lag,
             'min_news': args.min_news,
+            'merged': not args.no_merge,
             'per_stock': per_stock,
             'overall': overall,
         }
